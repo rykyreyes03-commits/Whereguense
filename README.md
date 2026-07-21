@@ -1,16 +1,39 @@
-# React + Vite
+# 🌍 Wheregüense
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Plataforma de turismo cultural gamificado para la Ruta Dariana (León)**  
+Proyecto para **Hackathon Nicaragua 2026 - Circuitos Creativos**
 
-Currently, two official plugins are available:
+## Descripción
+Wheregüense conecta turistas con experiencias culturales auténticas a través de un **mapa interactivo** y un **Pasaporte Digital** gamificado con el personaje del la gigantona y el cabezon.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Tecnologías usadas
+- **Frontend:** React + Vite + Leaflet (mapas)
+- **Estilo:** CSS
+- **Control de versiones:** Git + GitHub
+- **Próximamente:** Supabase (Base de datos) + autenticación
 
-## React Compiler
+## Cómo instalar y ejecutar
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+# Clonar el repositorio
+git clone https://github.com/rykyreyes03-/whereguense.git
+cd whereguense
 
-## Expanding the ESLint configuration
+# Instalar dependencias
+npm install
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# Ejecutar en desarrollo
+npm run dev
+
+Abre http://localhost:5174 en tu navegador.
+
+## Cómo usar
+- Explora el mapa interactivo de León
+- Haz clic en los marcadores azules para ver información de cada sitio cultural
+- Próximamente: sistema de sellos en Pasaporte Digital con el Güegüense
+
+## Próximos entregables
+- Diagrama de Base de Datos (ER)
+- Sistema de sellado del pasaporte
+- Manual de identidad corporativa
+- Más sitios de la Ruta Dariana
