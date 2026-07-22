@@ -1,6 +1,5 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import RutaCalculada from './RutaCalculada';  
 
 function MapaRuta({ sitios, onSellar }) {
   return (
@@ -17,7 +16,8 @@ function MapaRuta({ sitios, onSellar }) {
         <Marker key={sitio.id} position={sitio.position}>
           <Popup>
             <h3>{sitio.name}</h3>
-            <p>{sitio.desc}</p>
+            <p><strong>{sitio.desc}</strong></p>
+            {sitio.historia && <p>{sitio.historia}</p>}
             <button 
               onClick={() => onSellar(sitio)} 
               style={{ 
