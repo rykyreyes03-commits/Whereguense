@@ -1,4 +1,13 @@
 function PanelPasaporte({ sellos, total }) {
+  const progreso = Math.round((sellos.length / total) * 100);
+  const rango = () => {
+    if (sellos.length >= 8) return { nombre: "Maestro Güegüense", color: "#d32f2f" };
+    if (sellos.length >= 5) return { nombre: "Explorador", color: "#ff9800" };
+    return { nombre: "Principiante", color: "#4caf50" };
+  };
+
+  const nivel = rango();
+
   return (
     <div style={{ 
       position: 'absolute', 
@@ -9,12 +18,30 @@ function PanelPasaporte({ sellos, total }) {
       borderRadius: '8px', 
       zIndex: 1000, 
       boxShadow: '0 4px 12px rgba(0,0,0,0.2)', 
-      maxWidth: '280px' 
+      maxWidth: '280px',
+      textAlign: 'center'
     }}>
-      <h3>Sellos obtenidos: {sellos.length}/{total}</h3>
-      <ul style={{ paddingLeft: '20px', maxHeight: '300px', overflowY: 'auto' }}>
+      <div style={{ fontSize: '3rem', marginBottom: '10px' }}>🎭</div>
+      <h3 style={{ color: nivel.color, margin: '5px 0' }}>
+        {nivel.nombre}
+      </h3>
+      
+      <div style={{ background: '#eee', height: '8px', borderRadius: '4px', margin: '10px 0' }}>
+        <div style={{ 
+          width: `${progreso}%`, 
+          height: '100%', 
+          background: nivel.color, 
+          borderRadius: '4px' 
+        }}></div>
+      </div>
+      
+      <p style={{ fontSize: '0.9rem' }}>
+        Sellos: {sellos.length}/{total} ({progreso}%)
+      </p>
+
+      <ul style={{ paddingLeft: '20px', maxHeight: '250px', overflowY: 'auto', textAlign: 'left' }}>
         {sellos.map(s => (
-          <li key={s.id} style={{ fontSize: '0.9rem', marginBottom: '4px' }}>
+          <li key={s.id} style={{ fontSize: '0.85rem', marginBottom: '4px' }}>
             {s.nombre} ({s.fecha})
           </li>
         ))}
