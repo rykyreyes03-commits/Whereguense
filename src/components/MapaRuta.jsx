@@ -1,5 +1,6 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import RutaCalculada from './RutaCalculada';  
 
 function MapaRuta({ sitios, onSellar }) {
   return (
