@@ -31,7 +31,7 @@ function App() {
   };
 
   if (pantalla === 'inicio') {
-    return <Inicio onNavigate={setPantalla} onSeleccionarRuta={setRutaActivaId} />;
+    return <Inicio onNavigate={setPantalla} onSeleccionarRuta={setRutaActivaId} totalSitios={rutas[0].sitios.length} />;
   }
 
   if (pantalla === 'mapa') {

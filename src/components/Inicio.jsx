@@ -12,7 +12,7 @@ import iconoUbicacion from '../assets/icons/icono_ubicacion.svg';
 import iconoEventos from '../assets/icons/icono_eventos.svg';
 import iconoPerfil from '../assets/icons/icono_perfil.svg';
 
-function Inicio({ onNavigate, onSeleccionarRuta }) {
+function Inicio({ onNavigate, onSeleccionarRuta, totalSitios }) {
   return (
     <div className="inicio-wrapper">
 
@@ -71,7 +71,7 @@ function Inicio({ onNavigate, onSeleccionarRuta }) {
               <div className="guia">GUÍA:<br/>Invitado</div>
               <h3>Ruta Dariana</h3>
               <div className="ubicacion">LEÓN, NICARAGUA</div>
-              <div className="pill">8 sitios</div>
+              <div className="pill">{totalSitios} sitios</div>
             </div>
           </div>
         </div>
