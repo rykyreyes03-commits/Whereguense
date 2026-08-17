@@ -1,12 +1,15 @@
-import { useEffect } from 'react';
-import L from 'leaflet';
+import { useState } from 'react';
+import Inicio from './components/Inicio';
+import MapaRuta from './components/MapaRuta';
+import PanelPasaporte from './components/PanelPasaporte';
+import Perfil from './components/Perfil';
 import { sitios } from './data/sitios';
 import { useSellos } from './hooks/useSellos';
-import Header from './components/Header';
-import PanelPasaporte from './components/PanelPasaporte';
-import MapaRuta from './components/MapaRuta';
+import { useEffect } from 'react';
+import L from 'leaflet';
 
 function App() {
+  const [pantalla, setPantalla] = useState('inicio');
   const { sellos, sellar } = useSellos();
 
   useEffect(() => {
@@ -23,11 +26,79 @@ function App() {
     alert(resultado.mensaje);
   };
 
+  if (pantalla === 'inicio') {
+    return <Inicio onNavigate={setPantalla} />;
+  }
+
+  if (pantalla === 'mapa') {
+    return (
+      <div style={{ height: '100vh', width: '100%' }}>
+        <MapaRuta sitios={sitios} onSellar={handleSellar} />
+        <button
+          onClick={() => setPantalla('inicio')}
+          style={{
+            position: 'fixed',
+            top: '15px',
+            left: '15px',
+            zIndex: 1000,
+            padding: '8px 14px',
+            background: '#1a237e',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer'
+          }}
+        >
+          ← Volver
+        </button>
+      </div>
+    );
+  }
+
+  if (pantalla === 'pasaporte') {
+    return (
+      <div style={{ padding: '20px' }}>
+        <button
+          onClick={() => setPantalla('inicio')}
+          style={{
+            marginBottom: '15px',
+            padding: '8px 14px',
+            background: '#1a237e',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer'
+          }}
+        >
+          ← Volver
+        </button>
+        <PanelPasaporte sellos={sellos} total={sitios.length} />
+      </div>
+    );
+  }
+
+  if (pantalla === 'perfil') {
+    return <Perfil sellos={sellos} total={sitios.length} onNavigate={setPantalla} />;
+  }
+
   return (
-    <div style={{ height: '100vh', width: '100%' }}>
-      <Header />
-      <PanelPasaporte sellos={sellos} total={sitios.length} />
-      <MapaRuta sitios={sitios} onSellar={handleSellar} />
+    <div style={{ padding: '40px', textAlign: 'center' }}>
+      <h2>Pantalla: {pantalla}</h2>
+      <p>En construcción...</p>
+      <button
+        onClick={() => setPantalla('inicio')}
+        style={{
+          marginTop: '20px',
+          padding: '10px 20px',
+          background: '#1a237e',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          cursor: 'pointer'
+        }}
+      >
+        Volver al Inicio
+      </button>
     </div>
   );
 }

@@ -1,12 +1,8 @@
+import { obtenerRango } from '../utils/rango';
+
 function PanelPasaporte({ sellos, total }) {
   const progreso = Math.round((sellos.length / total) * 100);
-  const rango = () => {
-    if (sellos.length >= 8) return { nombre: "Maestro Güegüense", color: "#d32f2f" };
-    if (sellos.length >= 5) return { nombre: "Explorador", color: "#ff9800" };
-    return { nombre: "Principiante", color: "#4caf50" };
-  };
-
-  const nivel = rango();
+  const nivel = obtenerRango(sellos.length);
 
   return (
     <div style={{ 
