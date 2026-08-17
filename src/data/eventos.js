@@ -1,0 +1,38 @@
+export const eventos = [
+  {
+    id: 1,
+    nombre: "Festival Dariano",
+    fechaInicio: "2026-08-14",
+    fechaFin: "2026-08-20",
+    ubicacion: "Parque Central de León",
+    sitioRelacionado: "Parque Central de León",
+    descripcion: "Celebración cultural en honor a Rubén Darío con desfiles, poesía y música tradicional por las calles del centro histórico de León.",
+  },
+  {
+    id: 2,
+    nombre: "Feria del Libro Leonés",
+    fechaInicio: "2026-08-01",
+    fechaFin: "2026-08-10",
+    ubicacion: "Casa de la Cultura",
+    sitioRelacionado: "Casa de la Cultura",
+    descripcion: "Exposición y venta de libros de autores nicaragüenses, con charlas y presentaciones diarias.",
+  },
+  {
+    id: 3,
+    nombre: "Noche de Museos",
+    fechaInicio: "2026-08-17",
+    fechaFin: "2026-08-17",
+    ubicacion: "Museo de la Revolución",
+    sitioRelacionado: "Museo de la Revolución",
+    descripcion: "Entrada libre y recorridos guiados nocturnos por las salas del museo, con actividades para toda la familia.",
+  },
+  {
+    id: 4,
+    nombre: "Concierto Sinfónico en la Catedral",
+    fechaInicio: "2026-08-25",
+    fechaFin: "2026-08-25",
+    ubicacion: "Catedral de León",
+    sitioRelacionado: "Catedral de León",
+    descripcion: "Presentación de la Orquesta Sinfónica Nacional en el atrio de la Catedral de León, Patrimonio de la Humanidad.",
+  },
+];

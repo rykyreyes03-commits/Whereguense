@@ -5,8 +5,11 @@ import PanelPasaporte from './components/PanelPasaporte';
 import Perfil from './components/Perfil';
 import RutasDestacadas from './components/RutasDestacadas';
 import DetalleRuta from './components/DetalleRuta';
+import Eventos from './components/Eventos';
+import DetalleEvento from './components/DetalleEvento';
 import { sitios } from './data/sitios';
 import { rutas } from './data/rutas';
+import { eventos } from './data/eventos';
 import { useSellos } from './hooks/useSellos';
 import { useEffect } from 'react';
 import L from 'leaflet';
@@ -14,6 +17,7 @@ import L from 'leaflet';
 function App() {
   const [pantalla, setPantalla] = useState('inicio');
   const [rutaActivaId, setRutaActivaId] = useState(null);
+  const [eventoActivoId, setEventoActivoId] = useState(null);
   const { sellos, sellar } = useSellos();
 
   useEffect(() => {
@@ -31,7 +35,19 @@ function App() {
   };
 
   if (pantalla === 'inicio') {
-    return <Inicio onNavigate={setPantalla} onSeleccionarRuta={setRutaActivaId} totalSitios={rutas[0].sitios.length} />;
+    const hoy = new Date().toISOString().slice(0, 10);
+    const eventoVigente = eventos
+      .filter(e => e.fechaInicio <= hoy && hoy <= e.fechaFin)
+      .sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio))[0];
+    return (
+      <Inicio
+        onNavigate={setPantalla}
+        onSeleccionarRuta={setRutaActivaId}
+        totalSitios={rutas[0].sitios.length}
+        onSeleccionarEvento={setEventoActivoId}
+        eventoDestacadoId={eventoVigente?.id}
+      />
+    );
   }
 
   if (pantalla === 'mapa') {
@@ -92,6 +108,15 @@ function App() {
   if (pantalla === 'detalleRuta') {
     const ruta = rutas.find(r => r.id === rutaActivaId);
     return <DetalleRuta ruta={ruta} sellos={sellos} onNavigate={setPantalla} />;
+  }
+
+  if (pantalla === 'eventos') {
+    return <Eventos eventos={eventos} onNavigate={setPantalla} onSeleccionarEvento={setEventoActivoId} />;
+  }
+
+  if (pantalla === 'detalleEvento') {
+    const evento = eventos.find(e => e.id === eventoActivoId);
+    return <DetalleEvento evento={evento} onNavigate={setPantalla} />;
   }
 
   return (

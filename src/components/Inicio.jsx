@@ -12,7 +12,7 @@ import iconoUbicacion from '../assets/icons/icono_ubicacion.svg';
 import iconoEventos from '../assets/icons/icono_eventos.svg';
 import iconoPerfil from '../assets/icons/icono_perfil.svg';
 
-function Inicio({ onNavigate, onSeleccionarRuta, totalSitios }) {
+function Inicio({ onNavigate, onSeleccionarRuta, totalSitios, onSeleccionarEvento, eventoDestacadoId }) {
   return (
     <div className="inicio-wrapper">
 
@@ -78,7 +78,12 @@ function Inicio({ onNavigate, onSeleccionarRuta, totalSitios }) {
 
         <h2 className="seccion">EVENTOS DE ESTA SEMANA</h2>
         <div className="card-wrap">
-          <div className="card destacada">
+          <div
+            className="card destacada"
+            onClick={eventoDestacadoId ? () => { onSeleccionarEvento?.(eventoDestacadoId); onNavigate?.('detalleEvento'); } : undefined}
+            role={eventoDestacadoId ? 'button' : undefined}
+            tabIndex={eventoDestacadoId ? 0 : undefined}
+          >
             <div className="card-img placeholder-b"></div>
             <div className="card-info">
               <div className="barcode"></div>

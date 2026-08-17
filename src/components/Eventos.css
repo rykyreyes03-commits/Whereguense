@@ -1,0 +1,118 @@
+.eventos-wrapper{
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background:#ffffff;
+  color:#111;
+  width:100%;
+  max-width:480px;
+  margin:0 auto;
+  min-height:100vh;
+  transition: max-width 0.2s ease;
+}
+
+.eventos-header{
+  background: linear-gradient(90deg, #2b2be0 0%, #1717a8 100%);
+  border-bottom-left-radius: 28px;
+  border-bottom-right-radius: 28px;
+  padding: 30px 24px 32px;
+}
+.eventos-header .volver-btn{
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:0.95rem;
+  cursor:pointer;
+  padding:0;
+  margin-bottom:16px;
+}
+.eventos-header h1{
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight:700;
+  font-size:1.4rem;
+  color:#fff;
+}
+
+.eventos-contenido{ padding: 24px 22px 40px; }
+
+.eventos-vacio{
+  text-align:center;
+  color:#555;
+  font-size:0.95rem;
+  padding:60px 20px;
+}
+
+.card-wrap{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:20px;
+}
+.card{
+  display:flex;
+  border:2px solid #111111;
+  border-radius:18px;
+  overflow:hidden;
+  background:#fff;
+  cursor:pointer;
+}
+.card.destacada{
+  border-color:#7a9fd6;
+  box-shadow:0 0 0 3px #b9cdec;
+}
+.card-img{
+  width:38%;
+  flex-shrink:0;
+}
+.placeholder-b{ background: linear-gradient(160deg,#241a1a,#7a2b2b 55%,#c96a3f); }
+.card-info{
+  flex:1;
+  padding:14px 34px 16px 16px;
+  position:relative;
+}
+.card-info .guia{
+  font-size:0.82rem;
+  color:#111;
+  margin-bottom:6px;
+}
+.card-info h3{
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size:1.1rem;
+  display:inline-block;
+  border-bottom:2px solid #2b2be0;
+  padding-bottom:2px;
+  margin-bottom:8px;
+}
+.card-info .ubicacion{
+  font-size:0.82rem;
+  color:#111;
+  margin-bottom:12px;
+}
+.pill{
+  display:inline-block;
+  border:2px solid #111;
+  border-radius:20px;
+  padding:4px 14px;
+  font-size:0.78rem;
+}
+.barcode{
+  position:absolute;
+  top:12px;
+  right:8px;
+  width:22px;
+  height:calc(100% - 24px);
+  background: repeating-linear-gradient(90deg, #111 0 2px, transparent 2px 4px);
+  opacity:0.75;
+}
+
+/* ===== TABLET: 640px+ ===== */
+@media (min-width: 640px){
+  .eventos-wrapper{ max-width:700px; }
+  .eventos-contenido{ padding: 28px 32px 40px; }
+}
+
+/* ===== DESKTOP: 1024px+ ===== */
+@media (min-width: 1024px){
+  .eventos-wrapper{ max-width:1100px; }
+  .eventos-contenido{ padding: 36px 60px 40px; }
+  .card-wrap{
+    grid-template-columns: 1fr 1fr;
+  }
+}
