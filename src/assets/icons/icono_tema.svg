@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs><mask id="cres"><rect width="512" height="512" fill="#FFFFFF"/><circle cx="336" cy="188" r="150" fill="#000000"/></mask></defs>
+  <circle cx="244" cy="272" r="182" fill="#111111" mask="url(#cres)"/>
+  <g fill="#111111">
+    <path d="M0 -40L11 -12L40 -12L17 6L26 34L0 17L-26 34L-17 6L-40 -12L-11 -12Z" transform="translate(352 128) scale(0.9)"/>
+    <path d="M0 -40L11 -12L40 -12L17 6L26 34L0 17L-26 34L-17 6L-40 -12L-11 -12Z" transform="translate(432 176) scale(0.5)"/>
+    <path d="M0 -40L11 -12L40 -12L17 6L26 34L0 17L-26 34L-17 6L-40 -12L-11 -12Z" transform="translate(320 216) scale(0.55)"/>
+    <path d="M0 -40L11 -12L40 -12L17 6L26 34L0 17L-26 34L-17 6L-40 -12L-11 -12Z" transform="translate(388 224) scale(0.8)"/>
+    <circle cx="300" cy="120" r="9"/>
+  </g>
+</svg>
