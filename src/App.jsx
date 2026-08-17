@@ -7,6 +7,7 @@ import RutasDestacadas from './components/RutasDestacadas';
 import DetalleRuta from './components/DetalleRuta';
 import Eventos from './components/Eventos';
 import DetalleEvento from './components/DetalleEvento';
+import Ranking from './components/Ranking';
 import { sitios } from './data/sitios';
 import { rutas } from './data/rutas';
 import { eventos } from './data/eventos';
@@ -117,6 +118,10 @@ function App() {
   if (pantalla === 'detalleEvento') {
     const evento = eventos.find(e => e.id === eventoActivoId);
     return <DetalleEvento evento={evento} onNavigate={setPantalla} />;
+  }
+
+  if (pantalla === 'ranking') {
+    return <Ranking sellos={sellos} onNavigate={setPantalla} />;
   }
 
   return (
