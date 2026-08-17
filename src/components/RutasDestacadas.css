@@ -1,0 +1,113 @@
+.rutas-wrapper{
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background:#ffffff;
+  color:#111;
+  width:100%;
+  max-width:480px;
+  margin:0 auto;
+  min-height:100vh;
+  transition: max-width 0.2s ease;
+}
+
+.rutas-header{
+  background: linear-gradient(90deg, #2b2be0 0%, #1717a8 100%);
+  border-bottom-left-radius: 28px;
+  border-bottom-right-radius: 28px;
+  padding: 30px 24px 32px;
+}
+.rutas-header .volver-btn{
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:0.95rem;
+  cursor:pointer;
+  padding:0;
+  margin-bottom:16px;
+}
+.rutas-header h1{
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight:700;
+  font-size:1.4rem;
+  color:#fff;
+}
+
+.rutas-contenido{ padding: 24px 22px 40px; }
+
+.card-wrap{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:20px;
+}
+.card{
+  display:flex;
+  border:2px solid #111111;
+  border-radius:18px;
+  overflow:hidden;
+  background:#fff;
+  cursor:pointer;
+}
+.card-img{
+  width:38%;
+  flex-shrink:0;
+}
+.placeholder-a{ background: linear-gradient(160deg,#3a2f28,#8a6a3f 60%,#c9a45c); }
+.card-info{
+  flex:1;
+  padding:14px 34px 16px 16px;
+  position:relative;
+}
+.card-info .guia{
+  font-size:0.82rem;
+  color:#111;
+  margin-bottom:6px;
+}
+.card-info h3{
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size:1.1rem;
+  display:inline-block;
+  border-bottom:2px solid #2b2be0;
+  padding-bottom:2px;
+  margin-bottom:8px;
+}
+.card-info .ubicacion{
+  font-size:0.82rem;
+  color:#111;
+  margin-bottom:12px;
+}
+.pill{
+  display:inline-block;
+  border:2px solid #111;
+  border-radius:20px;
+  padding:4px 14px;
+  font-size:0.78rem;
+}
+.barcode{
+  position:absolute;
+  top:12px;
+  right:8px;
+  width:22px;
+  height:calc(100% - 24px);
+  background: repeating-linear-gradient(90deg, #111 0 2px, transparent 2px 4px);
+  opacity:0.75;
+}
+.progreso-ruta{
+  margin-top:10px;
+  font-size:0.8rem;
+  font-weight:600;
+  color:#2b2be0;
+}
+
+/* ===== TABLET: 640px+ ===== */
+@media (min-width: 640px){
+  .rutas-wrapper{ max-width:700px; }
+  .rutas-contenido{ padding: 28px 32px 40px; }
+}
+
+/* ===== DESKTOP: 1024px+ ===== */
+@media (min-width: 1024px){
+  .rutas-wrapper{ max-width:1100px; }
+  .rutas-contenido{ padding: 36px 60px 40px; }
+  .card-wrap{
+    grid-template-columns: 1fr 1fr;
+  }
+}

@@ -3,13 +3,17 @@ import Inicio from './components/Inicio';
 import MapaRuta from './components/MapaRuta';
 import PanelPasaporte from './components/PanelPasaporte';
 import Perfil from './components/Perfil';
+import RutasDestacadas from './components/RutasDestacadas';
+import DetalleRuta from './components/DetalleRuta';
 import { sitios } from './data/sitios';
+import { rutas } from './data/rutas';
 import { useSellos } from './hooks/useSellos';
 import { useEffect } from 'react';
 import L from 'leaflet';
 
 function App() {
   const [pantalla, setPantalla] = useState('inicio');
+  const [rutaActivaId, setRutaActivaId] = useState(null);
   const { sellos, sellar } = useSellos();
 
   useEffect(() => {
@@ -27,7 +31,7 @@ function App() {
   };
 
   if (pantalla === 'inicio') {
-    return <Inicio onNavigate={setPantalla} />;
+    return <Inicio onNavigate={setPantalla} onSeleccionarRuta={setRutaActivaId} />;
   }
 
   if (pantalla === 'mapa') {
@@ -79,6 +83,15 @@ function App() {
 
   if (pantalla === 'perfil') {
     return <Perfil sellos={sellos} total={sitios.length} onNavigate={setPantalla} />;
+  }
+
+  if (pantalla === 'rutas') {
+    return <RutasDestacadas rutas={rutas} sellos={sellos} onNavigate={setPantalla} onSeleccionarRuta={setRutaActivaId} />;
+  }
+
+  if (pantalla === 'detalleRuta') {
+    const ruta = rutas.find(r => r.id === rutaActivaId);
+    return <DetalleRuta ruta={ruta} sellos={sellos} onNavigate={setPantalla} />;
   }
 
   return (

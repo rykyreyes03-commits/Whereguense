@@ -12,7 +12,7 @@ import iconoUbicacion from '../assets/icons/icono_ubicacion.svg';
 import iconoEventos from '../assets/icons/icono_eventos.svg';
 import iconoPerfil from '../assets/icons/icono_perfil.svg';
 
-function Inicio({ onNavigate }) {
+function Inicio({ onNavigate, onSeleccionarRuta }) {
   return (
     <div className="inicio-wrapper">
 
@@ -56,10 +56,15 @@ function Inicio({ onNavigate }) {
 
         <div className="seccion-header">
           <h2 className="seccion">RUTAS DESTACADAS</h2>
-          <span className="ver-todas">ver todas</span>
+          <span className="ver-todas" onClick={() => onNavigate?.('rutas')}>ver todas</span>
         </div>
         <div className="card-wrap">
-          <div className="card">
+          <div
+            className="card"
+            onClick={() => { onSeleccionarRuta?.(1); onNavigate?.('detalleRuta'); }}
+            role="button"
+            tabIndex={0}
+          >
             <div className="card-img placeholder-a"></div>
             <div className="card-info">
               <div className="barcode"></div>
