@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import Inicio from './components/Inicio';
 import MapaRuta from './components/MapaRuta';
-import PanelPasaporte from './components/PanelPasaporte';
+import MisSellos from './components/MisSellos';
+import DetalleSello from './components/DetalleSello';
 import Perfil from './components/Perfil';
 import RutasDestacadas from './components/RutasDestacadas';
 import DetalleRuta from './components/DetalleRuta';
@@ -20,6 +21,8 @@ function App() {
   const [pantalla, setPantalla] = useState('inicio');
   const [rutaActivaId, setRutaActivaId] = useState(null);
   const [eventoActivoId, setEventoActivoId] = useState(null);
+  const [sitioSeleccionadoId, setSitioSeleccionadoId] = useState(null);
+  const [sitioEnfocadoId, setSitioEnfocadoId] = useState(null);
   const { sellos, sellar } = useSellos();
 
   useEffect(() => {
@@ -55,7 +58,7 @@ function App() {
   if (pantalla === 'mapa') {
     return (
       <div style={{ height: '100vh', width: '100%' }}>
-        <MapaRuta sitios={sitios} onSellar={handleSellar} />
+        <MapaRuta sitios={sitios} onSellar={handleSellar} sitioEnfocadoId={sitioEnfocadoId} />
         <button
           onClick={() => setPantalla('inicio')}
           style={{
@@ -79,23 +82,27 @@ function App() {
 
   if (pantalla === 'pasaporte') {
     return (
-      <div style={{ padding: '20px' }}>
-        <button
-          onClick={() => setPantalla('inicio')}
-          style={{
-            marginBottom: '15px',
-            padding: '8px 14px',
-            background: '#1a237e',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          ← Volver
-        </button>
-        <PanelPasaporte sellos={sellos} total={sitios.length} />
-      </div>
+      <MisSellos
+        sellos={sellos}
+        sitios={sitios}
+        onNavigate={setPantalla}
+        onSeleccionarSitio={setSitioSeleccionadoId}
+      />
+    );
+  }
+
+  if (pantalla === 'detalleSello') {
+    const sitio = sitios.find(s => s.id === sitioSeleccionadoId);
+    const sello = sellos.find(s => s.sitioId === sitioSeleccionadoId);
+    return (
+      <DetalleSello
+        sitio={sitio}
+        sello={sello}
+        onNavigate={(p) => {
+          if (p === 'mapa') setSitioEnfocadoId(sitio.id);
+          setPantalla(p);
+        }}
+      />
     );
   }
 
