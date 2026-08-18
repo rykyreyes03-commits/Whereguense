@@ -8,6 +8,7 @@ import DetalleRuta from './components/DetalleRuta';
 import Eventos from './components/Eventos';
 import DetalleEvento from './components/DetalleEvento';
 import Ranking from './components/Ranking';
+import Tienda from './components/Tienda';
 import { sitios } from './data/sitios';
 import { rutas } from './data/rutas';
 import { eventos } from './data/eventos';
@@ -122,6 +123,10 @@ function App() {
 
   if (pantalla === 'ranking') {
     return <Ranking sellos={sellos} onNavigate={setPantalla} />;
+  }
+
+  if (pantalla === 'tienda') {
+    return <Tienda sellos={sellos} onNavigate={setPantalla} />;
   }
 
   return (
