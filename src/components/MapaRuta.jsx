@@ -30,7 +30,6 @@ function MapaRuta({ sitios, onSellar, sitioEnfocadoId }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; OpenStreetMap contributors'
       />
-      <EnfocarSitio sitios={sitios} sitioEnfocadoId={sitioEnfocadoId} markerRefs={markerRefs} />
       {sitios.map(sitio => (
         <Marker
           key={sitio.id}
@@ -60,6 +59,7 @@ function MapaRuta({ sitios, onSellar, sitioEnfocadoId }) {
           </Popup>
         </Marker>
       ))}
+      <EnfocarSitio sitios={sitios} sitioEnfocadoId={sitioEnfocadoId} markerRefs={markerRefs} />
     </MapContainer>
   );
 }
