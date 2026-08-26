@@ -1,32 +1,27 @@
 import './Inicio.css';
-import iconoMenu from '../assets/icons/icono_menu.svg';
+import TopBar from './TopBar';
+import BottomNav from './BottomNav';
 import iconoUsuario from '../assets/icons/icono_usuario.svg';
 import iconoBuscar from '../assets/icons/icono_buscar.svg';
 import iconoArbol from '../assets/icons/icono_arbol.svg';
 import iconoRuta from '../assets/icons/icono_ruta.svg';
 import iconoRutaGuardada from '../assets/icons/icono_ruta_guardada.svg';
 import iconoTema from '../assets/icons/icono_tema.svg';
-import iconoInicio from '../assets/icons/icono_inicio.svg';
-import iconoPasaporte from '../assets/icons/icono_pasaporte.svg';
-import iconoUbicacion from '../assets/icons/icono_ubicacion.svg';
-import iconoEventos from '../assets/icons/icono_eventos.svg';
-import iconoPerfil from '../assets/icons/icono_perfil.svg';
 
 function Inicio({ onNavigate, onSeleccionarRuta, totalSitios, onSeleccionarEvento, eventoDestacadoId }) {
   return (
     <div className="inicio-wrapper">
 
-      <header className="inicio-header">
-        <button className="icon-btn" aria-label="Menú">
-          <img src={iconoMenu} alt="Menú" />
-        </button>
-        <div className="avatar">
-          <img src={iconoUsuario} alt="Usuario" />
-        </div>
-      </header>
+      <TopBar
+        rightSlot={
+          <div className="avatar">
+            <img src={iconoUsuario} alt="Usuario" />
+          </div>
+        }
+      />
 
       <div className="contenido">
-        <h1 className="bienvenida">¡BIENVENIDO, INVITADO!</h1>
+        <h1 className="bienvenida">¡Bienvenido, Invitado!</h1>
         <p className="subtitulo">¿Qué quieres descubrir hoy?</p>
 
         <div className="buscador">
@@ -96,29 +91,7 @@ function Inicio({ onNavigate, onSeleccionarRuta, totalSitios, onSeleccionarEvent
         </div>
       </div>
 
-      <button className="fab" onClick={() => onNavigate?.('mapa')} aria-label="Ver mapa">
-        <img src={iconoUbicacion} alt="Mapa" />
-      </button>
-
-      <nav className="nav-bottom">
-        <button className="item activo" onClick={() => onNavigate?.('inicio')}>
-          <img src={iconoInicio} alt="Inicio" />
-          <span>INICIO</span>
-        </button>
-        <button className="item" onClick={() => onNavigate?.('pasaporte')}>
-          <img src={iconoPasaporte} alt="Pasaporte" />
-          <span>PASAPORTE</span>
-        </button>
-        <div className="item centro"></div>
-        <button className="item" onClick={() => onNavigate?.('eventos')}>
-          <img src={iconoEventos} alt="Eventos" />
-          <span>EVENTOS</span>
-        </button>
-        <button className="item" onClick={() => onNavigate?.('perfil')}>
-          <img src={iconoPerfil} alt="Perfil" />
-          <span>PERFIL</span>
-        </button>
-      </nav>
+      <BottomNav activo="inicio" onNavigate={onNavigate} />
 
     </div>
   );

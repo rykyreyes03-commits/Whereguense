@@ -11,7 +11,7 @@
 }
 
 .detalle-evento-header{
-  background: linear-gradient(90deg, #2b2be0 0%, #1717a8 100%);
+  background: linear-gradient(90deg, #4945CD 0%, #1119BC 100%);
   border-bottom-left-radius: 28px;
   border-bottom-right-radius: 28px;
   padding: 30px 24px 32px;
@@ -52,7 +52,7 @@
   font-weight:700;
   font-size:0.8rem;
   letter-spacing:0.5px;
-  color:#2b2be0;
+  color:#4945CD;
   margin-bottom:8px;
 }
 .detalle-evento-dato p{

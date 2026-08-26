@@ -11,7 +11,7 @@
 }
 
 .tienda-header{
-  background: linear-gradient(90deg, #2b2be0 0%, #1717a8 100%);
+  background: linear-gradient(90deg, #4945CD 0%, #1119BC 100%);
   border-bottom-left-radius: 28px;
   border-bottom-right-radius: 28px;
   padding: 30px 24px 32px;
@@ -52,9 +52,9 @@
   text-align:center;
 }
 .tienda-tab.activo{
-  background: linear-gradient(90deg, #2b2be0 0%, #1717a8 100%);
+  background: linear-gradient(90deg, #4945CD 0%, #1119BC 100%);
   color:#fff;
-  border-color:#1717a8;
+  border-color:#1119BC;
 }
 
 .tienda-lista{
@@ -99,8 +99,8 @@
   flex-shrink:0;
   white-space:nowrap;
 }
-.tienda-estado.desbloqueado{ color:#4caf50; }
-.tienda-estado.comprado{ color:#2b2be0; }
+.tienda-estado.desbloqueado{ color:#78E33C; }
+.tienda-estado.comprado{ color:#4945CD; }
 
 .tienda-btn{
   border:2px solid #1a1a1a;
@@ -115,9 +115,9 @@
   white-space:nowrap;
 }
 .tienda-btn.comprar{
-  background: linear-gradient(90deg, #2b2be0 0%, #1717a8 100%);
+  background: linear-gradient(90deg, #4945CD 0%, #1119BC 100%);
   color:#fff;
-  border-color:#1717a8;
+  border-color:#1119BC;
 }
 
 /* ===== TABLET: 640px+ ===== */
