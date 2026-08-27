@@ -26,10 +26,7 @@ import L from 'leaflet';
 
 function pantallaInicial() {
   const completado = localStorage.getItem('flujoInicialCompletado');
-  if (completado === 'true') return 'inicio';
-
-  const onboardingVisto = localStorage.getItem('onboardingVisto');
-  return onboardingVisto === 'true' ? 'login' : 'onboarding';
+  return completado === 'true' ? 'inicio' : 'login';
 }
 
 function App() {
@@ -62,16 +59,15 @@ function App() {
     setPantalla(nueva);
   };
 
-  const handleTerminarOnboarding = () => {
-    localStorage.setItem('onboardingVisto', 'true');
-    setPantalla('login');
-  };
-
   const handleElegirProposito = (tipo) => {
     if (tipo === 'emprendimiento') {
       alert('El registro de negocios todavía no está construido — por ahora, elegí "Turismo" para seguir. 🚧');
       return;
     }
+    setPantalla('onboarding');
+  };
+
+  const handleTerminarOnboarding = () => {
     setPantalla('danzante');
   };
 
@@ -89,16 +85,16 @@ function App() {
     setPantalla('login');
   };
 
-  if (pantalla === 'onboarding') {
-    return <Onboarding onTerminar={handleTerminarOnboarding} />;
-  }
-
   if (pantalla === 'login') {
     return <Login onIniciarComoInvitado={() => setPantalla('proposito')} />;
   }
 
   if (pantalla === 'proposito') {
     return <Proposito onElegir={handleElegirProposito} />;
+  }
+
+  if (pantalla === 'onboarding') {
+    return <Onboarding onTerminar={handleTerminarOnboarding} />;
   }
 
   if (pantalla === 'danzante') {
