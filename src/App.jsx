@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 import './App.css';
+import Onboarding from './components/Onboarding';
+import Login from './components/Login';
+import Proposito from './components/Proposito';
+import SeleccionDanzante from './components/SeleccionDanzante';
 import Inicio from './components/Inicio';
 import MapaRuta from './components/MapaRuta';
 import MisSellos from './components/MisSellos';
@@ -20,8 +24,16 @@ import { eventos } from './data/eventos';
 import { useSellos } from './hooks/useSellos';
 import L from 'leaflet';
 
+function pantallaInicial() {
+  const completado = localStorage.getItem('flujoInicialCompletado');
+  if (completado === 'true') return 'inicio';
+
+  const onboardingVisto = localStorage.getItem('onboardingVisto');
+  return onboardingVisto === 'true' ? 'login' : 'onboarding';
+}
+
 function App() {
-  const [pantalla, setPantalla] = useState('inicio');
+  const [pantalla, setPantalla] = useState(pantallaInicial);
   const [pantallaAnterior, setPantallaAnterior] = useState('inicio');
   const [rutaActivaId, setRutaActivaId] = useState(null);
   const [eventoActivoId, setEventoActivoId] = useState(null);
@@ -49,6 +61,49 @@ function App() {
     }
     setPantalla(nueva);
   };
+
+  const handleTerminarOnboarding = () => {
+    localStorage.setItem('onboardingVisto', 'true');
+    setPantalla('login');
+  };
+
+  const handleElegirProposito = (tipo) => {
+    if (tipo === 'emprendimiento') {
+      alert('El registro de negocios todavía no está construido — por ahora, elegí "Turismo" para seguir. 🚧');
+      return;
+    }
+    setPantalla('danzante');
+  };
+
+  const handleElegirDanzante = (avatar) => {
+    localStorage.setItem('avatarElegido', avatar);
+    localStorage.setItem('flujoInicialCompletado', 'true');
+    setPantalla('inicio');
+  };
+
+  const handleCerrarSesionGlobal = () => {
+    localStorage.removeItem('sellos');
+    localStorage.removeItem('perfilUsuario');
+    localStorage.removeItem('avatarElegido');
+    localStorage.removeItem('flujoInicialCompletado');
+    setPantalla('login');
+  };
+
+  if (pantalla === 'onboarding') {
+    return <Onboarding onTerminar={handleTerminarOnboarding} />;
+  }
+
+  if (pantalla === 'login') {
+    return <Login onIniciarComoInvitado={() => setPantalla('proposito')} />;
+  }
+
+  if (pantalla === 'proposito') {
+    return <Proposito onElegir={handleElegirProposito} />;
+  }
+
+  if (pantalla === 'danzante') {
+    return <SeleccionDanzante onElegir={handleElegirDanzante} />;
+  }
 
   if (pantalla === 'inicio') {
     const hoy = new Date().toISOString().slice(0, 10);
@@ -103,7 +158,14 @@ function App() {
   }
 
   if (pantalla === 'perfil') {
-    return <Perfil sellos={sellos} total={sitios.length} onNavigate={cambiarPantalla} />;
+    return (
+      <Perfil
+        sellos={sellos}
+        total={sitios.length}
+        onNavigate={cambiarPantalla}
+        onCerrarSesion={handleCerrarSesionGlobal}
+      />
+    );
   }
 
   if (pantalla === 'rutas') {
@@ -137,6 +199,7 @@ function App() {
       <Menu
         onNavigate={cambiarPantalla}
         onVolver={() => cambiarPantalla(pantallaAnterior)}
+        onCerrarSesion={handleCerrarSesionGlobal}
       />
     );
   }
