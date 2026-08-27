@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import './App.css';
 import Inicio from './components/Inicio';
 import MapaRuta from './components/MapaRuta';
 import MisSellos from './components/MisSellos';
@@ -10,11 +11,12 @@ import Eventos from './components/Eventos';
 import DetalleEvento from './components/DetalleEvento';
 import Ranking from './components/Ranking';
 import Tienda from './components/Tienda';
+import TopBar from './components/TopBar';
+import BottomNav from './components/BottomNav';
 import { sitios } from './data/sitios';
 import { rutas } from './data/rutas';
 import { eventos } from './data/eventos';
 import { useSellos } from './hooks/useSellos';
-import { useEffect } from 'react';
 import L from 'leaflet';
 
 function App() {
@@ -57,25 +59,10 @@ function App() {
 
   if (pantalla === 'mapa') {
     return (
-      <div style={{ height: '100vh', width: '100%' }}>
+      <div className="mapa-pantalla">
+        <TopBar />
         <MapaRuta sitios={sitios} onSellar={handleSellar} sitioEnfocadoId={sitioEnfocadoId} />
-        <button
-          onClick={() => setPantalla('inicio')}
-          style={{
-            position: 'fixed',
-            top: '15px',
-            left: '15px',
-            zIndex: 1000,
-            padding: '8px 14px',
-            background: '#1a237e',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          ← Volver
-        </button>
+        <BottomNav activo="mapa" onNavigate={setPantalla} />
       </div>
     );
   }

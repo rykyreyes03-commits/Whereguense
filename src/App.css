@@ -1,0 +1,15 @@
+.mapa-pantalla {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+  .mapa-pantalla { max-width: 700px; }
+}
+
+@media (min-width: 1024px) {
+  .mapa-pantalla { max-width: 1100px; }
+}

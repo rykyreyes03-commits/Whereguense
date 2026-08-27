@@ -24,7 +24,7 @@ function MapaRuta({ sitios, onSellar, sitioEnfocadoId }) {
     <MapContainer
       center={[12.4375, -86.8783]}
       zoom={13.5}
-      style={{ height: 'calc(100vh - 70px)', width: '100%' }}
+            style={{ flex: 1, width: '100%' }}
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
