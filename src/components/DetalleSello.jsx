@@ -1,4 +1,5 @@
 import './DetalleSello.css';
+import { INSIGNIAS } from '../data/insignias';
 
 function DetalleSello({ sitio, sello, onNavigate }) {
   if (!sitio) {
@@ -20,7 +21,7 @@ function DetalleSello({ sitio, sello, onNavigate }) {
         <button className="volver-btn" onClick={() => onNavigate?.('pasaporte')}>
           ← Volver
         </button>
-        <div className="detalle-sello-icono">🎭</div>
+        <img className="detalle-sello-icono" src={INSIGNIAS[sitio.badge]} alt={sitio.name} />
         <h1>{sitio.name}</h1>
         {sello && <p className="detalle-sello-fecha">Sellado el {sello.fecha}</p>}
       </header>

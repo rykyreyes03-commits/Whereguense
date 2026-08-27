@@ -2,6 +2,7 @@ import './MisSellos.css';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
 import { obtenerRango } from '../utils/rango';
+import { INSIGNIAS } from '../data/insignias';
 
 function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio }) {
   const nivel = obtenerRango(sellos.length);
@@ -46,7 +47,7 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio }) {
                   role="button"
                   tabIndex={0}
                 >
-                  <div className="sello-icono">🎭</div>
+                  <img className="sello-icono" src={INSIGNIAS[sitio.badge]} alt={sitio.name} />
                   <strong>{sitio.name}</strong>
                   <span className="sello-fecha">{sello.fecha}</span>
                 </div>
@@ -55,7 +56,11 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio }) {
 
             return (
               <div key={sitio.id} className="sello-card bloqueado">
-                <div className="sello-icono">🔒</div>
+                <img
+                  className="sello-icono"
+                  src={INSIGNIAS[sitio.badge]}
+                  alt={`${sitio.name} (sello bloqueado)`}
+                />
                 <strong>{sitio.name}</strong>
                 <span className="sello-fecha">Sin sellar</span>
               </div>
