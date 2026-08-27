@@ -1,4 +1,6 @@
 import './MisSellos.css';
+import TopBar from './TopBar';
+import BottomNav from './BottomNav';
 import { obtenerRango } from '../utils/rango';
 
 function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio }) {
@@ -13,15 +15,11 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio }) {
 
   return (
     <div className="mis-sellos-wrapper">
-      <header className="mis-sellos-header">
-        <button className="volver-btn" onClick={() => onNavigate?.('inicio')}>
-          ← Volver
-        </button>
-        <h1>Mis sellos</h1>
+      <TopBar title="Mis sellos">
         <span className="mis-sellos-rango" style={{ color: nivel.color, borderColor: nivel.color }}>
           {nivel.nombre}
         </span>
-      </header>
+      </TopBar>
 
       <div className="mis-sellos-contenido">
         <div className="mis-sellos-progreso">
@@ -69,6 +67,8 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio }) {
           Ver ranking
         </button>
       </div>
+
+      <BottomNav activo="pasaporte" onNavigate={onNavigate} />
     </div>
   );
 }

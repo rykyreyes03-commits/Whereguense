@@ -6,32 +6,10 @@
   max-width:480px;
   margin:0 auto;
   min-height:100vh;
-  padding-bottom:40px;
+  padding-bottom:90px;
   transition: max-width 0.2s ease;
 }
 
-.mis-sellos-header{
-  background: linear-gradient(90deg, #4945CD 0%, #1119BC 100%);
-  border-bottom-left-radius: 28px;
-  border-bottom-right-radius: 28px;
-  padding: 30px 24px 32px;
-}
-.mis-sellos-header .volver-btn{
-  background:none;
-  border:none;
-  color:#fff;
-  font-size:0.95rem;
-  cursor:pointer;
-  padding:0;
-  margin-bottom:16px;
-}
-.mis-sellos-header h1{
-  font-family: Georgia, 'Times New Roman', serif;
-  font-weight:700;
-  font-size:1.4rem;
-  color:#fff;
-  margin-bottom:10px;
-}
 .mis-sellos-rango{
   display:inline-block;
   background:#fff;

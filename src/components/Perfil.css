@@ -7,20 +7,10 @@
   margin:0 auto;
   position:relative;
   min-height:100vh;
-  padding-bottom:60px;
+  padding-bottom:90px;
   transition: max-width 0.2s ease;
 }
 
-.perfil-header{
-  background: linear-gradient(90deg, #4945CD 0%, #1119BC 100%);
-  border-bottom-left-radius: 28px;
-  border-bottom-right-radius: 28px;
-  padding: 36px 24px 32px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  text-align:center;
-}
 .perfil-avatar{
   width:92px; height:92px;
   border-radius:50%;
@@ -32,8 +22,6 @@
 }
 .perfil-avatar img{width:56px; height:56px;}
 .perfil-nombre{
-  font-family: Georgia, 'Times New Roman', serif;
-  font-weight:700;
   font-size:1.4rem;
   color:#fff;
   margin-bottom:10px;

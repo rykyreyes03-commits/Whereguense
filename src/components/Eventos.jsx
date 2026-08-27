@@ -1,4 +1,6 @@
 import './Eventos.css';
+import TopBar from './TopBar';
+import BottomNav from './BottomNav';
 
 function esVigente(evento, hoy) {
   return evento.fechaInicio <= hoy && hoy <= evento.fechaFin;
@@ -25,12 +27,7 @@ function Eventos({ eventos, onNavigate, onSeleccionarEvento }) {
 
   return (
     <div className="eventos-wrapper">
-      <header className="eventos-header">
-        <button className="volver-btn" onClick={() => onNavigate?.('inicio')}>
-          ← Volver
-        </button>
-        <h1>Agenda de eventos</h1>
-      </header>
+      <TopBar title="Agenda de eventos" />
 
       <div className="eventos-contenido">
         {eventosVigentes.length === 0 ? (
@@ -60,6 +57,8 @@ function Eventos({ eventos, onNavigate, onSeleccionarEvento }) {
           </div>
         )}
       </div>
+
+      <BottomNav activo="eventos" onNavigate={onNavigate} />
     </div>
   );
 }

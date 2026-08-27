@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import './Perfil.css';
+import TopBar from './TopBar';
+import BottomNav from './BottomNav';
 import iconoUsuario from '../assets/icons/icono_usuario.svg';
 import { obtenerRango } from '../utils/rango';
 
@@ -54,7 +56,7 @@ function Perfil({ sellos, total, onNavigate }) {
 
   return (
     <div className="perfil-wrapper">
-      <header className="perfil-header">
+      <TopBar align="center">
         <div className="perfil-avatar">
           <img src={iconoUsuario} alt="Usuario" />
         </div>
@@ -62,7 +64,7 @@ function Perfil({ sellos, total, onNavigate }) {
         <span className="perfil-rango" style={{ color: nivel.color, borderColor: nivel.color }}>
           {nivel.nombre}
         </span>
-      </header>
+      </TopBar>
 
       <div className="perfil-contenido">
         <div className="perfil-datos">
@@ -135,6 +137,8 @@ function Perfil({ sellos, total, onNavigate }) {
           Cerrar sesión
         </button>
       </div>
+
+      <BottomNav activo="perfil" onNavigate={onNavigate} />
     </div>
   );
 }
