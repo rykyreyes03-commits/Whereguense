@@ -56,7 +56,7 @@ function Perfil({ sellos, total, onNavigate }) {
 
   return (
     <div className="perfil-wrapper">
-      <TopBar align="center">
+      <TopBar align="center" onMenuClick={() => onNavigate?.('menu')}>
         <div className="perfil-avatar">
           <img src={iconoUsuario} alt="Usuario" />
         </div>

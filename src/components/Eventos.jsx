@@ -27,7 +27,7 @@ function Eventos({ eventos, onNavigate, onSeleccionarEvento }) {
 
   return (
     <div className="eventos-wrapper">
-      <TopBar title="Agenda de eventos" />
+      <TopBar title="Agenda de eventos" onMenuClick={() => onNavigate?.('menu')} />
 
       <div className="eventos-contenido">
         {eventosVigentes.length === 0 ? (

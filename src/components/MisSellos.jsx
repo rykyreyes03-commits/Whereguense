@@ -16,7 +16,7 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio }) {
 
   return (
     <div className="mis-sellos-wrapper">
-      <TopBar title="Mis sellos">
+      <TopBar title="Mis sellos" onMenuClick={() => onNavigate?.('menu')}>
         <span className="mis-sellos-rango" style={{ color: nivel.color, borderColor: nivel.color }}>
           {nivel.nombre}
         </span>

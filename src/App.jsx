@@ -11,6 +11,7 @@ import Eventos from './components/Eventos';
 import DetalleEvento from './components/DetalleEvento';
 import Ranking from './components/Ranking';
 import Tienda from './components/Tienda';
+import Menu from './components/Menu';
 import TopBar from './components/TopBar';
 import BottomNav from './components/BottomNav';
 import { sitios } from './data/sitios';
@@ -21,6 +22,7 @@ import L from 'leaflet';
 
 function App() {
   const [pantalla, setPantalla] = useState('inicio');
+  const [pantallaAnterior, setPantallaAnterior] = useState('inicio');
   const [rutaActivaId, setRutaActivaId] = useState(null);
   const [eventoActivoId, setEventoActivoId] = useState(null);
   const [sitioSeleccionadoId, setSitioSeleccionadoId] = useState(null);
@@ -41,6 +43,13 @@ function App() {
     alert(resultado.mensaje);
   };
 
+  const cambiarPantalla = (nueva) => {
+    if (nueva === 'menu') {
+      setPantallaAnterior(pantalla);
+    }
+    setPantalla(nueva);
+  };
+
   if (pantalla === 'inicio') {
     const hoy = new Date().toISOString().slice(0, 10);
     const eventoVigente = eventos
@@ -48,7 +57,7 @@ function App() {
       .sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio))[0];
     return (
       <Inicio
-        onNavigate={setPantalla}
+        onNavigate={cambiarPantalla}
         onSeleccionarRuta={setRutaActivaId}
         totalSitios={rutas[0].sitios.length}
         onSeleccionarEvento={setEventoActivoId}
@@ -60,9 +69,9 @@ function App() {
   if (pantalla === 'mapa') {
     return (
       <div className="mapa-pantalla">
-        <TopBar />
+        <TopBar onMenuClick={() => cambiarPantalla('menu')} />
         <MapaRuta sitios={sitios} onSellar={handleSellar} sitioEnfocadoId={sitioEnfocadoId} />
-        <BottomNav activo="mapa" onNavigate={setPantalla} />
+        <BottomNav activo="mapa" onNavigate={cambiarPantalla} />
       </div>
     );
   }
@@ -72,7 +81,7 @@ function App() {
       <MisSellos
         sellos={sellos}
         sitios={sitios}
-        onNavigate={setPantalla}
+        onNavigate={cambiarPantalla}
         onSeleccionarSitio={setSitioSeleccionadoId}
       />
     );
@@ -87,40 +96,49 @@ function App() {
         sello={sello}
         onNavigate={(p) => {
           if (p === 'mapa') setSitioEnfocadoId(sitio.id);
-          setPantalla(p);
+          cambiarPantalla(p);
         }}
       />
     );
   }
 
   if (pantalla === 'perfil') {
-    return <Perfil sellos={sellos} total={sitios.length} onNavigate={setPantalla} />;
+    return <Perfil sellos={sellos} total={sitios.length} onNavigate={cambiarPantalla} />;
   }
 
   if (pantalla === 'rutas') {
-    return <RutasDestacadas rutas={rutas} sellos={sellos} onNavigate={setPantalla} onSeleccionarRuta={setRutaActivaId} />;
+    return <RutasDestacadas rutas={rutas} sellos={sellos} onNavigate={cambiarPantalla} onSeleccionarRuta={setRutaActivaId} />;
   }
 
   if (pantalla === 'detalleRuta') {
     const ruta = rutas.find(r => r.id === rutaActivaId);
-    return <DetalleRuta ruta={ruta} sellos={sellos} onNavigate={setPantalla} />;
+    return <DetalleRuta ruta={ruta} sellos={sellos} onNavigate={cambiarPantalla} />;
   }
 
   if (pantalla === 'eventos') {
-    return <Eventos eventos={eventos} onNavigate={setPantalla} onSeleccionarEvento={setEventoActivoId} />;
+    return <Eventos eventos={eventos} onNavigate={cambiarPantalla} onSeleccionarEvento={setEventoActivoId} />;
   }
 
   if (pantalla === 'detalleEvento') {
     const evento = eventos.find(e => e.id === eventoActivoId);
-    return <DetalleEvento evento={evento} onNavigate={setPantalla} />;
+    return <DetalleEvento evento={evento} onNavigate={cambiarPantalla} />;
   }
 
   if (pantalla === 'ranking') {
-    return <Ranking sellos={sellos} onNavigate={setPantalla} />;
+    return <Ranking sellos={sellos} onNavigate={cambiarPantalla} />;
   }
 
   if (pantalla === 'tienda') {
-    return <Tienda sellos={sellos} onNavigate={setPantalla} />;
+    return <Tienda sellos={sellos} onNavigate={cambiarPantalla} />;
+  }
+
+  if (pantalla === 'menu') {
+    return (
+      <Menu
+        onNavigate={cambiarPantalla}
+        onVolver={() => cambiarPantalla(pantallaAnterior)}
+      />
+    );
   }
 
   return (
@@ -128,7 +146,7 @@ function App() {
       <h2>Pantalla: {pantalla}</h2>
       <p>En construcción...</p>
       <button
-        onClick={() => setPantalla('inicio')}
+        onClick={() => cambiarPantalla('inicio')}
         style={{
           marginTop: '20px',
           padding: '10px 20px',
