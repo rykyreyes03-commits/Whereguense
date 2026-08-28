@@ -16,12 +16,15 @@ import DetalleEvento from './components/DetalleEvento';
 import Ranking from './components/Ranking';
 import Personalizacion from './components/Personalizacion';
 import Menu from './components/Menu';
+import RegistroNegocio from './components/RegistroNegocio';
+import EstadoNegocio from './components/EstadoNegocio';
 import TopBar from './components/TopBar';
 import BottomNav from './components/BottomNav';
 import { sitios } from './data/sitios';
 import { rutas } from './data/rutas';
 import { eventos } from './data/eventos';
 import { useSellos } from './hooks/useSellos';
+import { useNegocio } from './hooks/useNegocio';
 import L from 'leaflet';
 
 function pantallaInicial() {
@@ -37,6 +40,7 @@ function App() {
   const [sitioSeleccionadoId, setSitioSeleccionadoId] = useState(null);
   const [sitioEnfocadoId, setSitioEnfocadoId] = useState(null);
   const { sellos, sellar } = useSellos();
+  const { negocio, registrar, simularAprobar, simularRechazar } = useNegocio();
 
   useEffect(() => {
     delete L.Icon.Default.prototype._getIconUrl;
@@ -66,7 +70,13 @@ function App() {
 
   const handleElegirProposito = (tipo) => {
     if (tipo === 'emprendimiento') {
-      alert('El registro de negocios todavía no está construido — por ahora, elegí "Turismo" para seguir. 🚧');
+      if (negocio?.estado === 'activo') {
+        setPantalla('perfilNegocio');
+      } else if (negocio) {
+        setPantalla('estadoNegocio');
+      } else {
+        setPantalla('registroNegocio');
+      }
       return;
     }
     setPantalla('onboarding');
@@ -197,6 +207,51 @@ function App() {
 
   if (pantalla === 'personalizacion') {
     return <Personalizacion sellos={sellos} onNavigate={cambiarPantalla} />;
+  }
+
+  if (pantalla === 'registroNegocio') {
+    return (
+      <RegistroNegocio
+        onVolver={() => cambiarPantalla('proposito')}
+        onRegistrar={(datos) => {
+          registrar(datos);
+          cambiarPantalla('registroEnviado');
+        }}
+      />
+    );
+  }
+
+  if (pantalla === 'registroEnviado') {
+    return (
+      <EstadoNegocio
+        vista="enviado"
+        onContinuar={() => cambiarPantalla('estadoNegocio')}
+      />
+    );
+  }
+
+  if (pantalla === 'estadoNegocio') {
+    return (
+      <EstadoNegocio
+        vista={negocio?.estado === 'rechazado' ? 'rechazado' : 'pendiente'}
+        motivoRechazo={negocio?.motivoRechazo}
+        onSimularAprobar={() => {
+          simularAprobar();
+          cambiarPantalla('perfilNegocio');
+        }}
+        onSimularRechazar={(motivo) => simularRechazar(motivo)}
+        onCorregir={() => cambiarPantalla('registroNegocio')}
+      />
+    );
+  }
+
+  if (pantalla === 'perfilNegocio') {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center' }}>
+        <h2>¡Negocio aprobado! 🎉</h2>
+        <p>El Perfil de negocio (S02) y el generador de QR (S03) van en el próximo paso.</p>
+      </div>
+    );
   }
 
   if (pantalla === 'menu') {

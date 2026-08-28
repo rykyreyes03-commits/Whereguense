@@ -1,0 +1,127 @@
+.registro-wrapper {
+  position: relative;
+  background: #ffffff;
+  color: #111;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  overflow: hidden;
+}
+.registro-esquina {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 110px 110px 0;
+  border-color: transparent var(--color-cultural-blue) transparent transparent;
+}
+.registro-contenido {
+  position: relative;
+  padding: 32px 24px 48px;
+  display: flex;
+  flex-direction: column;
+}
+.registro-volver {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--color-ultramarine);
+  font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+.registro-titulo {
+  font-size: 1.6rem;
+  margin: 0 0 24px;
+}
+.registro-label {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin: 16px 0 6px;
+}
+.registro-ayuda {
+  font-size: 0.8rem;
+  color: #666;
+  margin: -2px 0 8px;
+}
+.registro-input {
+  border: 2px solid #1a1a1a;
+  border-radius: var(--radius-pill);
+  padding: 12px 18px;
+  font-size: 0.95rem;
+  font-family: var(--font-body);
+  width: 100%;
+}
+.registro-categorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.registro-chip {
+  border: 2px solid #1a1a1a;
+  border-radius: var(--radius-pill);
+  background: #fff;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+.registro-chip-activo {
+  background: var(--color-ultramarine);
+  border-color: var(--color-ultramarine);
+  color: #fff;
+}
+.registro-input-file {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+}
+.registro-fotos-contador {
+  font-size: 0.8rem;
+  color: var(--color-ultramarine);
+  font-weight: 700;
+  margin: 6px 0 0;
+}
+.registro-ubicacion-btn {
+  border: 2px dashed var(--color-ultramarine);
+  border-radius: var(--radius-md);
+  background: #f5f6ff;
+  padding: 14px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-ultramarine);
+  cursor: pointer;
+  text-align: center;
+}
+.registro-error {
+  color: var(--color-coral);
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin: 16px 0 0;
+  text-align: center;
+}
+.registro-enviar {
+  margin-top: 24px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-indigo), var(--color-ultramarine));
+  color: #fff;
+  padding: 14px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+@media (min-width: 640px) {
+  .registro-wrapper { max-width: 700px; }
+}
+@media (min-width: 1024px) {
+  .registro-wrapper { max-width: 1100px; }
+}
