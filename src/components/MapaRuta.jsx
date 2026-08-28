@@ -1,9 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './MapaRuta.css';
 import { useUbicacionActual } from '../hooks/useUbicacionActual';
+import { calcularDistanciaMetros } from '../utils/geo';
+
+const RADIO_GEOFENCE_METROS = 80;
 
 const iconoUbicacion = L.divIcon({
   className: 'ubicacion-usuario-icono',
@@ -26,10 +29,26 @@ function EnfocarSitio({ sitios, sitioEnfocadoId, markerRefs }) {
   return null;
 }
 
-function MapaRuta({ sitios, onSellar, sitioEnfocadoId }) {
+function MapaRuta({ sitios, onSellar, onSellarAutomatico, sitioEnfocadoId }) {
   const markerRefs = useRef({});
   const mapRef = useRef(null);
   const { ubicacion, error } = useUbicacionActual();
+
+  useEffect(() => {
+    if (!ubicacion) return;
+
+    sitios.forEach((sitio) => {
+      const distancia = calcularDistanciaMetros(
+        ubicacion.lat,
+        ubicacion.lng,
+        sitio.position[0],
+        sitio.position[1]
+      );
+      if (distancia <= RADIO_GEOFENCE_METROS) {
+        onSellarAutomatico?.(sitio);
+      }
+    });
+  }, [ubicacion, sitios, onSellarAutomatico]);
 
   const centrarEnMiUbicacion = () => {
     if (ubicacion && mapRef.current) {
@@ -49,6 +68,15 @@ function MapaRuta({ sitios, onSellar, sitioEnfocadoId }) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; OpenStreetMap contributors'
         />
+        {sitios.map(sitio => (
+          <Circle
+            key={`radio-${sitio.id}`}
+            center={sitio.position}
+            radius={RADIO_GEOFENCE_METROS}
+            pathOptions={{ color: '#1a73e8', weight: 1, fillOpacity: 0.08 }}
+          />
+        ))}
+
         {sitios.map(sitio => (
           <Marker
             key={sitio.id}

@@ -94,6 +94,13 @@ function App() {
     }
   };
 
+  const intentarSellarPorGeofencing = (sitio) => {
+    const resultado = sellar(sitio);
+    if (resultado.exito) {
+      setToastSitio(sitio);
+    }
+  };
+
   const handleCerrarToast = () => setToastSitio(null);
 
   const handleClickToast = () => {
@@ -190,7 +197,12 @@ function App() {
     return (
       <div className="mapa-pantalla">
         <TopBar onMenuClick={() => cambiarPantalla('menu')} />
-        <MapaRuta sitios={sitios} onSellar={handleSellar} sitioEnfocadoId={sitioEnfocadoId} />
+        <MapaRuta
+          sitios={sitios}
+          onSellar={handleSellar}
+          onSellarAutomatico={intentarSellarPorGeofencing}
+          sitioEnfocadoId={sitioEnfocadoId}
+        />
         <BottomNav activo="mapa" onNavigate={cambiarPantalla} />
         <Toast sitio={toastSitio} onClose={handleCerrarToast} onClick={handleClickToast} />
         {mostrarSubidaNivel && (
