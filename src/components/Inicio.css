@@ -195,3 +195,36 @@
   .bienvenida{ font-size:1.8rem; }
   .subtitulo{ font-size:1.3rem; }
 }
+
+.resultados-busqueda{
+  border:2px solid #1a1a1a;
+  border-radius:16px;
+  margin-top:-18px;
+  margin-bottom:26px;
+  overflow:hidden;
+  background:#fff;
+}
+.resultado-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 16px;
+  border-bottom:1px solid #eee;
+  cursor:pointer;
+  font-size:0.9rem;
+}
+.resultado-item:last-child{ border-bottom:none; }
+.resultado-item:hover{ background:#f5f5ff; }
+.resultado-tipo{
+  font-size:0.75rem;
+  color:#777;
+  text-transform:uppercase;
+}
+.resultado-vacio{
+  padding:14px 16px;
+  font-size:0.85rem;
+  color:#777;
+}
+.acceso.deshabilitado{
+  opacity:0.45;
+}

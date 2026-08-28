@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-
+import './MapaRuta.css';
 function EnfocarSitio({ sitios, sitioEnfocadoId, markerRefs }) {
   const map = useMap();
 
@@ -42,18 +42,7 @@ function MapaRuta({ sitios, onSellar, sitioEnfocadoId }) {
             <h3>{sitio.name}</h3>
             <p><strong>{sitio.desc}</strong></p>
             {sitio.historia && <p>{sitio.historia}</p>}
-            <button
-              onClick={() => onSellar(sitio)}
-              style={{
-                padding: '10px 15px',
-                background: '#4caf50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                width: '100%'
-              }}
-            >
+                        <button className="mapa-popup-sellar-btn" onClick={() => onSellar(sitio)}>
               Sellar Pasaporte
             </button>
           </Popup>

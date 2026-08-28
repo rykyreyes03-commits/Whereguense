@@ -14,7 +14,7 @@ import DetalleRuta from './components/DetalleRuta';
 import Eventos from './components/Eventos';
 import DetalleEvento from './components/DetalleEvento';
 import Ranking from './components/Ranking';
-import Tienda from './components/Tienda';
+import Personalizacion from './components/Personalizacion';
 import Menu from './components/Menu';
 import TopBar from './components/TopBar';
 import BottomNav from './components/BottomNav';
@@ -57,6 +57,11 @@ function App() {
       setPantallaAnterior(pantalla);
     }
     setPantalla(nueva);
+  };
+
+  const irAlMapaConSitio = (sitioId) => {
+    setSitioEnfocadoId(sitioId);
+    cambiarPantalla('mapa');
   };
 
   const handleElegirProposito = (tipo) => {
@@ -108,9 +113,13 @@ function App() {
       .sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio))[0];
     return (
       <Inicio
+        sitios={sitios}
+        rutas={rutas}
+        sellos={sellos}
         onNavigate={cambiarPantalla}
         onSeleccionarRuta={setRutaActivaId}
-        totalSitios={rutas[0].sitios.length}
+        onSeleccionarSitio={setSitioSeleccionadoId}
+        onVerSitioEnMapa={irAlMapaConSitio}
         onSeleccionarEvento={setEventoActivoId}
         eventoDestacadoId={eventoVigente?.id}
       />
@@ -186,8 +195,8 @@ function App() {
     return <Ranking sellos={sellos} onNavigate={cambiarPantalla} />;
   }
 
-  if (pantalla === 'tienda') {
-    return <Tienda sellos={sellos} onNavigate={cambiarPantalla} />;
+  if (pantalla === 'personalizacion') {
+    return <Personalizacion sellos={sellos} onNavigate={cambiarPantalla} />;
   }
 
   if (pantalla === 'menu') {

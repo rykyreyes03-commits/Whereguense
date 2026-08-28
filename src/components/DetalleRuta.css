@@ -138,3 +138,20 @@
   .detalle-wrapper{ max-width:1100px; }
   .detalle-contenido{ padding: 36px 60px 0; }
 }
+
+.detalle-titulo-fila{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.detalle-guardar-btn{
+  background:none;
+  border:none;
+  font-size:1.8rem;
+  line-height:1;
+  color:#fff;
+  cursor:pointer;
+  padding:0;
+}
+.detalle-guardar-btn.activo{ color:#FFD447; }
