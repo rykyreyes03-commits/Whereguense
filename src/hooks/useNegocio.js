@@ -44,5 +44,37 @@ export function useNegocio() {
     guardarNegocio({ ...negocio, estado: 'rechazado', motivoRechazo: motivo || 'No especificado' });
   };
 
-  return { negocio, registrar, simularAprobar, simularRechazar };
+  const actualizarHorarios = (horarios) => {
+    if (!negocio) return;
+    guardarNegocio({ ...negocio, horarios });
+  };
+
+  const actualizarUbicacion = (ubicacion) => {
+    if (!negocio) return;
+    guardarNegocio({ ...negocio, ubicacion });
+  };
+
+  const agregarProducto = (nombre) => {
+    if (!negocio) return;
+    const nuevoProducto = { id: Date.now(), nombre };
+    const productos = [...(negocio.productos || []), nuevoProducto];
+    guardarNegocio({ ...negocio, productos });
+  };
+
+  const eliminarProducto = (id) => {
+    if (!negocio) return;
+    const productos = (negocio.productos || []).filter((p) => p.id !== id);
+    guardarNegocio({ ...negocio, productos });
+  };
+
+  return {
+    negocio,
+    registrar,
+    simularAprobar,
+    simularRechazar,
+    actualizarHorarios,
+    actualizarUbicacion,
+    agregarProducto,
+    eliminarProducto,
+  };
 }

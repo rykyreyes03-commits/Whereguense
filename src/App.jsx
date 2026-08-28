@@ -18,6 +18,7 @@ import Personalizacion from './components/Personalizacion';
 import Menu from './components/Menu';
 import RegistroNegocio from './components/RegistroNegocio';
 import EstadoNegocio from './components/EstadoNegocio';
+import PerfilNegocio from './components/PerfilNegocio';
 import TopBar from './components/TopBar';
 import BottomNav from './components/BottomNav';
 import { sitios } from './data/sitios';
@@ -40,7 +41,16 @@ function App() {
   const [sitioSeleccionadoId, setSitioSeleccionadoId] = useState(null);
   const [sitioEnfocadoId, setSitioEnfocadoId] = useState(null);
   const { sellos, sellar } = useSellos();
-  const { negocio, registrar, simularAprobar, simularRechazar } = useNegocio();
+  const {
+    negocio,
+    registrar,
+    simularAprobar,
+    simularRechazar,
+    actualizarHorarios,
+    actualizarUbicacion,
+    agregarProducto,
+    eliminarProducto,
+  } = useNegocio();
 
   useEffect(() => {
     delete L.Icon.Default.prototype._getIconUrl;
@@ -247,9 +257,23 @@ function App() {
 
   if (pantalla === 'perfilNegocio') {
     return (
+      <PerfilNegocio
+        negocio={negocio}
+        onNavigate={cambiarPantalla}
+        onActualizarHorarios={actualizarHorarios}
+        onActualizarUbicacion={actualizarUbicacion}
+        onAgregarProducto={agregarProducto}
+        onEliminarProducto={eliminarProducto}
+      />
+    );
+  }
+
+  if (pantalla === 'generarQR') {
+    return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h2>¡Negocio aprobado! 🎉</h2>
-        <p>El Perfil de negocio (S02) y el generador de QR (S03) van en el próximo paso.</p>
+        <h2>Generar QR de sello 🔳</h2>
+        <p>Esta pantalla (S03) va en el próximo paso.</p>
+        <button onClick={() => cambiarPantalla('perfilNegocio')}>← Volver al perfil</button>
       </div>
     );
   }
