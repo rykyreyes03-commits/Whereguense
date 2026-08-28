@@ -108,6 +108,15 @@
   margin-bottom:12px;
 }
 
+.sello-card.recien-obtenido {
+  animation: sello-resaltado-pulso 1s ease-in-out 3;
+  box-shadow: 0 0 0 3px var(--color-turquoise);
+}
+@keyframes sello-resaltado-pulso {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
 /* ===== TABLET: 640px+ ===== */
 @media (min-width: 640px){
   .mis-sellos-wrapper{ max-width:700px; }

@@ -7,14 +7,19 @@ import {
 
 const CLAVE_DESBLOQUEOS = 'avatarDesbloqueos';
 const CLAVE_SELECCION = 'avatarSeleccion';
+const CLAVE_MILESTONES = 'avatarMilestonesResueltos';
+const CLAVE_CANDIDATOS = 'avatarCandidatosPendientes';
 
 const PRIMER_NIVEL_DESBLOQUEO = 5;
-const INTERVALO_DESBLOQUEO = 10;
+const INTERVALO_DESBLOQUEO = 5;
+const CANTIDAD_CANDIDATOS = 3;
 
-function cantidadDesbloqueosEsperados(nivel) {
-  if (nivel < PRIMER_NIVEL_DESBLOQUEO) return 0;
-  return Math.floor((nivel - PRIMER_NIVEL_DESBLOQUEO) / INTERVALO_DESBLOQUEO) + 1;
-}
+const CATEGORIAS = [
+  { clave: 'rostro', pool: ROSTROS_IDS },
+  { clave: 'ropa', pool: ROPAS_IDS },
+  { clave: 'sombrero', pool: SOMBREROS_IDS },
+  { clave: 'gigantona', pool: GIGANTONA_IDS },
+];
 
 function cargarDesbloqueos() {
   try {
@@ -46,62 +51,112 @@ function cargarSeleccion() {
   };
 }
 
-function elegirAlAzar(pool, excluidos) {
-  const disponibles = pool.filter((id) => !excluidos.includes(id));
-  if (disponibles.length === 0) return null;
-  return disponibles[Math.floor(Math.random() * disponibles.length)];
+function cargarMilestonesResueltos() {
+  try {
+    const guardado = JSON.parse(localStorage.getItem(CLAVE_MILESTONES));
+    if (Array.isArray(guardado)) return guardado;
+  } catch (error) {
+    console.error('Error leyendo milestones resueltos:', error);
+  }
+  return [];
+}
+
+function cargarCandidatos() {
+  try {
+    const guardado = JSON.parse(localStorage.getItem(CLAVE_CANDIDATOS));
+    if (guardado && typeof guardado === 'object') return guardado;
+  } catch (error) {
+    console.error('Error leyendo candidatos pendientes:', error);
+  }
+  return null;
+}
+
+function milestonesAlcanzados(nivel) {
+  const lista = [];
+  for (let m = PRIMER_NIVEL_DESBLOQUEO; m <= nivel; m += INTERVALO_DESBLOQUEO) {
+    lista.push(m);
+  }
+  return lista;
+}
+
+function elegirCandidatosAlAzar(desbloqueados) {
+  const disponibles = [];
+  CATEGORIAS.forEach(({ clave, pool }) => {
+    const actuales = desbloqueados[clave] || [];
+    pool.forEach((id) => {
+      if (!actuales.includes(id)) {
+        disponibles.push({ categoria: clave, id });
+      }
+    });
+  });
+
+  const elegidos = [];
+  const restantes = [...disponibles];
+  while (elegidos.length < CANTIDAD_CANDIDATOS && restantes.length > 0) {
+    const indice = Math.floor(Math.random() * restantes.length);
+    elegidos.push(restantes[indice]);
+    restantes.splice(indice, 1);
+  }
+  return elegidos;
 }
 
 export function useAvatarPersonalizado(cantidadSellos) {
   const [desbloqueados, setDesbloqueados] = useState(cargarDesbloqueos);
   const [seleccion, setSeleccion] = useState(cargarSeleccion);
-  const [nuevosDesbloqueos, setNuevosDesbloqueos] = useState([]);
+  const [milestonesResueltos, setMilestonesResueltos] = useState(cargarMilestonesResueltos);
+  const [candidatosPendientes, setCandidatosPendientes] = useState(cargarCandidatos);
   const nivel = obtenerNivel(cantidadSellos);
 
   useEffect(() => {
-    const esperados = cantidadDesbloqueosEsperados(nivel);
-    const actualesGuardados = cargarDesbloqueos();
+    if (candidatosPendientes) return;
 
-    const categorias = [
-      { clave: 'rostro', pool: ROSTROS_IDS, tieneDefecto: true },
-      { clave: 'ropa', pool: ROPAS_IDS, tieneDefecto: true },
-      { clave: 'sombrero', pool: SOMBREROS_IDS, tieneDefecto: false },
-      { clave: 'gigantona', pool: GIGANTONA_IDS, tieneDefecto: true },
-    ];
+    const alcanzados = milestonesAlcanzados(nivel);
+    const pendiente = alcanzados.find((m) => !milestonesResueltos.includes(m));
+    if (!pendiente) return;
 
-    const nuevo = { ...actualesGuardados };
-    const recienDesbloqueados = [];
-    let huboCambios = false;
+    const opciones = elegirCandidatosAlAzar(desbloqueados);
+    if (opciones.length === 0) return;
 
-    categorias.forEach(({ clave, pool, tieneDefecto }) => {
-      const actuales = [...(nuevo[clave] || [])];
-      const extras = tieneDefecto ? actuales.length - 1 : actuales.length;
-      const faltantes = esperados - Math.max(0, extras);
-
-      for (let i = 0; i < faltantes; i++) {
-        const elegido = elegirAlAzar(pool, actuales);
-        if (elegido) {
-          actuales.push(elegido);
-          recienDesbloqueados.push({ categoria: clave, id: elegido });
-          huboCambios = true;
-        }
-      }
-      nuevo[clave] = actuales;
-    });
-
-    if (huboCambios) {
-      localStorage.setItem(CLAVE_DESBLOQUEOS, JSON.stringify(nuevo));
-      setDesbloqueados(nuevo);
-      setNuevosDesbloqueos(recienDesbloqueados);
+    const nuevo = { milestone: pendiente, opciones };
+    setCandidatosPendientes(nuevo);
+    try {
+      localStorage.setItem(CLAVE_CANDIDATOS, JSON.stringify(nuevo));
+    } catch (error) {
+      console.error('Error guardando candidatos pendientes:', error);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [nivel]);
+
+  const elegirDesbloqueo = (opcionElegida) => {
+    if (!candidatosPendientes) return;
+
+    const actuales = { ...desbloqueados };
+    actuales[opcionElegida.categoria] = [...(actuales[opcionElegida.categoria] || []), opcionElegida.id];
+
+    const resueltos = [...milestonesResueltos, candidatosPendientes.milestone];
+
+    setDesbloqueados(actuales);
+    setMilestonesResueltos(resueltos);
+    setCandidatosPendientes(null);
+
+    try {
+      localStorage.setItem(CLAVE_DESBLOQUEOS, JSON.stringify(actuales));
+      localStorage.setItem(CLAVE_MILESTONES, JSON.stringify(resueltos));
+      localStorage.removeItem(CLAVE_CANDIDATOS);
+    } catch (error) {
+      console.error('Error guardando elección de accesorio:', error);
+    }
+  };
 
   const elegir = (categoria, id) => {
     const nueva = { ...seleccion, [categoria]: id };
     setSeleccion(nueva);
-    localStorage.setItem(CLAVE_SELECCION, JSON.stringify(nueva));
+    try {
+      localStorage.setItem(CLAVE_SELECCION, JSON.stringify(nueva));
+    } catch (error) {
+      console.error('Error guardando selección de avatar:', error);
+    }
   };
 
-  return { desbloqueados, seleccion, elegir, nuevosDesbloqueos, nivel };
+  return { desbloqueados, seleccion, elegir, nivel, candidatosPendientes, elegirDesbloqueo };
 }

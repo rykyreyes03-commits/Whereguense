@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Onboarding from './components/Onboarding';
 import Login from './components/Login';
@@ -20,6 +20,8 @@ import RegistroNegocio from './components/RegistroNegocio';
 import EstadoNegocio from './components/EstadoNegocio';
 import PerfilNegocio from './components/PerfilNegocio';
 import GenerarQR from './components/GenerarQR';
+import Toast from './components/Toast';
+import LevelUpModal from './components/LevelUpModal';
 import TopBar from './components/TopBar';
 import BottomNav from './components/BottomNav';
 import { sitios } from './data/sitios';
@@ -27,6 +29,7 @@ import { rutas } from './data/rutas';
 import { eventos } from './data/eventos';
 import { useSellos } from './hooks/useSellos';
 import { useNegocio } from './hooks/useNegocio';
+import { useAvatarPersonalizado } from './hooks/useAvatarPersonalizado';
 import L from 'leaflet';
 
 function pantallaInicial() {
@@ -53,6 +56,25 @@ function App() {
     eliminarProducto,
     generarQR,
   } = useNegocio();
+  const {
+    desbloqueados,
+    seleccion,
+    elegir,
+    nivel,
+    candidatosPendientes,
+    elegirDesbloqueo,
+  } = useAvatarPersonalizado(sellos.length);
+  const [toastSitio, setToastSitio] = useState(null);
+  const [sitioResaltadoPasaporte, setSitioResaltadoPasaporte] = useState(null);
+  const [mostrarSubidaNivel, setMostrarSubidaNivel] = useState(false);
+  const nivelPrevioRef = useRef(nivel);
+
+  useEffect(() => {
+    if (nivel > nivelPrevioRef.current) {
+      setMostrarSubidaNivel(true);
+    }
+    nivelPrevioRef.current = nivel;
+  }, [nivel]);
 
   useEffect(() => {
     delete L.Icon.Default.prototype._getIconUrl;
@@ -65,7 +87,21 @@ function App() {
 
   const handleSellar = (sitio) => {
     const resultado = sellar(sitio);
-    alert(resultado.mensaje);
+    if (resultado.exito) {
+      setToastSitio(sitio);
+    } else {
+      alert(resultado.mensaje);
+    }
+  };
+
+  const handleCerrarToast = () => setToastSitio(null);
+
+  const handleClickToast = () => {
+    if (toastSitio) {
+      setSitioResaltadoPasaporte(toastSitio.id);
+    }
+    setToastSitio(null);
+    cambiarPantalla('pasaporte');
   };
 
   const cambiarPantalla = (nueva) => {
@@ -109,6 +145,8 @@ function App() {
     localStorage.removeItem('perfilUsuario');
     localStorage.removeItem('avatarElegido');
     localStorage.removeItem('flujoInicialCompletado');
+    localStorage.removeItem('avatarMilestonesResueltos');
+    localStorage.removeItem('avatarCandidatosPendientes');
     setPantalla('login');
   };
 
@@ -154,6 +192,18 @@ function App() {
         <TopBar onMenuClick={() => cambiarPantalla('menu')} />
         <MapaRuta sitios={sitios} onSellar={handleSellar} sitioEnfocadoId={sitioEnfocadoId} />
         <BottomNav activo="mapa" onNavigate={cambiarPantalla} />
+        <Toast sitio={toastSitio} onClose={handleCerrarToast} onClick={handleClickToast} />
+        {mostrarSubidaNivel && (
+          <LevelUpModal
+            nivel={nivel}
+            candidatos={candidatosPendientes}
+            onElegir={(opcion) => {
+              elegirDesbloqueo(opcion);
+              setMostrarSubidaNivel(false);
+            }}
+            onCerrar={() => setMostrarSubidaNivel(false)}
+          />
+        )}
       </div>
     );
   }
@@ -165,6 +215,7 @@ function App() {
         sitios={sitios}
         onNavigate={cambiarPantalla}
         onSeleccionarSitio={setSitioSeleccionadoId}
+        sitioResaltadoId={sitioResaltadoPasaporte}
       />
     );
   }
@@ -218,7 +269,29 @@ function App() {
   }
 
   if (pantalla === 'personalizacion') {
-    return <Personalizacion sellos={sellos} onNavigate={cambiarPantalla} />;
+    return (
+      <>
+        <Personalizacion
+          sellos={sellos}
+          onNavigate={cambiarPantalla}
+          desbloqueados={desbloqueados}
+          seleccion={seleccion}
+          elegir={elegir}
+          nivel={nivel}
+        />
+        {mostrarSubidaNivel && (
+          <LevelUpModal
+            nivel={nivel}
+            candidatos={candidatosPendientes}
+            onElegir={(opcion) => {
+              elegirDesbloqueo(opcion);
+              setMostrarSubidaNivel(false);
+            }}
+            onCerrar={() => setMostrarSubidaNivel(false)}
+          />
+        )}
+      </>
+    );
   }
 
   if (pantalla === 'registroNegocio') {

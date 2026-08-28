@@ -1,31 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import './Personalizacion.css';
 import TopBar from './TopBar';
 import Avatar from './Avatar';
-import { useAvatarPersonalizado } from '../hooks/useAvatarPersonalizado';
+import { sellosParaSiguienteNivel } from '../utils/rango';
 import {
   ROSTROS, ROPAS, SOMBREROS, GIGANTONA,
   ROSTROS_IDS, ROPAS_IDS, SOMBREROS_IDS, GIGANTONA_IDS,
 } from '../data/avatarPiezas';
 
-const NOMBRES_CATEGORIA = {
-  rostro: 'un rostro',
-  ropa: 'un traje',
-  sombrero: 'un sombrero',
-  gigantona: 'un vestido',
-};
-
-function Personalizacion({ sellos, onNavigate }) {
+function Personalizacion({ sellos, onNavigate, desbloqueados, seleccion, elegir, nivel }) {
   const tipoAvatar = localStorage.getItem('avatarElegido') === 'gigantona' ? 'gigantona' : 'enano';
-  const { desbloqueados, seleccion, elegir, nuevosDesbloqueos, nivel } = useAvatarPersonalizado(sellos.length);
   const [tab, setTab] = useState('ropa');
-
-  useEffect(() => {
-    if (nuevosDesbloqueos.length > 0) {
-      const nombres = nuevosDesbloqueos.map((d) => NOMBRES_CATEGORIA[d.categoria]).join(' y ');
-      window.alert(`¡Subiste de nivel! Desbloqueaste ${nombres} nuevo 🎉`);
-    }
-  }, [nuevosDesbloqueos]);
+  const faltantes = Math.max(0, sellosParaSiguienteNivel(sellos.length) - sellos.length);
 
   const catalogos = {
     rostro: { pool: ROSTROS, ids: ROSTROS_IDS },
@@ -76,7 +62,9 @@ function Personalizacion({ sellos, onNavigate }) {
       <div className="personalizacion-contenido">
         <Avatar tipo={tipoAvatar} seleccion={seleccion} tamano="grande" />
 
-        <p className="personalizacion-nivel">Nivel {nivel} · subís de nivel juntando sellos</p>
+        <p className="personalizacion-nivel">
+          Nivel {nivel} · te faltan {faltantes} sello{faltantes === 1 ? '' : 's'} para subir de nivel
+        </p>
 
         {tipoAvatar === 'gigantona' ? (
           renderGrid('gigantona')

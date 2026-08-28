@@ -4,7 +4,7 @@ import BottomNav from './BottomNav';
 import { obtenerRango } from '../utils/rango';
 import { INSIGNIAS } from '../data/insignias';
 
-function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio }) {
+function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResaltadoId }) {
   const nivel = obtenerRango(sellos.length);
   const total = sitios.length;
   const progreso = total > 0 ? Math.round((sellos.length / total) * 100) : 0;
@@ -42,7 +42,7 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio }) {
               return (
                 <div
                   key={sitio.id}
-                  className="sello-card obtenido"
+                  className={`sello-card obtenido ${sitio.id === sitioResaltadoId ? 'recien-obtenido' : ''}`}
                   onClick={() => handleSeleccionar(sitio)}
                   role="button"
                   tabIndex={0}

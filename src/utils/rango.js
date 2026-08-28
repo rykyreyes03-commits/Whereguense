@@ -4,10 +4,36 @@ export function obtenerRango(cantidadSellos) {
   return { nombre: "Principiante", color: "#4caf50" };
 }
 
+function generarUmbrales(maxNivel = 40) {
+  const umbrales = [0, 2, 3];
+  for (let i = 3; i < maxNivel; i++) {
+    umbrales.push(umbrales[i - 1] + umbrales[i - 2]);
+  }
+  return umbrales;
+}
+
+const UMBRALES_NIVEL = generarUmbrales();
+
 export function obtenerNivel(cantidadSellos) {
-  return 1 + Math.floor(cantidadSellos / 2);
+  let nivel = 1;
+  for (let i = 1; i < UMBRALES_NIVEL.length; i++) {
+    if (cantidadSellos >= UMBRALES_NIVEL[i]) {
+      nivel = i + 1;
+    } else {
+      break;
+    }
+  }
+  return nivel;
 }
 
 export function sellosParaNivel(nivel) {
-  return Math.max(0, (nivel - 1) * 2);
+  const indice = nivel - 1;
+  if (indice < 0) return 0;
+  if (indice >= UMBRALES_NIVEL.length) return UMBRALES_NIVEL[UMBRALES_NIVEL.length - 1];
+  return UMBRALES_NIVEL[indice];
+}
+
+export function sellosParaSiguienteNivel(cantidadSellos) {
+  const nivelActual = obtenerNivel(cantidadSellos);
+  return sellosParaNivel(nivelActual + 1);
 }
