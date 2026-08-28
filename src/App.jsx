@@ -19,6 +19,7 @@ import Menu from './components/Menu';
 import RegistroNegocio from './components/RegistroNegocio';
 import EstadoNegocio from './components/EstadoNegocio';
 import PerfilNegocio from './components/PerfilNegocio';
+import GenerarQR from './components/GenerarQR';
 import TopBar from './components/TopBar';
 import BottomNav from './components/BottomNav';
 import { sitios } from './data/sitios';
@@ -50,6 +51,7 @@ function App() {
     actualizarUbicacion,
     agregarProducto,
     eliminarProducto,
+    generarQR,
   } = useNegocio();
 
   useEffect(() => {
@@ -270,11 +272,7 @@ function App() {
 
   if (pantalla === 'generarQR') {
     return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h2>Generar QR de sello 🔳</h2>
-        <p>Esta pantalla (S03) va en el próximo paso.</p>
-        <button onClick={() => cambiarPantalla('perfilNegocio')}>← Volver al perfil</button>
-      </div>
+      <GenerarQR negocio={negocio} onGenerarQR={generarQR} onNavigate={cambiarPantalla} />
     );
   }
 

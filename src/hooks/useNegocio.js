@@ -67,6 +67,11 @@ export function useNegocio() {
     guardarNegocio({ ...negocio, productos });
   };
 
+  const generarQR = (datosQR) => {
+    if (!negocio) return;
+    guardarNegocio({ ...negocio, qr: datosQR });
+  };
+
   return {
     negocio,
     registrar,
@@ -76,5 +81,6 @@ export function useNegocio() {
     actualizarUbicacion,
     agregarProducto,
     eliminarProducto,
+    generarQR,
   };
 }
