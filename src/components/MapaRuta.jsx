@@ -1,7 +1,16 @@
 import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './MapaRuta.css';
+import { useUbicacionActual } from '../hooks/useUbicacionActual';
+
+const iconoUbicacion = L.divIcon({
+  className: 'ubicacion-usuario-icono',
+  html: '<div class="ubicacion-usuario-punto"></div>',
+  iconSize: [18, 18],
+});
+
 function EnfocarSitio({ sitios, sitioEnfocadoId, markerRefs }) {
   const map = useMap();
 
@@ -19,37 +28,65 @@ function EnfocarSitio({ sitios, sitioEnfocadoId, markerRefs }) {
 
 function MapaRuta({ sitios, onSellar, sitioEnfocadoId }) {
   const markerRefs = useRef({});
+  const mapRef = useRef(null);
+  const { ubicacion, error } = useUbicacionActual();
+
+  const centrarEnMiUbicacion = () => {
+    if (ubicacion && mapRef.current) {
+      mapRef.current.flyTo([ubicacion.lat, ubicacion.lng], 16);
+    }
+  };
 
   return (
-    <MapContainer
-      center={[12.4375, -86.8783]}
-      zoom={13.5}
-            style={{ flex: 1, width: '100%' }}
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; OpenStreetMap contributors'
-      />
-      {sitios.map(sitio => (
-        <Marker
-          key={sitio.id}
-          position={sitio.position}
-          ref={(ref) => {
-            if (ref) markerRefs.current[sitio.id] = ref;
-          }}
-        >
-          <Popup>
-            <h3>{sitio.name}</h3>
-            <p><strong>{sitio.desc}</strong></p>
-            {sitio.historia && <p>{sitio.historia}</p>}
-                        <button className="mapa-popup-sellar-btn" onClick={() => onSellar(sitio)}>
-              Sellar Pasaporte
-            </button>
-          </Popup>
-        </Marker>
-      ))}
-      <EnfocarSitio sitios={sitios} sitioEnfocadoId={sitioEnfocadoId} markerRefs={markerRefs} />
-    </MapContainer>
+    <div className="mapa-ruta-wrapper">
+      <MapContainer
+        ref={mapRef}
+        center={[12.4375, -86.8783]}
+        zoom={13.5}
+        style={{ flex: 1, width: '100%' }}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; OpenStreetMap contributors'
+        />
+        {sitios.map(sitio => (
+          <Marker
+            key={sitio.id}
+            position={sitio.position}
+            ref={(ref) => {
+              if (ref) markerRefs.current[sitio.id] = ref;
+            }}
+          >
+            <Popup>
+              <h3>{sitio.name}</h3>
+              <p><strong>{sitio.desc}</strong></p>
+              {sitio.historia && <p>{sitio.historia}</p>}
+              <button className="mapa-popup-sellar-btn" onClick={() => onSellar(sitio)}>
+                Sellar Pasaporte
+              </button>
+            </Popup>
+          </Marker>
+        ))}
+
+        {ubicacion && (
+          <Marker position={[ubicacion.lat, ubicacion.lng]} icon={iconoUbicacion} zIndexOffset={1000} />
+        )}
+
+        <EnfocarSitio sitios={sitios} sitioEnfocadoId={sitioEnfocadoId} markerRefs={markerRefs} />
+      </MapContainer>
+
+      <button
+        className="mapa-mi-ubicacion-btn"
+        onClick={centrarEnMiUbicacion}
+        disabled={!ubicacion}
+        aria-label="Centrar en mi ubicación"
+        type="button"
+      >
+        📍
+      </button>
+
+      {error && <p className="mapa-ubicacion-error">{error}</p>}
+    </div>
   );
 }
 
