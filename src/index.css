@@ -1,3 +1,43 @@
+:root {
+  /* Colores de marca */
+  --color-ultramarine: #1119BC;
+  --color-indigo: #4945CD;
+  --color-navy: #161D30;
+  --color-deep-purple: #180E57;
+  --color-cultural-blue: #193E6A;
+  --color-sky: #45A6D9;
+
+  /* Superficies */
+  --color-white: #FFFFFF;
+  --color-surface-soft: #F5F5F5;
+
+  /* Acentos */
+  --color-turquoise: #54C8C0;
+  --color-green: #78E33C;
+  --color-coral: #F24E50;
+
+  /* Texto */
+  --color-text: #111111;
+  --color-text-inverse: #FFFFFF;
+
+  /* Espaciado */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Radios */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+
+  /* Tipografías */
+  --font-display: 'Bitter', serif;
+  --font-body: 'Nunito', sans-serif;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -9,9 +49,29 @@ body {
 }
 
 body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: #F5F5F5;
-  color: #111111;
+  font-family: var(--font-body);
+  background: var(--color-surface-soft);
+  color: var(--color-text);
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin: 0;
+}
+
+h1 {
+  font-size: 26px;
+}
+
+h2 {
+  font-size: 20px;
+}
+
+button {
+  font-family: var(--font-body);
+  font-weight: 700;
 }
 
 #root {

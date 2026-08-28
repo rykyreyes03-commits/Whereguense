@@ -1,0 +1,73 @@
+.proposito-wrapper{
+  position: relative;
+  background:#ffffff;
+  color:#111;
+  width:100%;
+  max-width:480px;
+  margin:0 auto;
+  min-height:100vh;
+  overflow:hidden;
+  transition: max-width 0.2s ease;
+}
+
+.proposito-esquina{
+  position:absolute;
+  top:0;
+  right:0;
+  width:0;
+  height:0;
+  border-style:solid;
+  border-width:0 140px 140px 0;
+  border-color:transparent var(--color-cultural-blue) transparent transparent;
+}
+
+.proposito-contenido{
+  position:relative;
+  padding: 100px 32px 40px;
+  text-align:center;
+}
+
+.proposito-titulo{
+  font-size:2rem;
+  margin-bottom:56px;
+}
+
+.proposito-opciones{
+  display:flex;
+  justify-content:center;
+  gap:24px;
+}
+
+.proposito-opcion{
+  background:none;
+  border:none;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:16px;
+  cursor:pointer;
+  width:45%;
+}
+.proposito-opcion img{
+  width:100%;
+  max-width:130px;
+  object-fit:contain;
+}
+
+.proposito-pill{
+  display:inline-block;
+  border:2px solid #1a1a1a;
+  border-radius:30px;
+  padding:8px 24px;
+  font-size:0.95rem;
+  font-weight:600;
+  color:#111;
+}
+.proposito-opcion:hover .proposito-pill{ background:#f0f0ff; }
+
+@media (min-width: 640px){
+  .proposito-wrapper{ max-width:700px; }
+}
+@media (min-width: 1024px){
+  .proposito-wrapper{ max-width:1100px; }
+}

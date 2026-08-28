@@ -23,7 +23,7 @@ function cargarPerfil() {
   return PERFIL_POR_DEFECTO;
 }
 
-function Perfil({ sellos, total, onNavigate }) {
+function Perfil({ sellos, total, onNavigate, onCerrarSesion }) {
   const [perfil, setPerfil] = useState(cargarPerfil);
   const [editando, setEditando] = useState(false);
   const [borrador, setBorrador] = useState(perfil);
@@ -46,12 +46,12 @@ function Perfil({ sellos, total, onNavigate }) {
   };
 
   const handleCerrarSesion = () => {
-    const confirmado = window.confirm('¿Seguro que quieres cerrar sesión? Se borrarán tus sellos y datos de perfil guardados en este dispositivo.');
+    const confirmado = window.confirm(
+      '¿Seguro que quieres cerrar sesión? Se borrarán tus sellos y datos de perfil guardados en este dispositivo.'
+    );
     if (!confirmado) return;
 
-    localStorage.removeItem('sellos');
-    localStorage.removeItem('perfilUsuario');
-    onNavigate?.('inicio');
+    onCerrarSesion?.();
   };
 
   return (
@@ -61,7 +61,10 @@ function Perfil({ sellos, total, onNavigate }) {
           <img src={iconoUsuario} alt="Usuario" />
         </div>
         <h1 className="perfil-nombre">{perfil.nombre}</h1>
-        <span className="perfil-rango" style={{ color: nivel.color, borderColor: nivel.color }}>
+        <span
+          className="perfil-rango"
+          style={{ color: nivel.color, borderColor: nivel.color }}
+        >
           {nivel.nombre}
         </span>
       </TopBar>
@@ -71,7 +74,11 @@ function Perfil({ sellos, total, onNavigate }) {
           <div className="perfil-datos-titulo">
             <h2 className="seccion">DATOS DE USUARIO</h2>
             {!editando && (
-              <button className="perfil-editar-btn" onClick={handleEditar} aria-label="Editar perfil">
+              <button
+                className="perfil-editar-btn"
+                onClick={handleEditar}
+                aria-label="Editar perfil"
+              >
                 ✏️
               </button>
             )}
@@ -79,9 +86,18 @@ function Perfil({ sellos, total, onNavigate }) {
 
           {!editando ? (
             <ul className="perfil-lista">
-              <li><span>Nombre de usuario</span><strong>{perfil.nombre}</strong></li>
-              <li><span>País</span><strong>{perfil.pais || 'No especificado'}</strong></li>
-              <li><span>Idioma preferido</span><strong>{perfil.idioma}</strong></li>
+              <li>
+                <span>Nombre de usuario</span>
+                <strong>{perfil.nombre}</strong>
+              </li>
+              <li>
+                <span>País</span>
+                <strong>{perfil.pais || 'No especificado'}</strong>
+              </li>
+              <li>
+                <span>Idioma preferido</span>
+                <strong>{perfil.idioma}</strong>
+              </li>
             </ul>
           ) : (
             <div className="perfil-form">
@@ -90,7 +106,9 @@ function Perfil({ sellos, total, onNavigate }) {
                 <input
                   type="text"
                   value={borrador.nombre}
-                  onChange={(e) => setBorrador({ ...borrador, nombre: e.target.value })}
+                  onChange={(e) =>
+                    setBorrador({ ...borrador, nombre: e.target.value })
+                  }
                 />
               </label>
               <label>
@@ -98,7 +116,9 @@ function Perfil({ sellos, total, onNavigate }) {
                 <input
                   type="text"
                   value={borrador.pais}
-                  onChange={(e) => setBorrador({ ...borrador, pais: e.target.value })}
+                  onChange={(e) =>
+                    setBorrador({ ...borrador, pais: e.target.value })
+                  }
                 />
               </label>
               <label>
@@ -106,7 +126,9 @@ function Perfil({ sellos, total, onNavigate }) {
                 <input
                   type="text"
                   value={borrador.idioma}
-                  onChange={(e) => setBorrador({ ...borrador, idioma: e.target.value })}
+                  onChange={(e) =>
+                    setBorrador({ ...borrador, idioma: e.target.value })
+                  }
                 />
               </label>
               <button className="perfil-guardar-btn" onClick={handleGuardar}>
@@ -118,17 +140,22 @@ function Perfil({ sellos, total, onNavigate }) {
 
         <div className="perfil-sellos-resumen">
           <h2 className="seccion">SELLOS</h2>
-          <p>{sellos.length} de {total} obtenidos</p>
+          <p>
+            {sellos.length} de {total} obtenidos
+          </p>
         </div>
 
         <div className="perfil-acciones">
-          <button className="perfil-nav-btn" onClick={() => onNavigate?.('pasaporte')}>
+          <button
+            className="perfil-nav-btn"
+            onClick={() => onNavigate?.('pasaporte')}
+          >
             Ver mis sellos
           </button>
-          <button className="perfil-nav-btn" onClick={() => onNavigate?.('tienda')}>
-            Tienda de accesorios
-          </button>
-          <button className="perfil-nav-btn" onClick={() => onNavigate?.('ranking')}>
+          <button
+            className="perfil-nav-btn"
+            onClick={() => onNavigate?.('ranking')}
+          >
             Ranking
           </button>
         </div>

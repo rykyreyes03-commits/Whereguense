@@ -10,18 +10,16 @@ const OPCIONES = [
   'Acerca de',
 ];
 
-function Menu({ onNavigate, onVolver }) {
+function Menu({ onNavigate, onVolver, onCerrarSesion }) {
   const handleOpcion = (opcion) => {
     window.alert(`${opcion}: próximamente 🚧`);
   };
 
-  const handleCerrarSesion = () => {
+    const handleCerrarSesion = () => {
     const confirmado = window.confirm('¿Seguro que quieres cerrar sesión? Se borrarán tus sellos y datos de perfil guardados en este dispositivo.');
     if (!confirmado) return;
 
-    localStorage.removeItem('sellos');
-    localStorage.removeItem('perfilUsuario');
-    onNavigate?.('inicio');
+    onCerrarSesion?.();
   };
 
   return (

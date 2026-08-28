@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import './Onboarding.css';
-import explorador from '../assets/flujo-inicial/explorer_transparente_final.png';
+import avatarCirculo from '../assets/flujo-inicial/avatar_transparente.png';
+import chibiFlanqueado from '../assets/flujo-inicial/chibi_transparente_final.png';
 
 const PASOS = [
   {
     fondo: 'verde',
     titulo: 'Compite, obtén sellos y trajes',
     tipo: 'personaje',
+    imagen: avatarCirculo,
   },
   {
     fondo: 'coral',
     titulo: 'Personaliza tu avatar virtual',
     tipo: 'personaje',
+    imagen: chibiFlanqueado,
   },
   {
     fondo: 'azul',
@@ -66,7 +69,7 @@ function Onboarding({ onTerminar }) {
         )}
 
         {actual.tipo === 'personaje' && (
-          <img className="onboarding-personaje" src={explorador} alt="" />
+          <img className="onboarding-personaje" src={actual.imagen} alt="" />
         )}
 
         {actual.tipo === 'ruta' && (

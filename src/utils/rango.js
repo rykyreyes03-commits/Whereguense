@@ -4,7 +4,10 @@ export function obtenerRango(cantidadSellos) {
   return { nombre: "Principiante", color: "#4caf50" };
 }
 
-// SUPUESTO: curva de nivel temporal, confirmar con el equipo
 export function obtenerNivel(cantidadSellos) {
-  return cantidadSellos + 1;
+  return 1 + Math.floor(cantidadSellos / 2);
+}
+
+export function sellosParaNivel(nivel) {
+  return Math.max(0, (nivel - 1) * 2);
 }
