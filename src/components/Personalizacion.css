@@ -15,14 +15,27 @@
 /* El avatar nunca debe tocar el borde de la pantalla */
 .personalizacion-contenido .avatar-grande{ max-width: 230px; }
 
-/* Gigantona: imagen única, se muestra completa (sin recorte por aspect-ratio) */
-.personalizacion-contenido .avatar-gigantona{ aspect-ratio: auto; }
+/* Gigantona: gigantona.png tiene ~30% de espacio transparente a cada lado, así que
+   sin escalar se veía diminuta. Se le da un marco con la proporción de la FIGURA real
+   (ancho/alto ≈ 0.38/0.94  ->  ~115x210) y se recorta el vacío lateral con
+   overflow:hidden + object-fit:cover, para que llene el preview como el Cabezón.
+   El asset y Avatar.css no se tocan: Login/Landing/Perfil (que usan la imagen directa)
+   no se ven afectados. Verticalmente object-fit:cover no recorta (la figura ocupa el
+   94% central), así que no se corta ni el sombrero ni los pies. */
+.personalizacion-contenido .avatar-gigantona{
+  aspect-ratio: auto;
+  width: 115px;
+  height: 210px;
+  overflow: hidden;
+}
 .personalizacion-contenido .avatar-gigantona .avatar-capa-ropa{
   position: static;
   display: block;
   width: 100%;
-  height: auto;
-  margin: 0 auto;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  margin: 0;
 }
 
 .personalizacion-nivel{
