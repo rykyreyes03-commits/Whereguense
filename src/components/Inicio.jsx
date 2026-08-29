@@ -1,19 +1,28 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import './Inicio.css';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
 import { useRutasGuardadas } from '../hooks/useRutasGuardadas';
+import { INSIGNIAS } from '../data/insignias';
 import iconoUsuario from '../assets/icons/icono_usuario.svg';
 import iconoBuscar from '../assets/icons/icono_buscar.svg';
 import iconoArbol from '../assets/icons/icono_arbol.svg';
 import iconoRuta from '../assets/icons/icono_ruta.svg';
 import iconoRutaGuardada from '../assets/icons/icono_ruta_guardada.svg';
-import iconoTema from '../assets/icons/icono_tema.svg';
+import iconoQR from '../assets/icons/icono_qr.svg';
+import iconoPasaporte from '../assets/icons/icono_pasaporte.svg';
+
+function formatearFechaCorta(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}`;
+}
 
 function Inicio({
   sitios,
   rutas,
   sellos,
+  eventos,
   onNavigate,
   onSeleccionarRuta,
   onSeleccionarSitio,
@@ -34,11 +43,13 @@ function Inicio({
   const rutaPrincipal = rutas[0];
   const rutaGuardada = rutas.find((r) => guardadas.includes(r.id));
 
+  const eventoDestacado = useMemo(
+    () => eventos?.find((e) => e.id === eventoDestacadoId) || null,
+    [eventos, eventoDestacadoId]
+  );
+
   const handleUltimoSello = () => {
-    if (!ultimoSello) {
-      window.alert('Todavía no tenés ningún sello — ¡visitá un sitio en el mapa!');
-      return;
-    }
+    if (!ultimoSello) return;
     onSeleccionarSitio?.(ultimoSello.sitioId);
     onNavigate?.('detalleSello');
   };
@@ -50,16 +61,13 @@ function Inicio({
   };
 
   const handleRutaGuardada = () => {
-    if (!rutaGuardada) {
-      window.alert('Todavía no guardaste ninguna ruta — entrá a una ruta y tocá la estrella para guardarla.');
-      return;
-    }
+    if (!rutaGuardada) return;
     onSeleccionarRuta?.(rutaGuardada.id);
     onNavigate?.('detalleRuta');
   };
 
-  const handleTema = () => {
-    window.alert('Tema oscuro: próximamente 🚧');
+  const handleEscanear = () => {
+    onNavigate?.('escanearQR');
   };
 
   const irARuta = (rutaId) => {
@@ -67,116 +75,222 @@ function Inicio({
     onNavigate?.('detalleRuta');
   };
 
+  const irAlMapa = () => onNavigate?.('mapa');
+
+  const totalSellos = sitios.length;
+
   return (
     <div className="inicio-wrapper">
-
       <TopBar
         onMenuClick={() => onNavigate?.('menu')}
         rightSlot={
-          <div className="avatar" onClick={() => onNavigate?.('personalizacion')} role="button" tabIndex={0}>
-            <img src={iconoUsuario} alt="Personalizar avatar" />
-          </div>
+          <button
+            className="inicio-avatar-btn"
+            onClick={() => onNavigate?.('personalizacion')}
+            aria-label="Personalizar avatar"
+          >
+            <img src={iconoUsuario} alt="" />
+          </button>
         }
       />
 
-      <div className="contenido">
-        <h1 className="bienvenida">¡Bienvenido, Invitado!</h1>
-        <p className="subtitulo">¿Qué quieres descubrir hoy?</p>
+      <header className="inicio-hero">
+        <div className="inicio-hero-texto">
+          <span className="inicio-hero-eyebrow">RUTAS DARIANAS</span>
+          <h1 className="inicio-hero-titulo">Hola, Explorador</h1>
+          <p className="inicio-hero-sub">¿Qué quieres descubrir hoy en León?</p>
+        </div>
+        <div className="inicio-hero-progreso" aria-label={`${sellos.length} de ${totalSellos} sellos`}>
+          <span className="inicio-hero-progreso-num">{sellos.length}</span>
+          <span className="inicio-hero-progreso-label">de {totalSellos} sellos</span>
+        </div>
+      </header>
 
-        <div className="buscador">
-          <img src={iconoBuscar} alt="Buscar" />
+      <div className="inicio-contenido">
+        <div className="inicio-buscador">
+          <img src={iconoBuscar} alt="" />
           <input
             type="text"
-            placeholder="Buscar rutas, sitios..."
+            placeholder="Buscar rutas, sitios, eventos..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
+            aria-label="Buscar"
           />
+          {busqueda && (
+            <button
+              className="inicio-buscador-limpiar"
+              onClick={() => setBusqueda('')}
+              aria-label="Limpiar búsqueda"
+            >
+              ×
+            </button>
+          )}
         </div>
 
         {buscando && (
-          <div className="resultados-busqueda">
+          <div className="inicio-resultados">
             {rutasCoincidentes.map((r) => (
-              <div key={`ruta-${r.id}`} className="resultado-item" onClick={() => irARuta(r.id)}>
-                <span>{r.nombre}</span>
-                <span className="resultado-tipo">Ruta</span>
-              </div>
+              <button key={`ruta-${r.id}`} className="inicio-resultado" onClick={() => irARuta(r.id)}>
+                <span className="inicio-resultado-titulo">{r.nombre}</span>
+                <span className="inicio-resultado-tipo">Ruta</span>
+              </button>
             ))}
             {sitiosCoincidentes.map((s) => (
-              <div key={`sitio-${s.id}`} className="resultado-item" onClick={() => onVerSitioEnMapa?.(s.id)}>
-                <span>{s.name}</span>
-                <span className="resultado-tipo">Sitio</span>
-              </div>
+              <button key={`sitio-${s.id}`} className="inicio-resultado" onClick={() => onVerSitioEnMapa?.(s.id)}>
+                <span className="inicio-resultado-titulo">{s.name}</span>
+                <span className="inicio-resultado-tipo">Sitio</span>
+              </button>
             ))}
             {sinResultados && (
-              <div className="resultado-vacio">Sin resultados para "{busqueda}"</div>
+              <div className="inicio-resultado-vacio">
+                Sin resultados para &ldquo;{busqueda}&rdquo;
+              </div>
             )}
           </div>
         )}
 
-        <h2 className="seccion">ACCESOS RÁPIDOS</h2>
-        <div className="accesos-rapidos">
-          <div className={`acceso ${ultimoSello ? 'activo' : 'plain'}`} onClick={handleUltimoSello} role="button" tabIndex={0}>
-            <div className="circulo"><img src={iconoArbol} alt="Último sello" /></div>
-            <span>Último<br/>sello</span>
-          </div>
-          <div className="acceso plain" onClick={handleUltimaRuta} role="button" tabIndex={0}>
-            <div className="circulo"><img src={iconoRuta} alt="Última ruta" /></div>
-            <span>Última<br/>ruta</span>
-          </div>
-          <div className={`acceso plain ${!rutaGuardada ? 'deshabilitado' : ''}`} onClick={handleRutaGuardada} role="button" tabIndex={0}>
-            <div className="circulo"><img src={iconoRutaGuardada} alt="Ruta guardada" /></div>
-            <span>Ruta<br/>guardada</span>
-          </div>
-          <div className="acceso plain" onClick={handleTema} role="button" tabIndex={0}>
-            <div className="circulo"><img src={iconoTema} alt="Tema" /></div>
-            <span>Tema</span>
-          </div>
+        <h2 className="inicio-seccion">Accesos rápidos</h2>
+        <div className="inicio-accesos">
+          <button
+            type="button"
+            className={`inicio-acceso ${ultimoSello ? '' : 'inicio-acceso--vacio'}`}
+            onClick={handleUltimoSello}
+            disabled={!ultimoSello}
+          >
+            <span className="inicio-acceso-icono"><img src={iconoArbol} alt="" /></span>
+            <span className="inicio-acceso-label">Último sello</span>
+            <span className="inicio-acceso-meta">
+              {ultimoSello ? 'Ver detalle' : 'Sin sellos aún'}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className="inicio-acceso"
+            onClick={handleUltimaRuta}
+            disabled={!rutaPrincipal}
+          >
+            <span className="inicio-acceso-icono"><img src={iconoRuta} alt="" /></span>
+            <span className="inicio-acceso-label">Última ruta</span>
+            <span className="inicio-acceso-meta">{rutaPrincipal?.nombre || '—'}</span>
+          </button>
+
+          <button
+            type="button"
+            className={`inicio-acceso ${!rutaGuardada ? 'inicio-acceso--vacio' : ''}`}
+            onClick={handleRutaGuardada}
+            disabled={!rutaGuardada}
+          >
+            <span className="inicio-acceso-icono"><img src={iconoRutaGuardada} alt="" /></span>
+            <span className="inicio-acceso-label">Ruta guardada</span>
+            <span className="inicio-acceso-meta">
+              {rutaGuardada ? 'Continuar' : 'Guarda una ruta'}
+            </span>
+          </button>
+
+          <button type="button" className="inicio-acceso" onClick={handleEscanear}>
+            <span className="inicio-acceso-icono"><img src={iconoQR} alt="" /></span>
+            <span className="inicio-acceso-label">Escanear</span>
+            <span className="inicio-acceso-meta">Sello de negocio</span>
+          </button>
         </div>
 
-        <div className="seccion-header">
-          <h2 className="seccion">RUTAS DESTACADAS</h2>
-          <span className="ver-todas" onClick={() => onNavigate?.('rutas')}>ver todas</span>
+        {sellos.length === 0 && (
+          <div className="inicio-banner-bienvenida" role="region" aria-label="Invitación a explorar">
+            <span className="inicio-banner-bienvenida-icono" aria-hidden="true">
+              <img src={iconoPasaporte} alt="" />
+            </span>
+            <div className="inicio-banner-bienvenida-texto">
+              <strong>Aún no tienes sellos</strong>
+              <span>Visita un sitio en el mapa para comenzar la aventura.</span>
+            </div>
+            <button className="inicio-banner-bienvenida-btn" onClick={irAlMapa}>
+              Abrir mapa
+            </button>
+          </div>
+        )}
+
+        <div className="inicio-seccion-header">
+          <h2 className="inicio-seccion">Rutas destacadas</h2>
+          <button className="inicio-ver-todas" onClick={() => onNavigate?.('rutas')}>
+            Ver todas
+          </button>
         </div>
-        <div className="card-wrap">
-          <div
-            className="card"
+
+        {rutas.length > 0 && rutaPrincipal ? (
+          <article
+            className="inicio-card"
             onClick={() => { onSeleccionarRuta?.(rutaPrincipal.id); onNavigate?.('detalleRuta'); }}
             role="button"
             tabIndex={0}
           >
-            <div className="card-img placeholder-a"></div>
-            <div className="card-info">
-              <div className="barcode"></div>
-              <div className="guia">GUÍA:<br/>Invitado</div>
-              <h3>{rutaPrincipal.nombre}</h3>
-              <div className="ubicacion">{rutaPrincipal.ciudad.toUpperCase()}</div>
-              <div className="pill">{sitios.length} sitios</div>
+            <div className="inicio-card-media inicio-card-media--ruta" aria-hidden="true">
+              <img src={INSIGNIAS.cathedral} alt="" />
             </div>
+            <div className="inicio-card-body">
+              <div className="inicio-card-eyebrow">RUTA PRINCIPAL</div>
+              <h3 className="inicio-card-titulo">{rutaPrincipal.nombre}</h3>
+              <div className="inicio-card-ubicacion">{rutaPrincipal.ciudad}</div>
+              <div className="inicio-card-pills">
+                <span className="inicio-pill">{sitios.length} sitios</span>
+                <span className="inicio-pill inicio-pill--folk">
+                  {sellos.length} sellados
+                </span>
+              </div>
+            </div>
+          </article>
+        ) : (
+          <div className="inicio-empty">
+            <div className="inicio-empty-icono" aria-hidden="true">🧭</div>
+            <h3>Aún no hay rutas disponibles</h3>
+            <p>Explora el mapa para descubrir sitios por tu cuenta y crear tu propia ruta.</p>
+            <button className="inicio-empty-btn" onClick={irAlMapa}>
+              Explorar mapa
+            </button>
           </div>
+        )}
+
+        <div className="inicio-seccion-header">
+          <h2 className="inicio-seccion">Eventos de esta semana</h2>
+          <button className="inicio-ver-todas" onClick={() => onNavigate?.('eventos')}>
+            Ver todos
+          </button>
         </div>
 
-        <h2 className="seccion">EVENTOS DE ESTA SEMANA</h2>
-        <div className="card-wrap">
-          <div
-            className="card destacada"
-            onClick={eventoDestacadoId ? () => { onSeleccionarEvento?.(eventoDestacadoId); onNavigate?.('detalleEvento'); } : undefined}
-            role={eventoDestacadoId ? 'button' : undefined}
-            tabIndex={eventoDestacadoId ? 0 : undefined}
+        {eventoDestacado ? (
+          <article
+            className="inicio-card"
+            onClick={() => { onSeleccionarEvento?.(eventoDestacado.id); onNavigate?.('detalleEvento'); }}
+            role="button"
+            tabIndex={0}
           >
-            <div className="card-img placeholder-b"></div>
-            <div className="card-info">
-              <div className="barcode"></div>
-              <div className="guia">GUÍA:<br/>Invitado</div>
-              <h3>Festival Dariano</h3>
-              <div className="ubicacion">LEÓN, NICARAGUA</div>
-              <div className="pill">4 sitios</div>
+            <div className="inicio-card-media inicio-card-media--evento" aria-hidden="true">
+              <img src={INSIGNIAS.sun} alt="" />
             </div>
+            <div className="inicio-card-body">
+              <div className="inicio-card-eyebrow">EVENTO</div>
+              <h3 className="inicio-card-titulo">{eventoDestacado.nombre}</h3>
+              <div className="inicio-card-ubicacion">{eventoDestacado.ubicacion}</div>
+              <div className="inicio-card-pills">
+                <span className="inicio-pill">
+                  {formatearFechaCorta(eventoDestacado.fechaInicio)} – {formatearFechaCorta(eventoDestacado.fechaFin)}
+                </span>
+              </div>
+            </div>
+          </article>
+        ) : (
+          <div className="inicio-empty">
+            <div className="inicio-empty-icono" aria-hidden="true">🎉</div>
+            <h3>Sin eventos esta semana</h3>
+            <p>Vuelve pronto: la agenda cultural de León se actualiza cada semana.</p>
+            <button className="inicio-empty-btn inicio-empty-btn--ghost" onClick={() => onNavigate?.('eventos')}>
+              Ver agenda completa
+            </button>
           </div>
-        </div>
+        )}
       </div>
 
       <BottomNav activo="inicio" onNavigate={onNavigate} />
-
     </div>
   );
 }
