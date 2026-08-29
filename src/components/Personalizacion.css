@@ -12,6 +12,19 @@
   padding: 24px 22px 40px;
 }
 
+/* El avatar nunca debe tocar el borde de la pantalla */
+.personalizacion-contenido .avatar-grande{ max-width: 230px; }
+
+/* Gigantona: imagen única, se muestra completa (sin recorte por aspect-ratio) */
+.personalizacion-contenido .avatar-gigantona{ aspect-ratio: auto; }
+.personalizacion-contenido .avatar-gigantona .avatar-capa-ropa{
+  position: static;
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
 .personalizacion-nivel{
   text-align:center;
   font-size:0.85rem;

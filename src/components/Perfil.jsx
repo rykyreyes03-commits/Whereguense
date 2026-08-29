@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import './Perfil.css';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
-import iconoUsuario from '../assets/icons/icono_usuario.svg';
+import cabezonImg from '../assets/flujo-inicial/explorer_transparente_final.png';
+import gigantonaImg from '../assets/flujo-inicial/gigantona.png';
 import { obtenerRango } from '../utils/rango';
 
 const PERFIL_POR_DEFECTO = {
@@ -23,12 +24,60 @@ function cargarPerfil() {
   return PERFIL_POR_DEFECTO;
 }
 
+function cargarAvatar() {
+  try {
+    return localStorage.getItem('avatarElegido') === 'gigantona' ? 'gigantona' : 'enano';
+  } catch (error) {
+    console.error('Error leyendo avatar elegido:', error);
+    return 'enano';
+  }
+}
+
+function cargarFoto() {
+  try {
+    return localStorage.getItem('fotoPerfil') || null;
+  } catch (error) {
+    console.error('Error leyendo foto de perfil:', error);
+    return null;
+  }
+}
+
+const FOTO_MAX_PX = 256;
+
+function redimensionarImagen(file) {
+  return new Promise((resolve, reject) => {
+    const lector = new FileReader();
+    lector.onerror = () => reject(new Error('No se pudo leer el archivo.'));
+    lector.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('El archivo no es una imagen válida.'));
+      img.onload = () => {
+        const escala = Math.min(1, FOTO_MAX_PX / Math.max(img.width, img.height));
+        const w = Math.round(img.width * escala);
+        const h = Math.round(img.height * escala);
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.src = lector.result;
+    };
+    lector.readAsDataURL(file);
+  });
+}
+
 function Perfil({ sellos, total, onNavigate, onCerrarSesion }) {
   const [perfil, setPerfil] = useState(cargarPerfil);
   const [editando, setEditando] = useState(false);
   const [borrador, setBorrador] = useState(perfil);
+  const [fotoPerfil, setFotoPerfil] = useState(cargarFoto);
+  const inputFotoRef = useRef(null);
 
   const nivel = obtenerRango(sellos.length);
+  const avatarTipo = cargarAvatar();
+  const avatarImg = avatarTipo === 'gigantona' ? gigantonaImg : cabezonImg;
+  const avatarNombre = avatarTipo === 'gigantona' ? 'Gigantona' : 'Cabezón';
 
   const handleEditar = () => {
     setBorrador(perfil);
@@ -45,6 +94,33 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion }) {
     setEditando(false);
   };
 
+  const handleElegirFoto = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const dataUrl = await redimensionarImagen(file);
+      setFotoPerfil(dataUrl);
+      try {
+        localStorage.setItem('fotoPerfil', dataUrl);
+      } catch (err) {
+        console.error('Error guardando foto de perfil:', err);
+      }
+    } catch (err) {
+      console.error(err);
+      window.alert('No se pudo usar esa imagen. Prueba con otra foto.');
+    }
+  };
+
+  const handleQuitarFoto = () => {
+    setFotoPerfil(null);
+    try {
+      localStorage.removeItem('fotoPerfil');
+    } catch (err) {
+      console.error('Error quitando foto de perfil:', err);
+    }
+  };
+
   const handleCerrarSesion = () => {
     const confirmado = window.confirm(
       '¿Seguro que quieres cerrar sesión? Se borrarán tus sellos y datos de perfil guardados en este dispositivo.'
@@ -57,29 +133,64 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion }) {
   return (
     <div className="perfil-wrapper">
       <TopBar align="center" onMenuClick={() => onNavigate?.('menu')}>
-        <div className="perfil-avatar">
-          <img src={iconoUsuario} alt="Usuario" />
-        </div>
-        <h1 className="perfil-nombre">{perfil.nombre}</h1>
-        <span
-          className="perfil-rango"
-          style={{ color: nivel.color, borderColor: nivel.color }}
+        <button
+          type="button"
+          className={`perfil-avatar ${fotoPerfil ? 'perfil-avatar--foto' : ''}`}
+          onClick={() => inputFotoRef.current?.click()}
+          aria-label="Cambiar foto de perfil"
         >
-          {nivel.nombre}
-        </span>
+          <img
+            src={fotoPerfil || avatarImg}
+            alt={fotoPerfil ? 'Tu foto de perfil' : `Tu danzante: ${avatarNombre}`}
+          />
+          <span className="perfil-avatar-camara" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
+              <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h1.7l1-1.6A1 1 0 0 1 10 5h4a1 1 0 0 1 .85.4l1 1.6h1.65A1.5 1.5 0 0 1 20 8.5v9A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5v-9Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+              <circle cx="12" cy="12.5" r="3" stroke="currentColor" strokeWidth="1.8" />
+            </svg>
+          </span>
+        </button>
+        <input
+          ref={inputFotoRef}
+          type="file"
+          accept="image/*"
+          onChange={handleElegirFoto}
+          className="perfil-foto-input"
+        />
+        <h1 className="perfil-nombre">{perfil.nombre}</h1>
+        <span className="perfil-rango">{nivel.nombre}</span>
+        <div className="perfil-foto-acciones">
+          <button
+            type="button"
+            className="perfil-foto-btn"
+            onClick={() => inputFotoRef.current?.click()}
+          >
+            {fotoPerfil ? 'Cambiar foto' : 'Subir foto'}
+          </button>
+          {fotoPerfil && (
+            <button
+              type="button"
+              className="perfil-foto-btn perfil-foto-btn--quitar"
+              onClick={handleQuitarFoto}
+            >
+              Quitar foto
+            </button>
+          )}
+        </div>
+        <span className="perfil-danzante">Danzante · {avatarNombre}</span>
       </TopBar>
 
       <div className="perfil-contenido">
-        <div className="perfil-datos">
+        <div className="perfil-card perfil-datos">
           <div className="perfil-datos-titulo">
-            <h2 className="seccion">DATOS DE USUARIO</h2>
+            <h2 className="perfil-seccion">Datos de usuario</h2>
             {!editando && (
               <button
                 className="perfil-editar-btn"
                 onClick={handleEditar}
                 aria-label="Editar perfil"
               >
-                ✏️
+                Editar
               </button>
             )}
           </div>
@@ -138,29 +249,36 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion }) {
           )}
         </div>
 
-        <div className="perfil-sellos-resumen">
-          <h2 className="seccion">SELLOS</h2>
-          <p>
-            {sellos.length} de {total} obtenidos
-          </p>
+        <div className="perfil-card perfil-sellos-resumen">
+          <div>
+            <h2 className="perfil-seccion">Sellos</h2>
+            <p>Tu colección de la ruta cultural</p>
+          </div>
+          <div className="perfil-sellos-cifra">
+            <strong>{sellos.length}</strong>
+            <span>de {total}</span>
+          </div>
         </div>
 
         <div className="perfil-acciones">
           <button
-            className="perfil-nav-btn"
+            className="perfil-btn perfil-btn-primario"
             onClick={() => onNavigate?.('pasaporte')}
           >
             Ver mis sellos
           </button>
           <button
-            className="perfil-nav-btn"
+            className="perfil-btn perfil-btn-secundario"
             onClick={() => onNavigate?.('ranking')}
           >
             Ranking
           </button>
         </div>
 
-        <button className="perfil-logout-btn" onClick={handleCerrarSesion}>
+        <button
+          className="perfil-btn perfil-btn-danger"
+          onClick={handleCerrarSesion}
+        >
           Cerrar sesión
         </button>
       </div>
