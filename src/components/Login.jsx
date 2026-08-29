@@ -1,31 +1,57 @@
 import './Login.css';
+import ilustracionGigantona from '../assets/flujo-inicial/gigantona.png';
 import iconoGoogle from '../assets/flujo-inicial/google_hd.png';
 import iconoCorreo from '../assets/flujo-inicial/email_hd.png';
-import iconoInvitado from '../assets/flujo-inicial/icon_user_hd.png';
 
-function Login({ onIniciarComoInvitado }) {
+function Login({ onIniciarComoInvitado, onVolverALanding }) {
   const handleProximamente = (metodo) => {
     window.alert(`Continuar con ${metodo}: próximamente 🚧 (por ahora usá "Continuar como invitado")`);
   };
 
   return (
     <div className="login-wrapper">
-      <div className="login-esquina"></div>
+      {onVolverALanding && (
+        <button className="login-volver" onClick={onVolverALanding} type="button">
+          ← Volver al inicio
+        </button>
+      )}
 
-      <div className="login-contenido">
-        <h1 className="login-titulo">Bienvenido a<br/>Wheregüense</h1>
+      <div className="login-hero">
+        <div className="login-hero-texto">
+          <span className="login-hero-eyebrow">RUTAS DARIANAS · LEÓN</span>
+          <h1 className="login-hero-titulo">Bienvenido a<br />Wheregüense</h1>
+          <p className="login-hero-sub">
+            Recorre la ciudad, sella tu pasaporte y colecciona la cultura de León.
+          </p>
+        </div>
+        <img className="login-hero-ilustracion" src={ilustracionGigantona} alt="" />
+      </div>
 
-        <button className="login-btn" onClick={() => handleProximamente('Google')}>
+      <div className="login-panel">
+        <button
+          className="login-btn login-btn-invitado"
+          onClick={onIniciarComoInvitado}
+        >
+          Continuar como invitado
+        </button>
+
+        <div className="login-separador">
+          <span>o continuá con</span>
+        </div>
+
+        <button
+          className="login-btn login-btn-secundario"
+          onClick={() => handleProximamente('Google')}
+        >
           <img src={iconoGoogle} alt="" />
           Continuar con Google
         </button>
-        <button className="login-btn" onClick={() => handleProximamente('correo')}>
+        <button
+          className="login-btn login-btn-secundario"
+          onClick={() => handleProximamente('correo')}
+        >
           <img src={iconoCorreo} alt="" />
           Continuar con correo
-        </button>
-        <button className="login-btn login-btn-invitado" onClick={onIniciarComoInvitado}>
-          <img src={iconoInvitado} alt="" />
-          Continuar como invitado
         </button>
 
         <p className="login-crear-cuenta">

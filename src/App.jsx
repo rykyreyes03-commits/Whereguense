@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
+import Landing from './components/Landing';
 import Onboarding from './components/Onboarding';
 import Login from './components/Login';
 import Proposito from './components/Proposito';
@@ -20,10 +21,9 @@ import RegistroNegocio from './components/RegistroNegocio';
 import EstadoNegocio from './components/EstadoNegocio';
 import PerfilNegocio from './components/PerfilNegocio';
 import GenerarQR from './components/GenerarQR';
+import EscanearQR from './components/EscanearQR';
 import Toast from './components/Toast';
 import LevelUpModal from './components/LevelUpModal';
-import TopBar from './components/TopBar';
-import BottomNav from './components/BottomNav';
 import { sitios } from './data/sitios';
 import { rutas } from './data/rutas';
 import { eventos } from './data/eventos';
@@ -34,7 +34,7 @@ import L from 'leaflet';
 
 function pantallaInicial() {
   const completado = localStorage.getItem('flujoInicialCompletado');
-  return completado === 'true' ? 'inicio' : 'login';
+  return completado === 'true' ? 'inicio' : 'landing';
 }
 
 function App() {
@@ -141,6 +141,15 @@ function App() {
     setPantalla('danzante');
   };
 
+  const handleEscaneoQR = () => {
+    const pendiente = sitios.find(
+      (s) => !sellos.some((sello) => sello.sitioId === s.id)
+    );
+    if (!pendiente) return null;
+    const resultado = sellar(pendiente);
+    return resultado.exito ? pendiente : null;
+  };
+
   const handleElegirDanzante = (avatar) => {
     localStorage.setItem('avatarElegido', avatar);
     localStorage.setItem('flujoInicialCompletado', 'true');
@@ -157,12 +166,36 @@ function App() {
     setPantalla('login');
   };
 
+  if (pantalla === 'landing') {
+    return <Landing onComenzar={() => setPantalla('login')} />;
+  }
+
   if (pantalla === 'login') {
-    return <Login onIniciarComoInvitado={() => setPantalla('proposito')} />;
+    return (
+      <Login
+        onIniciarComoInvitado={() => setPantalla('proposito')}
+        onVolverALanding={() => setPantalla('landing')}
+      />
+    );
   }
 
   if (pantalla === 'proposito') {
-    return <Proposito onElegir={handleElegirProposito} />;
+    return (
+      <Proposito
+        onElegir={handleElegirProposito}
+        onVolverALanding={() => setPantalla('landing')}
+      />
+    );
+  }
+
+  if (pantalla === 'escanearQR') {
+    return (
+      <EscanearQR
+        onVolver={() => cambiarPantalla('inicio')}
+        onEscaneoExitoso={handleEscaneoQR}
+        onNavigate={cambiarPantalla}
+      />
+    );
   }
 
   if (pantalla === 'onboarding') {
@@ -170,7 +203,12 @@ function App() {
   }
 
   if (pantalla === 'danzante') {
-    return <SeleccionDanzante onElegir={handleElegirDanzante} />;
+    return (
+      <SeleccionDanzante
+        onElegir={handleElegirDanzante}
+        onVolverALanding={() => setPantalla('landing')}
+      />
+    );
   }
 
   if (pantalla === 'inicio') {
@@ -182,6 +220,7 @@ function App() {
       <Inicio
         sitios={sitios}
         rutas={rutas}
+        eventos={eventos}
         sellos={sellos}
         onNavigate={cambiarPantalla}
         onSeleccionarRuta={setRutaActivaId}
@@ -196,14 +235,14 @@ function App() {
   if (pantalla === 'mapa') {
     return (
       <div className="mapa-pantalla">
-        <TopBar onMenuClick={() => cambiarPantalla('menu')} />
         <MapaRuta
           sitios={sitios}
+          sellos={sellos}
           onSellar={handleSellar}
           onSellarAutomatico={intentarSellarPorGeofencing}
           sitioEnfocadoId={sitioEnfocadoId}
+          onVolver={() => cambiarPantalla('inicio')}
         />
-        <BottomNav activo="mapa" onNavigate={cambiarPantalla} />
         <Toast sitio={toastSitio} onClose={handleCerrarToast} onClick={handleClickToast} />
         {mostrarSubidaNivel && (
           <LevelUpModal

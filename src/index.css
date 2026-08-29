@@ -1,24 +1,40 @@
 :root {
-  /* Colores de marca */
-  --color-ultramarine: #1119BC;
-  --color-indigo: #4945CD;
-  --color-navy: #161D30;
-  --color-deep-purple: #180E57;
-  --color-cultural-blue: #193E6A;
-  --color-sky: #45A6D9;
-
-  /* Superficies */
+  /* ===== Paleta oficial Wheregüense ===== */
+  --color-primary: #1E2A78;
+  --color-navy: #1A1A2E;
   --color-white: #FFFFFF;
-  --color-surface-soft: #F5F5F5;
+  --color-folk: #2E7D32;
+  --color-surface: #F2F2F2;
 
-  /* Acentos */
+  /* Acentos derivados */
   --color-turquoise: #54C8C0;
-  --color-green: #78E33C;
   --color-coral: #F24E50;
+  --color-sun: #F2C94C;
+
+  /* Aliases semánticos para no romper componentes previos
+     (mantienen nombres pero apuntan a la paleta oficial) */
+  --color-ultramarine: var(--color-primary);
+  --color-indigo: var(--color-primary);
+  --color-deep-purple: var(--color-navy);
+  --color-cultural-blue: var(--color-primary);
+  --color-sky: var(--color-turquoise);
+  --color-green: var(--color-folk);
+  --color-surface-soft: var(--color-surface);
 
   /* Texto */
   --color-text: #111111;
   --color-text-inverse: #FFFFFF;
+  --color-text-muted: #5A5A6E;
+  --color-text-soft: #8A8AA0;
+
+  /* Bordes */
+  --color-border: #E4E4EC;
+  --color-border-strong: #C9C9D6;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(26, 26, 46, 0.06);
+  --shadow-md: 0 4px 14px rgba(26, 26, 46, 0.08);
+  --shadow-lg: 0 10px 28px rgba(26, 26, 46, 0.12);
 
   /* Espaciado */
   --space-xs: 4px;
@@ -50,24 +66,24 @@ body {
 
 body {
   font-family: var(--font-body);
-  background: var(--color-surface-soft);
+  background: var(--color-surface);
   color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1,
-h2 {
+h2,
+h3 {
   font-family: var(--font-display);
   font-weight: 700;
   margin: 0;
+  color: var(--color-navy);
 }
 
-h1 {
-  font-size: 26px;
-}
-
-h2 {
-  font-size: 20px;
-}
+h1 { font-size: 26px; }
+h2 { font-size: 20px; }
+h3 { font-size: 17px; }
 
 button {
   font-family: var(--font-body);
