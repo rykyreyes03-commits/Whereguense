@@ -1,0 +1,57 @@
+.ubicacion-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--color-white);
+}
+.ubicacion-topbar {
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+}
+.ubicacion-cancelar {
+  background: none;
+  border: none;
+  color: var(--color-ultramarine);
+  font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer;
+  padding: 0 0 8px;
+  font-size: 0.95rem;
+}
+.ubicacion-titulo {
+  font-size: 1.1rem;
+  margin: 0;
+  font-family: var(--font-display);
+}
+.ubicacion-footer {
+  padding: 16px;
+  border-top: 1px solid #eee;
+}
+.ubicacion-ayuda {
+  font-size: 0.85rem;
+  color: #555;
+  margin: 0 0 12px;
+  text-align: center;
+}
+.ubicacion-confirmar {
+  width: 100%;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-indigo), var(--color-ultramarine));
+  color: #fff;
+  padding: 14px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.ubicacion-confirmar:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+@media (min-width: 640px) {
+  .ubicacion-wrapper { max-width: 700px; }
+}

@@ -1,0 +1,492 @@
+/* =========================================================
+   PerfilNegocio — Wheregüense (lado emprendedor)
+   Perfil profesional del negocio · mismos tokens que Perfil turista
+   ========================================================= */
+
+@keyframes perfilnegocioFadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.perfilnegocio-wrapper {
+  font-family: var(--font-body);
+  background: var(--color-surface);
+  color: var(--color-text);
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  min-height: 100vh;
+  padding-bottom: 48px;
+  transition: max-width 0.2s ease;
+}
+
+/* ===== Cabecera (override scoped del TopBar) ===== */
+.perfilnegocio-wrapper .topbar {
+  background: linear-gradient(140deg, var(--color-navy) 0%, var(--color-primary) 100%);
+  padding-bottom: 40px;
+}
+
+.perfilnegocio-logo {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  padding: 0;
+  border-radius: var(--radius-lg);
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.24), rgba(84, 200, 192, 0.24));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.15s ease;
+}
+.perfilnegocio-logo:hover { transform: scale(1.03); }
+.perfilnegocio-logo span {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--color-text-inverse);
+}
+.perfilnegocio-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.perfilnegocio-logo-camara {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: 2px solid var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.perfilnegocio-file-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.perfilnegocio-nombre {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--color-text-inverse);
+  margin: 0 0 8px;
+}
+
+.perfilnegocio-categoria {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-pill);
+  padding: 4px 16px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.perfilnegocio-estado {
+  margin: 10px 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
+
+.perfilnegocio-editar-perfil {
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-pill);
+  padding: 7px 18px;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.perfilnegocio-editar-perfil:hover { background: rgba(255, 255, 255, 0.26); }
+
+/* ===== Contenido ===== */
+.perfilnegocio-contenido {
+  padding: 20px 18px 0;
+}
+.perfilnegocio-contenido > * {
+  opacity: 0;
+  animation: perfilnegocioFadeUp 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.perfilnegocio-contenido > *:nth-child(1) { animation-delay: 60ms; }
+.perfilnegocio-contenido > *:nth-child(2) { animation-delay: 120ms; }
+.perfilnegocio-contenido > *:nth-child(3) { animation-delay: 180ms; }
+.perfilnegocio-contenido > *:nth-child(4) { animation-delay: 240ms; }
+.perfilnegocio-contenido > *:nth-child(5) { animation-delay: 300ms; }
+.perfilnegocio-contenido > *:nth-child(6) { animation-delay: 360ms; }
+
+.perfilnegocio-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.perfilnegocio-seccion-titulo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-navy);
+  margin: 0;
+}
+.perfilnegocio-seccion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.perfilnegocio-editar-chip {
+  border: none;
+  background: rgba(30, 42, 120, 0.08);
+  color: var(--color-primary);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.perfilnegocio-editar-chip:hover { background: rgba(30, 42, 120, 0.14); }
+
+/* ===== Horarios ===== */
+.perfilnegocio-horarios-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.perfilnegocio-horarios-lista li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+.perfilnegocio-horarios-lista li:last-child { border-bottom: none; }
+.perfilnegocio-horarios-lista li span { color: var(--color-text-muted); }
+.perfilnegocio-horarios-lista li strong { font-weight: 700; color: var(--color-text); }
+
+.perfilnegocio-horarios-form { display: flex; flex-direction: column; gap: 6px; }
+.perfilnegocio-horarios-fila { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.perfilnegocio-horarios-fila span { color: var(--color-text-muted); font-size: 0.85rem; }
+.perfilnegocio-horarios-fila input[type='time'] {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+  outline: none;
+}
+.perfilnegocio-horarios-fila input[type='time']:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(30, 42, 120, 0.12);
+}
+
+/* ===== Campos de texto (editar perfil) ===== */
+.perfilnegocio-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  margin-bottom: 14px;
+}
+.perfilnegocio-campo input {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: 11px 14px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.perfilnegocio-campo input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(30, 42, 120, 0.12);
+}
+.perfilnegocio-campo-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  margin: 4px 0 8px;
+}
+
+.perfilnegocio-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.perfilnegocio-chip {
+  border: 1.5px solid var(--color-border-strong);
+  background: var(--color-white);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-pill);
+  padding: 8px 14px;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.perfilnegocio-chip:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.perfilnegocio-chip.activo {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+/* ===== Botones ===== */
+.perfilnegocio-btn-primario {
+  width: 100%;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  padding: 14px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.perfilnegocio-btn-primario:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  background: #25338c;
+}
+
+.perfilnegocio-btn-secundario {
+  border: 1.5px solid var(--color-primary);
+  background: var(--color-white);
+  color: var(--color-primary);
+  border-radius: var(--radius-pill);
+  padding: 11px 20px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+  flex-shrink: 0;
+}
+.perfilnegocio-btn-secundario:hover {
+  transform: translateY(-1px);
+  background: rgba(30, 42, 120, 0.06);
+}
+
+/* ===== Ubicación ===== */
+.perfilnegocio-ubicacion-ok {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.perfilnegocio-ubicacion-check {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(46, 125, 50, 0.14);
+  color: var(--color-folk);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+.perfilnegocio-ubicacion-ok strong {
+  display: block;
+  font-size: 0.92rem;
+  color: var(--color-text);
+}
+.perfilnegocio-ubicacion-ok span {
+  font-size: 0.78rem;
+  color: var(--color-text-soft);
+}
+
+/* ===== Empty state ===== */
+.perfilnegocio-empty {
+  text-align: center;
+  padding: 8px 4px 4px;
+}
+.perfilnegocio-empty-icono { font-size: 1.8rem; line-height: 1; }
+.perfilnegocio-empty p {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+  margin: 8px 0 14px;
+}
+
+/* ===== Fotos ===== */
+.perfilnegocio-fotos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.perfilnegocio-foto {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+.perfilnegocio-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.perfilnegocio-foto-quitar {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(26, 26, 46, 0.65);
+  color: var(--color-text-inverse);
+  font-size: 0.7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Productos ===== */
+.perfilnegocio-productos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.perfilnegocio-producto {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1.5px solid var(--color-primary);
+  background: rgba(30, 42, 120, 0.06);
+  color: var(--color-primary);
+  border-radius: var(--radius-pill);
+  padding: 6px 8px 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.perfilnegocio-producto-quitar {
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 0.75rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+.perfilnegocio-producto-quitar:hover { opacity: 1; }
+.perfilnegocio-productos-vacio {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+  margin: 0 0 14px;
+}
+.perfilnegocio-producto-nuevo {
+  display: flex;
+  gap: 8px;
+}
+.perfilnegocio-producto-nuevo input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  padding: 11px 16px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.perfilnegocio-producto-nuevo input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(30, 42, 120, 0.12);
+}
+
+/* ===== Botón Generar QR (destacado) ===== */
+.perfilnegocio-qr-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 4px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  padding: 18px;
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.perfilnegocio-qr-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(30, 42, 120, 0.32);
+  background: #25338c;
+}
+
+/* ===== Reduced motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .perfilnegocio-contenido > * { animation: none; opacity: 1; transform: none; }
+  .perfilnegocio-logo:hover,
+  .perfilnegocio-btn-primario:hover,
+  .perfilnegocio-btn-secundario:hover,
+  .perfilnegocio-qr-btn:hover { transform: none; }
+}
+
+/* ===== Tablet / Desktop ===== */
+@media (min-width: 640px) {
+  .perfilnegocio-wrapper { max-width: 700px; }
+  .perfilnegocio-contenido { padding: 26px 32px 0; }
+}
+@media (min-width: 1024px) {
+  .perfilnegocio-wrapper { max-width: 1100px; }
+  .perfilnegocio-contenido { max-width: 680px; margin: 0 auto; }
+}

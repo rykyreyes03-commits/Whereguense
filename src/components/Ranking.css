@@ -11,7 +11,7 @@
 }
 
 .ranking-header{
-  background: linear-gradient(90deg, #2b2be0 0%, #1717a8 100%);
+  background: linear-gradient(90deg, #4945CD 0%, #1119BC 100%);
   border-bottom-left-radius: 28px;
   border-bottom-right-radius: 28px;
   padding: 30px 24px 32px;
@@ -52,9 +52,9 @@
   text-align:center;
 }
 .ranking-tab.activo{
-  background: linear-gradient(90deg, #2b2be0 0%, #1717a8 100%);
+  background: linear-gradient(90deg, #4945CD 0%, #1119BC 100%);
   color:#fff;
-  border-color:#1717a8;
+  border-color:#1119BC;
 }
 
 .ranking-lista{
@@ -75,7 +75,7 @@
 }
 .ranking-fila.usuario-actual{
   background:#eef0ff;
-  border-color:#2b2be0;
+  border-color:#4945CD;
   box-shadow:0 0 0 3px #b9cdec;
 }
 .ranking-posicion{

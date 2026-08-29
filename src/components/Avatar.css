@@ -1,0 +1,55 @@
+/* =========================================================
+   Avatar — Wheregüense
+   Cabezón: 3 capas apiladas (Ropa < Rostro < Sombrero).
+   Calibrado para que la cabeza descanse sobre los hombros,
+   como en la ilustración de referencia del danzante.
+   ========================================================= */
+
+.avatar-capas {
+  position: relative;
+  width: 100%;
+  margin: 8px auto 0;
+  overflow: visible;
+  /* El avatar es solo decorativo: las capas escaladas se salen del cuadro
+     y no deben robar los clics de los controles que tiene debajo. */
+  pointer-events: none;
+}
+
+.avatar-capas img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform-origin: center;
+}
+
+/* ---- Cabezón (enano) ---- */
+.avatar-enano {
+  aspect-ratio: 1 / 1;
+}
+.avatar-enano .avatar-capa-ropa {
+  z-index: 1;
+  transform: translateY(21%) scale(1.43);
+}
+.avatar-enano .avatar-capa-rostro {
+  z-index: 2;
+  transform: translateY(-16%) scale(1.38);
+}
+.avatar-enano .avatar-capa-sombrero {
+  z-index: 3;
+  transform: translate(1%, -36%) scale(1.10);
+}
+
+/* ---- Gigantona (imagen única, sin cambios de composición) ---- */
+.avatar-gigantona {
+  aspect-ratio: 932 / 430;
+}
+.avatar-gigantona .avatar-capa-ropa {
+  z-index: 1;
+}
+
+/* ---- Tamaños ---- */
+.avatar-grande { max-width: 260px; }
+.avatar-chico { max-width: 140px; }

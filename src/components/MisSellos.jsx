@@ -1,7 +1,10 @@
 import './MisSellos.css';
+import TopBar from './TopBar';
+import BottomNav from './BottomNav';
 import { obtenerRango } from '../utils/rango';
+import { INSIGNIAS } from '../data/insignias';
 
-function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio }) {
+function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResaltadoId }) {
   const nivel = obtenerRango(sellos.length);
   const total = sitios.length;
   const progreso = total > 0 ? Math.round((sellos.length / total) * 100) : 0;
@@ -13,15 +16,11 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio }) {
 
   return (
     <div className="mis-sellos-wrapper">
-      <header className="mis-sellos-header">
-        <button className="volver-btn" onClick={() => onNavigate?.('inicio')}>
-          ← Volver
-        </button>
-        <h1>Mis sellos</h1>
+      <TopBar title="Mis sellos" onMenuClick={() => onNavigate?.('menu')}>
         <span className="mis-sellos-rango" style={{ color: nivel.color, borderColor: nivel.color }}>
           {nivel.nombre}
         </span>
-      </header>
+      </TopBar>
 
       <div className="mis-sellos-contenido">
         <div className="mis-sellos-progreso">
@@ -43,12 +42,12 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio }) {
               return (
                 <div
                   key={sitio.id}
-                  className="sello-card obtenido"
+                  className={`sello-card obtenido ${sitio.id === sitioResaltadoId ? 'recien-obtenido' : ''}`}
                   onClick={() => handleSeleccionar(sitio)}
                   role="button"
                   tabIndex={0}
                 >
-                  <div className="sello-icono">🎭</div>
+                  <img className="sello-icono" src={INSIGNIAS[sitio.badge]} alt={sitio.name} />
                   <strong>{sitio.name}</strong>
                   <span className="sello-fecha">{sello.fecha}</span>
                 </div>
@@ -57,7 +56,11 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio }) {
 
             return (
               <div key={sitio.id} className="sello-card bloqueado">
-                <div className="sello-icono">🔒</div>
+                <img
+                  className="sello-icono"
+                  src={INSIGNIAS[sitio.badge]}
+                  alt={`${sitio.name} (sello bloqueado)`}
+                />
                 <strong>{sitio.name}</strong>
                 <span className="sello-fecha">Sin sellar</span>
               </div>
@@ -69,6 +72,8 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio }) {
           Ver ranking
         </button>
       </div>
+
+      <BottomNav activo="pasaporte" onNavigate={onNavigate} />
     </div>
   );
 }

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import './DetalleRuta.css';
-
+import { useRutasGuardadas } from '../hooks/useRutasGuardadas';
 function DetalleRuta({ ruta, sellos, onNavigate }) {
   const [sitioResaltado, setSitioResaltado] = useState(null);
+  const { estaGuardada, alternar } = useRutasGuardadas();
 
   if (!ruta) {
     return (
@@ -24,13 +25,23 @@ function DetalleRuta({ ruta, sellos, onNavigate }) {
 
   return (
     <div className="detalle-wrapper">
-      <header className="detalle-header">
+            <header className="detalle-header">
         <button className="volver-btn" onClick={() => onNavigate?.('rutas')}>
           ← Volver
         </button>
-        <h1>{ruta.nombre}</h1>
+        <div className="detalle-titulo-fila">
+          <h1>{ruta.nombre}</h1>
+          <button
+            className={`detalle-guardar-btn ${estaGuardada(ruta.id) ? 'activo' : ''}`}
+            onClick={() => alternar(ruta.id)}
+            aria-label={estaGuardada(ruta.id) ? 'Quitar de guardadas' : 'Guardar ruta'}
+          >
+            {estaGuardada(ruta.id) ? '★' : '☆'}
+          </button>
+        </div>
         <p className="detalle-ciudad">{ruta.ciudad.toUpperCase()}</p>
       </header>
+      
 
       <div className="detalle-contenido">
         <div className="detalle-progreso">

@@ -1,0 +1,197 @@
+/* =========================================================
+   Propósito — Wheregüense
+   Turista vs Emprendedor · selección visual fuerte
+   ========================================================= */
+
+@keyframes propositoFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.proposito-wrapper {
+  position: relative;
+  font-family: var(--font-body);
+  background: var(--color-surface);
+  color: var(--color-text);
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  overflow: hidden;
+  transition: max-width 0.2s ease;
+}
+
+.proposito-volver {
+  position: absolute;
+  top: calc(16px + env(safe-area-inset-top));
+  left: calc(16px + env(safe-area-inset-left));
+  z-index: 50;
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.proposito-volver:hover { color: var(--color-text); }
+
+.proposito-contenido {
+  padding: 72px 24px 40px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+.proposito-contenido > * {
+  opacity: 0;
+  animation: propositoFadeUp 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.proposito-contenido > *:nth-child(1) { animation-delay: 60ms; }
+.proposito-contenido > *:nth-child(2) { animation-delay: 130ms; }
+.proposito-contenido > *:nth-child(3) { animation-delay: 200ms; }
+.proposito-contenido > *:nth-child(4) { animation-delay: 270ms; }
+.proposito-contenido > *:nth-child(5) { animation-delay: 340ms; }
+
+.proposito-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+}
+.proposito-titulo {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  line-height: 1.2;
+  color: var(--color-navy);
+  margin-bottom: 8px;
+}
+.proposito-sub {
+  font-size: 0.92rem;
+  color: var(--color-text-muted);
+  margin: 0 0 32px;
+}
+
+.proposito-opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.proposito-opcion {
+  position: relative;
+  background: var(--color-white);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 22px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  text-align: center;
+  font-family: inherit;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.proposito-opcion:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-strong);
+}
+.proposito-opcion.activa {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-lg);
+}
+.proposito-opcion img {
+  width: 100%;
+  max-width: 120px;
+  object-fit: contain;
+}
+.proposito-opcion-titulo {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+.proposito-opcion-texto {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+  max-width: 260px;
+}
+
+.proposito-check {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.proposito-opcion.activa .proposito-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.proposito-continuar {
+  align-self: stretch;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 16px 24px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.proposito-continuar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: #25338c;
+}
+.proposito-continuar:disabled {
+  background: var(--color-border-strong);
+  color: var(--color-white);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ===== Reduced motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .proposito-contenido > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .proposito-opcion:hover,
+  .proposito-continuar:hover:not(:disabled) { transform: none; }
+}
+
+/* ===== Tablet / Desktop ===== */
+@media (min-width: 640px) {
+  .proposito-wrapper { max-width: 700px; }
+  .proposito-contenido { padding: 88px 40px 48px; }
+  .proposito-opciones { flex-direction: row; }
+  .proposito-opcion { flex: 1; }
+  .proposito-continuar { align-self: center; min-width: 280px; }
+}
+@media (min-width: 1024px) {
+  .proposito-wrapper { max-width: 1100px; }
+  .proposito-contenido { max-width: 720px; margin: 0 auto; }
+  .proposito-titulo { font-size: 2rem; }
+}

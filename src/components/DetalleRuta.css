@@ -11,7 +11,7 @@
 }
 
 .detalle-header{
-  background: linear-gradient(90deg, #2b2be0 0%, #1717a8 100%);
+  background: linear-gradient(90deg, #4945CD 0%, #1119BC 100%);
   border-bottom-left-radius: 28px;
   border-bottom-right-radius: 28px;
   padding: 30px 24px 32px;
@@ -58,7 +58,7 @@
 }
 .detalle-progreso-relleno{
   height:100%;
-  background: linear-gradient(90deg, #2b2be0 0%, #1717a8 100%);
+  background: linear-gradient(90deg, #4945CD 0%, #1119BC 100%);
   border-radius:5px;
 }
 .detalle-progreso p{
@@ -98,8 +98,8 @@
   color:#fff;
 }
 .detalle-check.visitado{
-  background:#4caf50;
-  border-color:#4caf50;
+  background:#78E33C;
+  border-color:#78E33C;
 }
 .detalle-sitio-info{
   display:flex;
@@ -118,7 +118,7 @@
   width:100%;
   border:none;
   border-radius:30px;
-  background: linear-gradient(90deg, #2b2be0 0%, #1717a8 100%);
+  background: linear-gradient(90deg, #4945CD 0%, #1119BC 100%);
   color:#fff;
   padding:16px;
   font-size:1rem;
@@ -138,3 +138,20 @@
   .detalle-wrapper{ max-width:1100px; }
   .detalle-contenido{ padding: 36px 60px 0; }
 }
+
+.detalle-titulo-fila{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.detalle-guardar-btn{
+  background:none;
+  border:none;
+  font-size:1.8rem;
+  line-height:1;
+  color:#fff;
+  cursor:pointer;
+  padding:0;
+}
+.detalle-guardar-btn.activo{ color:#FFD447; }
