@@ -46,6 +46,8 @@ function App() {
   const [usuarioActual, setUsuarioActual] = useState(null);
   const [authInicializada, setAuthInicializada] = useState(false);
   const [cargandoUsuario, setCargandoUsuario] = useState(false);
+  const [guardandoDanzante, setGuardandoDanzante] = useState(false);
+  const [errorDanzante, setErrorDanzante] = useState(null);
   const rutaAplicadaRef = useRef(false);
   const authCargando = !authInicializada || cargandoUsuario;
   const [rutaActivaId, setRutaActivaId] = useState(null);
@@ -246,9 +248,37 @@ function App() {
     return resultado.exito ? pendiente : null;
   };
 
-  const handleElegirDanzante = (avatar) => {
+  const handleElegirDanzante = async (avatar) => {
+    if (!usuarioActual) {
+      localStorage.setItem('avatarElegido', avatar);
+      localStorage.setItem('flujoInicialCompletado', 'true');
+      setPantalla('inicio');
+      return;
+    }
+
+    setErrorDanzante(null);
+    setGuardandoDanzante(true);
+
+    const avatarDB = aPersonajeDB(avatar);
+
+    const { error } = await supabase
+      .from('usuario')
+      .update({ avatar_personaje: avatarDB, onboarding_completado: true })
+      .eq('id', usuarioActual.id);
+
+    setGuardandoDanzante(false);
+
+    if (error) {
+      console.error('Error guardando el danzante en usuario:', error);
+      setErrorDanzante('No se pudo guardar tu elección. Revisa tu conexión e intenta de nuevo.');
+      return;
+    }
+
     localStorage.setItem('avatarElegido', avatar);
     localStorage.setItem('flujoInicialCompletado', 'true');
+    setUsuarioActual((u) =>
+      u ? { ...u, avatar_personaje: avatarDB, onboarding_completado: true } : u
+    );
     setPantalla('inicio');
   };
 
@@ -317,6 +347,8 @@ function App() {
       <SeleccionDanzante
         onElegir={handleElegirDanzante}
         onVolverALanding={() => setPantalla('landing')}
+        guardando={guardandoDanzante}
+        error={errorDanzante}
       />
     );
   }
