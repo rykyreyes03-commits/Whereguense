@@ -30,6 +30,8 @@ import { eventos } from './data/eventos';
 import { useSellos } from './hooks/useSellos';
 import { useNegocio } from './hooks/useNegocio';
 import { useAvatarPersonalizado } from './hooks/useAvatarPersonalizado';
+import { supabase } from './lib/supabaseClient';
+import { aPersonajeDB, aPersonajeLocal } from './utils/avatarPersonaje';
 import L from 'leaflet';
 
 function pantallaInicial() {
@@ -40,6 +42,12 @@ function pantallaInicial() {
 function App() {
   const [pantalla, setPantalla] = useState(pantallaInicial);
   const [pantallaAnterior, setPantallaAnterior] = useState('inicio');
+  const [session, setSession] = useState(null);
+  const [usuarioActual, setUsuarioActual] = useState(null);
+  const [authInicializada, setAuthInicializada] = useState(false);
+  const [cargandoUsuario, setCargandoUsuario] = useState(false);
+  const rutaAplicadaRef = useRef(false);
+  const authCargando = !authInicializada || cargandoUsuario;
   const [rutaActivaId, setRutaActivaId] = useState(null);
   const [eventoActivoId, setEventoActivoId] = useState(null);
   const [sitioSeleccionadoId, setSitioSeleccionadoId] = useState(null);
@@ -84,6 +92,94 @@ function App() {
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
     });
   }, []);
+
+  // Arranque de auth: sesión inicial + suscripción a cambios de sesión.
+  useEffect(() => {
+    let activo = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!activo) return;
+      setSession(data.session ?? null);
+      setAuthInicializada(true);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_evento, nuevaSesion) => {
+      if (!activo) return;
+      setSession(nuevaSesion ?? null);
+      setAuthInicializada(true);
+      if (!nuevaSesion) {
+        setUsuarioActual(null);
+        rutaAplicadaRef.current = false;
+      }
+    });
+
+    return () => {
+      activo = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Con sesión: resolver la fila de `usuario` (crearla la primera vez) y, la
+  // primera vez por sesión, enrutar según onboarding_completado. El invitado sin
+  // sesión conserva el valor inicial de `pantalla` (pantallaInicial()).
+  useEffect(() => {
+    const userId = session?.user?.id;
+    if (!userId) return;
+
+    let activo = true;
+    // Marca de "sincronizando con Supabase Auth"; el resto de setState de este
+    // efecto ocurre dentro del callback async.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCargandoUsuario(true);
+
+    (async () => {
+      try {
+        let { data: fila, error } = await supabase
+          .from('usuario')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle();
+        if (error) throw error;
+
+        if (!fila) {
+          const email = session.user.email ?? '';
+          const nombre_usuario = email.split('@')[0] || 'usuario';
+          const creada = await supabase
+            .from('usuario')
+            .insert({ id: userId, email, nombre_usuario, rol: 'turista' })
+            .select()
+            .single();
+          if (creada.error) throw creada.error;
+          fila = creada.data;
+        }
+
+        if (!activo) return;
+        setUsuarioActual(fila);
+
+        if (!rutaAplicadaRef.current) {
+          rutaAplicadaRef.current = true;
+          if (fila.onboarding_completado) {
+            localStorage.setItem('avatarElegido', aPersonajeLocal(fila.avatar_personaje));
+            localStorage.setItem('flujoInicialCompletado', 'true');
+            setPantalla('inicio');
+          } else {
+            setPantalla('proposito');
+          }
+        }
+      } catch (e) {
+        console.error('Error resolviendo la fila de usuario:', e);
+        if (activo) setUsuarioActual(null);
+      } finally {
+        if (activo) setCargandoUsuario(false);
+      }
+    })();
+
+    return () => {
+      activo = false;
+      setCargandoUsuario(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
 
   const handleSellar = (sitio) => {
     const resultado = sellar(sitio);
@@ -156,7 +252,12 @@ function App() {
     setPantalla('inicio');
   };
 
-  const handleCerrarSesionGlobal = () => {
+  const handleCerrarSesionGlobal = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.error('Error cerrando sesión en Supabase:', e);
+    }
     localStorage.removeItem('sellos');
     localStorage.removeItem('perfilUsuario');
     localStorage.removeItem('avatarElegido');
@@ -165,6 +266,15 @@ function App() {
     localStorage.removeItem('avatarCandidatosPendientes');
     setPantalla('login');
   };
+
+  if (authCargando) {
+    return (
+      <div className="app-cargando">
+        <div className="app-cargando-spinner" aria-hidden="true" />
+        <p className="app-cargando-texto">Cargando…</p>
+      </div>
+    );
+  }
 
   if (pantalla === 'landing') {
     return <Landing onComenzar={() => setPantalla('login')} />;
