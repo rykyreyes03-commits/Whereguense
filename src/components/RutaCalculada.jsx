@@ -3,31 +3,45 @@ import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet-routing-machine';
 
-function RutaCalculada({ sitios }) {
+function RutaCalculada({ puntos, colorLinea = '#1a3c8f', onRutaCalculada, onError }) {
   const map = useMap();
 
   useEffect(() => {
-    if (!map || sitios.length < 2) return;
+    if (!map || !puntos || puntos.length < 2) return;
 
-    const waypoints = sitios.map(sitio => L.latLng(sitio.position[0], sitio.position[1]));
+    const waypoints = puntos.map(([lat, lng]) => L.latLng(lat, lng));
 
     const control = L.Routing.control({
       waypoints,
       routeWhileDragging: false,
       addWaypoints: false,
       draggableWaypoints: false,
-      fitSelectedRoutes: false,
+      fitSelectedRoutes: true,
       show: false,
       lineOptions: {
-        styles: [{ color: '#d32f2f', weight: 4, opacity: 0.7 }],
+        styles: [{ color: colorLinea, weight: 4, opacity: 0.75 }],
       },
       createMarker: () => null,
-    }).addTo(map);
+    })
+      .on('routesfound', (e) => {
+        const resumen = e.routes?.[0]?.summary;
+        if (resumen) {
+          onRutaCalculada?.({
+            distanciaMetros: resumen.totalDistance,
+            duracionSegundos: resumen.totalTime,
+          });
+        }
+      })
+      .on('routingerror', (e) => {
+        console.error('Error calculando ruta:', e.error);
+        onError?.('No se pudo calcular la ruta. Revisa tu conexión e intenta de nuevo.');
+      })
+      .addTo(map);
 
     return () => {
       map.removeControl(control);
     };
-  }, [map, sitios]);
+  }, [map, puntos]);
 
   return null;
 }

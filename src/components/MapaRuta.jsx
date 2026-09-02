@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './MapaRuta.css';
 import { useUbicacionActual } from '../hooks/useUbicacionActual';
 import { calcularDistanciaMetros } from '../utils/geo';
+import RutaCalculada from './RutaCalculada';
+import PanelSitio from './PanelSitio';
+import HistoriaSitio from './HistoriaSitio';
 
 const RADIO_GEOFENCE_METROS = 80;
 const CLAVE_GUARDADOS = 'sitiosGuardados';
@@ -25,7 +28,14 @@ function cargarGuardados() {
   }
 }
 
-function EnfocarSitio({ sitios, sitioEnfocadoId, markerRefs }) {
+function normalizarTexto(s) {
+  return s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function EnfocarSitio({ sitios, sitioEnfocadoId, onEnfocar }) {
   const map = useMap();
 
   useEffect(() => {
@@ -34,18 +44,35 @@ function EnfocarSitio({ sitios, sitioEnfocadoId, markerRefs }) {
     if (!sitio) return;
 
     map.flyTo(sitio.position, 17);
-    markerRefs.current[sitio.id]?.openPopup();
+    onEnfocar(sitio);
   }, [sitioEnfocadoId]);
 
   return null;
 }
 
-function MapaRuta({ sitios, sellos = [], onSellar, onSellarAutomatico, sitioEnfocadoId, onVolver }) {
-  const markerRefs = useRef({});
+function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver }) {
   const mapRef = useRef(null);
   const { ubicacion, error } = useUbicacionActual();
   const [busqueda, setBusqueda] = useState('');
+
+  const resultadosBusqueda = busqueda.trim()
+    ? sitios.filter((s) => normalizarTexto(s.name).includes(normalizarTexto(busqueda))).slice(0, 8)
+    : [];
+
+  const seleccionarResultadoBusqueda = (sitio) => {
+    setBusqueda('');
+    setSitioSeleccionado(sitio);
+    if (mapRef.current) {
+      mapRef.current.flyTo(sitio.position, 17);
+    }
+  };
+
   const [guardados, setGuardados] = useState(cargarGuardados);
+  const [sitioSeleccionado, setSitioSeleccionado] = useState(null);
+  const [sitioHistoria, setSitioHistoria] = useState(null);
+  const [destinoRuta, setDestinoRuta] = useState(null);
+  const [resumenRuta, setResumenRuta] = useState(null);
+  const [errorRuta, setErrorRuta] = useState(null);
 
   useEffect(() => {
     if (!ubicacion) return;
@@ -69,7 +96,6 @@ function MapaRuta({ sitios, sellos = [], onSellar, onSellarAutomatico, sitioEnfo
     }
   };
 
-  const estaSellado = (sitio) => sellos.some(s => s.sitioId === sitio.id);
   const estaGuardado = (sitio) => guardados.includes(sitio.id);
 
   const toggleGuardado = (sitio) => {
@@ -87,12 +113,19 @@ function MapaRuta({ sitios, sellos = [], onSellar, onSellarAutomatico, sitioEnfo
   };
 
   const comoLlegar = (sitio) => {
-    const [lat, lng] = sitio.position;
-    window.open(
-      `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
-      '_blank',
-      'noopener,noreferrer'
-    );
+    if (!ubicacion) {
+      setErrorRuta('Necesitas activar tu ubicación para trazar la ruta.');
+      return;
+    }
+    setErrorRuta(null);
+    setResumenRuta(null);
+    setDestinoRuta(sitio);
+  };
+
+  const cancelarRuta = () => {
+    setDestinoRuta(null);
+    setResumenRuta(null);
+    setErrorRuta(null);
   };
 
   return (
@@ -131,6 +164,24 @@ function MapaRuta({ sitios, sellos = [], onSellar, onSellarAutomatico, sitioEnfo
               ×
             </button>
           )}
+          {busqueda.trim() && (
+            <ul className="mapa-buscador-resultados">
+              {resultadosBusqueda.length > 0 ? (
+                resultadosBusqueda.map((sitio) => (
+                  <li key={sitio.id}>
+                    <button
+                      type="button"
+                      onClick={() => seleccionarResultadoBusqueda(sitio)}
+                    >
+                      {sitio.name}
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li className="mapa-buscador-sin-resultados">Sin resultados</li>
+              )}
+            </ul>
+          )}
         </div>
       </div>
 
@@ -158,51 +209,65 @@ function MapaRuta({ sitios, sellos = [], onSellar, onSellarAutomatico, sitioEnfo
           <Marker
             key={sitio.id}
             position={sitio.position}
-            ref={(ref) => {
-              if (ref) markerRefs.current[sitio.id] = ref;
+            eventHandlers={{
+              click: () => setSitioSeleccionado(sitio),
             }}
-          >
-            <Popup>
-              <div className="mapa-popup">
-                <h3>{sitio.name}</h3>
-                <p>{sitio.desc}</p>
-
-                <div className="mapa-popup-acciones">
-                  <button
-                    className="mapa-popup-btn mapa-popup-btn-secundario"
-                    onClick={() => comoLlegar(sitio)}
-                  >
-                    Cómo llegar
-                  </button>
-                  <button
-                    className={`mapa-popup-btn mapa-popup-btn-ghost ${estaGuardado(sitio) ? 'activo' : ''}`}
-                    onClick={() => toggleGuardado(sitio)}
-                  >
-                    {estaGuardado(sitio) ? 'Guardado' : 'Guardar'}
-                  </button>
-                </div>
-
-                {estaSellado(sitio) ? (
-                  <span className="mapa-popup-sellado">Sello obtenido ✓</span>
-                ) : (
-                  <button
-                    className="mapa-popup-btn mapa-popup-btn-primario"
-                    onClick={() => onSellar(sitio)}
-                  >
-                    Sellar pasaporte
-                  </button>
-                )}
-              </div>
-            </Popup>
-          </Marker>
+          />
         ))}
 
         {ubicacion && (
           <Marker position={[ubicacion.lat, ubicacion.lng]} icon={iconoUbicacion} zIndexOffset={1000} />
         )}
 
-        <EnfocarSitio sitios={sitios} sitioEnfocadoId={sitioEnfocadoId} markerRefs={markerRefs} />
+        <EnfocarSitio sitios={sitios} sitioEnfocadoId={sitioEnfocadoId} onEnfocar={setSitioSeleccionado} />
+
+        {destinoRuta && ubicacion && (
+          <RutaCalculada
+            puntos={[[ubicacion.lat, ubicacion.lng], destinoRuta.position]}
+            onRutaCalculada={setResumenRuta}
+            onError={setErrorRuta}
+          />
+        )}
       </MapContainer>
+
+      {destinoRuta && (
+        <div className="mapa-ruta-resumen">
+          <div className="mapa-ruta-resumen-info">
+            <strong>Ruta hacia {destinoRuta.name}</strong>
+            {resumenRuta && (
+              <span>
+                {(resumenRuta.distanciaMetros / 1000).toFixed(1)} km ·{' '}
+                {Math.round(resumenRuta.duracionSegundos / 60)} min
+              </span>
+            )}
+            {errorRuta && <span className="mapa-ruta-resumen-error">{errorRuta}</span>}
+          </div>
+          <button
+            type="button"
+            className="mapa-ruta-resumen-cancelar"
+            onClick={cancelarRuta}
+          >
+            Cancelar
+          </button>
+        </div>
+      )}
+
+      <PanelSitio
+        sitio={sitioSeleccionado}
+        estaGuardado={sitioSeleccionado ? estaGuardado(sitioSeleccionado) : false}
+        onCerrar={() => setSitioSeleccionado(null)}
+        onComoLlegar={(sitio) => {
+          comoLlegar(sitio);
+          setSitioSeleccionado(null);
+        }}
+        onGuardar={(sitio) => toggleGuardado(sitio)}
+        onHistoria={(sitio) => setSitioHistoria(sitio)}
+      />
+
+      <HistoriaSitio
+        sitio={sitioHistoria}
+        onCerrar={() => setSitioHistoria(null)}
+      />
 
       <button
         className="mapa-mi-ubicacion-btn"
@@ -218,6 +283,7 @@ function MapaRuta({ sitios, sellos = [], onSellar, onSellarAutomatico, sitioEnfo
       </button>
 
       {error && <p className="mapa-ubicacion-error">{error}</p>}
+      {errorRuta && !destinoRuta && <p className="mapa-ubicacion-error">{errorRuta}</p>}
     </div>
   );
 }

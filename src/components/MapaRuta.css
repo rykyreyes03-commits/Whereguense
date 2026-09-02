@@ -51,6 +51,7 @@
 }
 
 .mapa-buscador {
+  position: relative;
   flex: 1;
   display: flex;
   align-items: center;
@@ -60,6 +61,43 @@
   padding: 11px 16px;
   box-shadow: var(--shadow-md);
   color: var(--color-text-soft);
+}
+
+.mapa-buscador-resultados {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 500;
+}
+.mapa-buscador-resultados li button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm, 8px);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--color-text);
+  cursor: pointer;
+}
+.mapa-buscador-resultados li button:hover {
+  background: var(--color-surface);
+}
+.mapa-buscador-sin-resultados {
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
 }
 .mapa-buscador input {
   flex: 1;
@@ -215,6 +253,61 @@
   font-size: 0.82rem;
   font-weight: 800;
 }
+
+/* ===== Tarjeta flotante de resumen de ruta =====
+   Se coloca por encima del FAB "mi ubicación" (52px + 20px + margen) para no
+   taparlo. z-index 1001 = por encima del BottomNav (1000) y de los overlays. */
+.mapa-ruta-resumen {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(88px + env(safe-area-inset-bottom));
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+.mapa-ruta-resumen-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mapa-ruta-resumen-info strong {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  color: var(--color-navy);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mapa-ruta-resumen-info > span {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+.mapa-ruta-resumen-info > span.mapa-ruta-resumen-error {
+  color: var(--color-coral); /* mismo token de error que Login.css / SeleccionDanzante.css */
+  font-weight: 700;
+}
+.mapa-ruta-resumen-cancelar {
+  flex-shrink: 0;
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  color: var(--color-primary);
+  padding: 8px 14px;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.mapa-ruta-resumen-cancelar:hover { background: rgba(30, 42, 120, 0.06); }
 
 /* ===== Aviso de error de ubicación ===== */
 .mapa-ubicacion-error {

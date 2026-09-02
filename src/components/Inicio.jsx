@@ -37,7 +37,8 @@ function Inicio({
   const buscando = query.length > 0;
   const rutasCoincidentes = buscando ? rutas.filter((r) => r.nombre.toLowerCase().includes(query)) : [];
   const sitiosCoincidentes = buscando ? sitios.filter((s) => s.name.toLowerCase().includes(query)) : [];
-  const sinResultados = buscando && rutasCoincidentes.length === 0 && sitiosCoincidentes.length === 0;
+  const eventosCoincidentes = buscando ? eventos.filter((e) => e.nombre.toLowerCase().includes(query)) : [];
+  const sinResultados = buscando && rutasCoincidentes.length === 0 && sitiosCoincidentes.length === 0 && eventosCoincidentes.length === 0;
 
   const ultimoSello = sellos.length > 0 ? sellos[sellos.length - 1] : null;
   const rutaPrincipal = rutas[0];
@@ -74,6 +75,8 @@ function Inicio({
     onSeleccionarRuta?.(rutaId);
     onNavigate?.('detalleRuta');
   };
+
+  const irAEvento = () => onNavigate?.('eventos');
 
   const irAlMapa = () => onNavigate?.('mapa');
 
@@ -139,6 +142,12 @@ function Inicio({
               <button key={`sitio-${s.id}`} className="inicio-resultado" onClick={() => onVerSitioEnMapa?.(s.id)}>
                 <span className="inicio-resultado-titulo">{s.name}</span>
                 <span className="inicio-resultado-tipo">Sitio</span>
+              </button>
+            ))}
+            {eventosCoincidentes.map((e) => (
+              <button key={`evento-${e.id}`} className="inicio-resultado" onClick={() => irAEvento(e)}>
+                <span className="inicio-resultado-titulo">{e.nombre}</span>
+                <span className="inicio-resultado-tipo">Evento</span>
               </button>
             ))}
             {sinResultados && (

@@ -1,0 +1,96 @@
+/* =========================================================
+   HistoriaSitio — overlay a pantalla completa
+   Hero con el mismo degradado que la tarjeta "Hola, Explorador"
+   (.inicio-hero en Inicio.css). Resto: tokens de src/index.css.
+   ========================================================= */
+
+.historia-sitio {
+  position: fixed;
+  inset: 0;
+  z-index: 1003;
+  background: var(--color-white);
+  overflow-y: auto;
+  animation: historiaSitioEntrada 0.32s ease-out;
+}
+
+@keyframes historiaSitioEntrada {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.historia-sitio-hero {
+  position: relative;
+  padding: calc(20px + env(safe-area-inset-top)) 24px 32px;
+  /* mismo degradado que .inicio-hero ("Hola, Explorador") */
+  background: linear-gradient(140deg, var(--color-navy) 0%, var(--color-primary) 100%);
+  text-align: center;
+}
+
+.historia-sitio-cerrar {
+  position: absolute;
+  top: calc(14px + env(safe-area-inset-top));
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--color-white);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.historia-sitio-cerrar:hover { background: rgba(255, 255, 255, 0.28); }
+
+.historia-sitio-nombre {
+  margin: 0 44px 8px;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  line-height: 1.25;
+  color: var(--color-white);
+}
+
+.historia-sitio-guia-fondo {
+  width: 240px;
+  height: 240px;
+  margin: 10px auto 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.historia-sitio-guia {
+  width: 200px;
+  height: auto;
+  max-height: 220px;
+  object-fit: contain;
+}
+
+.historia-sitio-contenido {
+  padding: 24px 22px calc(28px + env(safe-area-inset-bottom));
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.historia-sitio-texto {
+  margin: 0 0 16px;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--color-text);
+}
+.historia-sitio-texto:last-child { margin-bottom: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .historia-sitio { animation: none; }
+}
