@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import './Inicio.css';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
-import { useRutasGuardadas } from '../hooks/useRutasGuardadas';
+import { useGuardados } from '../hooks/useGuardados';
 import { INSIGNIAS } from '../data/insignias';
 import iconoUsuario from '../assets/icons/icono_usuario.svg';
 import iconoBuscar from '../assets/icons/icono_buscar.svg';
@@ -23,6 +23,7 @@ function Inicio({
   rutas,
   sellos,
   eventos,
+  usuarioId,
   onNavigate,
   onSeleccionarRuta,
   onSeleccionarSitio,
@@ -31,7 +32,7 @@ function Inicio({
   eventoDestacadoId,
 }) {
   const [busqueda, setBusqueda] = useState('');
-  const { guardadas } = useRutasGuardadas();
+  const { guardados } = useGuardados(usuarioId);
 
   const query = busqueda.trim().toLowerCase();
   const buscando = query.length > 0;
@@ -42,7 +43,6 @@ function Inicio({
 
   const ultimoSello = sellos.length > 0 ? sellos[sellos.length - 1] : null;
   const rutaPrincipal = rutas[0];
-  const rutaGuardada = rutas.find((r) => guardadas.includes(r.id));
 
   const eventoDestacado = useMemo(
     () => eventos?.find((e) => e.id === eventoDestacadoId) || null,
@@ -58,12 +58,6 @@ function Inicio({
   const handleUltimaRuta = () => {
     if (!rutaPrincipal) return;
     onSeleccionarRuta?.(rutaPrincipal.id);
-    onNavigate?.('detalleRuta');
-  };
-
-  const handleRutaGuardada = () => {
-    if (!rutaGuardada) return;
-    onSeleccionarRuta?.(rutaGuardada.id);
     onNavigate?.('detalleRuta');
   };
 
@@ -186,14 +180,16 @@ function Inicio({
 
           <button
             type="button"
-            className={`inicio-acceso ${!rutaGuardada ? 'inicio-acceso--vacio' : ''}`}
-            onClick={handleRutaGuardada}
-            disabled={!rutaGuardada}
+            className={`inicio-acceso ${guardados.length === 0 ? 'inicio-acceso--vacio' : ''}`}
+            onClick={() => onNavigate?.('guardados')}
+            disabled={guardados.length === 0}
           >
             <span className="inicio-acceso-icono"><img src={iconoRutaGuardada} alt="" /></span>
-            <span className="inicio-acceso-label">Ruta guardada</span>
+            <span className="inicio-acceso-label">Guardados</span>
             <span className="inicio-acceso-meta">
-              {rutaGuardada ? 'Continuar' : 'Guarda una ruta'}
+              {guardados.length > 0
+                ? `${guardados.length} guardado${guardados.length === 1 ? '' : 's'}`
+                : 'Aún no guardas nada'}
             </span>
           </button>
 

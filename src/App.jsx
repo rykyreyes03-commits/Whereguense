@@ -8,6 +8,7 @@ import SeleccionDanzante from './components/SeleccionDanzante';
 import Inicio from './components/Inicio';
 import MapaRuta from './components/MapaRuta';
 import MisSellos from './components/MisSellos';
+import MisGuardados from './components/MisGuardados';
 import DetalleSello from './components/DetalleSello';
 import Perfil from './components/Perfil';
 import RutasDestacadas from './components/RutasDestacadas';
@@ -364,6 +365,7 @@ function App() {
         rutas={rutas}
         eventos={eventos}
         sellos={sellos}
+        usuarioId={usuarioActual?.id}
         onNavigate={cambiarPantalla}
         onSeleccionarRuta={setRutaActivaId}
         onSeleccionarSitio={setSitioSeleccionadoId}
@@ -384,6 +386,7 @@ function App() {
           onSellarAutomatico={intentarSellarPorGeofencing}
           sitioEnfocadoId={sitioEnfocadoId}
           onVolver={() => cambiarPantalla('inicio')}
+          usuarioId={usuarioActual?.id}
         />
         <Toast sitio={toastSitio} onClose={handleCerrarToast} onClick={handleClickToast} />
         {mostrarSubidaNivel && (
@@ -398,6 +401,16 @@ function App() {
           />
         )}
       </div>
+    );
+  }
+
+  if (pantalla === 'guardados') {
+    return (
+      <MisGuardados
+        usuarioId={usuarioActual?.id}
+        onVerSitio={irAlMapaConSitio}
+        onVolver={() => cambiarPantalla('inicio')}
+      />
     );
   }
 
