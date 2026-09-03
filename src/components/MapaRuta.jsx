@@ -14,8 +14,13 @@ const RADIO_GEOFENCE_METROS = 80;
 
 const iconoUbicacion = L.divIcon({
   className: 'ubicacion-usuario-icono',
-  html: '<div class="ubicacion-usuario-punto"></div>',
-  iconSize: [18, 18],
+  html: `
+    <div class="ubicacion-usuario-anillo"></div>
+    <div class="ubicacion-usuario-anillo ubicacion-usuario-anillo-2"></div>
+    <div class="ubicacion-usuario-punto"></div>
+  `,
+  iconSize: [60, 60],
+  iconAnchor: [30, 30],
 });
 
 function normalizarTexto(s) {
@@ -221,8 +226,8 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
         style={{ flex: 1, width: '100%' }}
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; OpenStreetMap contributors'
+          url={`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${import.meta.env.VITE_CARTO_API_KEY}`}
+          attribution='&copy; OpenStreetMap contributors &copy; CARTO'
         />
         {sitios.map(sitio => (
           <Circle
