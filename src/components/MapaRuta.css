@@ -155,6 +155,11 @@
   cursor: not-allowed;
   box-shadow: var(--shadow-sm);
 }
+/* Estado activo ("modo seguir"): mismo tinte primario translúcido que
+   .mapa-popup-btn-ghost.activo, aquí como halo alrededor del FAB. */
+.mapa-mi-ubicacion-btn.siguiendo {
+  box-shadow: 0 0 0 4px rgba(30, 42, 120, 0.25), var(--shadow-lg);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .mapa-volver-btn:hover,
@@ -293,6 +298,11 @@
 .mapa-ruta-resumen-info > span.mapa-ruta-resumen-error {
   color: var(--color-coral); /* mismo token de error que Login.css / SeleccionDanzante.css */
   font-weight: 700;
+}
+.mapa-ruta-resumen-info > span.mapa-ruta-resumen-aviso {
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--color-text-muted);
 }
 .mapa-ruta-resumen-cancelar {
   flex-shrink: 0;

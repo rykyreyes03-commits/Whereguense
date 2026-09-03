@@ -8,9 +8,9 @@ import { calcularDistanciaMetros } from '../utils/geo';
 import RutaCalculada from './RutaCalculada';
 import PanelSitio from './PanelSitio';
 import HistoriaSitio from './HistoriaSitio';
+import { useGuardados } from '../hooks/useGuardados';
 
 const RADIO_GEOFENCE_METROS = 80;
-const CLAVE_GUARDADOS = 'sitiosGuardados';
 
 const iconoUbicacion = L.divIcon({
   className: 'ubicacion-usuario-icono',
@@ -18,22 +18,24 @@ const iconoUbicacion = L.divIcon({
   iconSize: [18, 18],
 });
 
-function cargarGuardados() {
-  try {
-    const g = JSON.parse(localStorage.getItem(CLAVE_GUARDADOS));
-    return Array.isArray(g) ? g : [];
-  } catch (error) {
-    console.error('Error leyendo sitios guardados:', error);
-    return [];
-  }
-}
-
 function normalizarTexto(s) {
   return s
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 }
+
+function distanciaMinimaARuta(lat, lng, coordenadasRuta) {
+  if (!coordenadasRuta || coordenadasRuta.length === 0) return Infinity;
+  let minima = Infinity;
+  for (const [rutaLat, rutaLng] of coordenadasRuta) {
+    const d = calcularDistanciaMetros(lat, lng, rutaLat, rutaLng);
+    if (d < minima) minima = d;
+  }
+  return minima;
+}
+
+const UMBRAL_DESVIO_METROS = 40;
 
 function EnfocarSitio({ sitios, sitioEnfocadoId, onEnfocar }) {
   const map = useMap();
@@ -50,9 +52,34 @@ function EnfocarSitio({ sitios, sitioEnfocadoId, onEnfocar }) {
   return null;
 }
 
-function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver }) {
+function SeguidorUbicacion({ ubicacion, activo, onSeguirDesactivado }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!activo) return undefined;
+
+    const handleDragStart = () => {
+      onSeguirDesactivado();
+    };
+
+    map.on('dragstart', handleDragStart);
+    return () => {
+      map.off('dragstart', handleDragStart);
+    };
+  }, [activo, map, onSeguirDesactivado]);
+
+  useEffect(() => {
+    if (!activo || !ubicacion) return;
+    map.setView([ubicacion.lat, ubicacion.lng], map.getZoom(), { animate: true });
+  }, [activo, ubicacion, map]);
+
+  return null;
+}
+
+function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuarioId }) {
   const mapRef = useRef(null);
   const { ubicacion, error } = useUbicacionActual();
+  const { estaGuardado: estaGuardadoSupabase, toggleGuardar } = useGuardados(usuarioId);
   const [busqueda, setBusqueda] = useState('');
 
   const resultadosBusqueda = busqueda.trim()
@@ -67,10 +94,11 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver }) {
     }
   };
 
-  const [guardados, setGuardados] = useState(cargarGuardados);
   const [sitioSeleccionado, setSitioSeleccionado] = useState(null);
   const [sitioHistoria, setSitioHistoria] = useState(null);
   const [destinoRuta, setDestinoRuta] = useState(null);
+  const [origenRuta, setOrigenRuta] = useState(null);
+  const [modoSeguir, setModoSeguir] = useState(false);
   const [resumenRuta, setResumenRuta] = useState(null);
   const [errorRuta, setErrorRuta] = useState(null);
 
@@ -90,26 +118,22 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver }) {
     });
   }, [ubicacion, sitios, onSellarAutomatico]);
 
+  useEffect(() => {
+    if (!ubicacion || !destinoRuta || !resumenRuta?.coordenadas) return;
+
+    const distancia = distanciaMinimaARuta(ubicacion.lat, ubicacion.lng, resumenRuta.coordenadas);
+    if (distancia > UMBRAL_DESVIO_METROS) {
+      setOrigenRuta({ lat: ubicacion.lat, lng: ubicacion.lng });
+    }
+  }, [ubicacion, destinoRuta, resumenRuta]);
+
   const centrarEnMiUbicacion = () => {
     if (ubicacion && mapRef.current) {
       mapRef.current.flyTo([ubicacion.lat, ubicacion.lng], 16);
-    }
-  };
-
-  const estaGuardado = (sitio) => guardados.includes(sitio.id);
-
-  const toggleGuardado = (sitio) => {
-    setGuardados((prev) => {
-      const siguiente = prev.includes(sitio.id)
-        ? prev.filter(id => id !== sitio.id)
-        : [...prev, sitio.id];
-      try {
-        localStorage.setItem(CLAVE_GUARDADOS, JSON.stringify(siguiente));
-      } catch (err) {
-        console.error('Error guardando sitios guardados:', err);
+      if (destinoRuta) {
+        setModoSeguir(true);
       }
-      return siguiente;
-    });
+    }
   };
 
   const comoLlegar = (sitio) => {
@@ -120,12 +144,16 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver }) {
     setErrorRuta(null);
     setResumenRuta(null);
     setDestinoRuta(sitio);
+    setOrigenRuta({ lat: ubicacion.lat, lng: ubicacion.lng });
+    setModoSeguir(true);
   };
 
   const cancelarRuta = () => {
     setDestinoRuta(null);
+    setOrigenRuta(null);
     setResumenRuta(null);
     setErrorRuta(null);
+    setModoSeguir(false);
   };
 
   return (
@@ -221,9 +249,15 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver }) {
 
         <EnfocarSitio sitios={sitios} sitioEnfocadoId={sitioEnfocadoId} onEnfocar={setSitioSeleccionado} />
 
-        {destinoRuta && ubicacion && (
+        <SeguidorUbicacion
+          ubicacion={ubicacion}
+          activo={modoSeguir}
+          onSeguirDesactivado={() => setModoSeguir(false)}
+        />
+
+        {destinoRuta && origenRuta && (
           <RutaCalculada
-            puntos={[[ubicacion.lat, ubicacion.lng], destinoRuta.position]}
+            puntos={[[origenRuta.lat, origenRuta.lng], destinoRuta.position]}
             onRutaCalculada={setResumenRuta}
             onError={setErrorRuta}
           />
@@ -240,6 +274,9 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver }) {
                 {Math.round(resumenRuta.duracionSegundos / 60)} min
               </span>
             )}
+            {destinoRuta && !modoSeguir && (
+              <span className="mapa-ruta-resumen-aviso">Toca el botón de ubicación para seguir la ruta</span>
+            )}
             {errorRuta && <span className="mapa-ruta-resumen-error">{errorRuta}</span>}
           </div>
           <button
@@ -254,13 +291,18 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver }) {
 
       <PanelSitio
         sitio={sitioSeleccionado}
-        estaGuardado={sitioSeleccionado ? estaGuardado(sitioSeleccionado) : false}
+        estaGuardado={sitioSeleccionado ? estaGuardadoSupabase('sitio', sitioSeleccionado.id) : false}
         onCerrar={() => setSitioSeleccionado(null)}
         onComoLlegar={(sitio) => {
           comoLlegar(sitio);
           setSitioSeleccionado(null);
         }}
-        onGuardar={(sitio) => toggleGuardado(sitio)}
+        onGuardar={async (sitio) => {
+          const resultado = await toggleGuardar('sitio', sitio.id, { nombre: sitio.name });
+          if (!resultado.exito) {
+            console.error('Error al guardar sitio:', resultado.mensaje);
+          }
+        }}
         onHistoria={(sitio) => setSitioHistoria(sitio)}
       />
 
@@ -270,7 +312,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver }) {
       />
 
       <button
-        className="mapa-mi-ubicacion-btn"
+        className={`mapa-mi-ubicacion-btn ${modoSeguir ? 'siguiendo' : ''}`}
         onClick={centrarEnMiUbicacion}
         disabled={!ubicacion}
         aria-label="Centrar en mi ubicación"

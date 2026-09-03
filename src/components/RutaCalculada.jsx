@@ -12,6 +12,10 @@ function RutaCalculada({ puntos, colorLinea = '#1a3c8f', onRutaCalculada, onErro
     const waypoints = puntos.map(([lat, lng]) => L.latLng(lat, lng));
 
     const control = L.Routing.control({
+      router: L.Routing.osrmv1({
+        serviceUrl: 'https://routing.openstreetmap.de/routed-foot/route/v1',
+        profile: 'driving',
+      }),
       waypoints,
       routeWhileDragging: false,
       addWaypoints: false,
@@ -24,11 +28,12 @@ function RutaCalculada({ puntos, colorLinea = '#1a3c8f', onRutaCalculada, onErro
       createMarker: () => null,
     })
       .on('routesfound', (e) => {
-        const resumen = e.routes?.[0]?.summary;
-        if (resumen) {
+        const ruta = e.routes?.[0];
+        if (ruta?.summary) {
           onRutaCalculada?.({
-            distanciaMetros: resumen.totalDistance,
-            duracionSegundos: resumen.totalTime,
+            distanciaMetros: ruta.summary.totalDistance,
+            duracionSegundos: ruta.summary.totalTime,
+            coordenadas: (ruta.coordinates || []).map((c) => [c.lat, c.lng]),
           });
         }
       })
