@@ -7,6 +7,9 @@ function mapearNegocio(fila) {
     id: fila.id,
     nombre: fila.nombre_negocio,
     categoria: fila.categoria,
+    descripcion: fila.descripcion,
+    telefono: fila.telefono,
+    logoUrl: fila.logo_url,
     estado: fila.estado,
     motivoRechazo: fila.motivo_rechazo,
     fechaEnvio: fila.fecha_envio,
@@ -129,6 +132,64 @@ export function useNegocio(usuarioId) {
     return { exito: true };
   }, [negocio]);
 
+  const actualizarPerfil = useCallback(async ({ nombre, categoria, descripcion, telefono }) => {
+    if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
+
+    const { data, error } = await supabase
+      .from('negocio')
+      .update({
+        nombre_negocio: nombre,
+        categoria,
+        descripcion,
+        telefono,
+      })
+      .eq('id', negocio.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error actualizando perfil del negocio:', error);
+      return { exito: false, mensaje: 'No se pudo actualizar. Intenta de nuevo.' };
+    }
+
+    setNegocio(mapearNegocio(data));
+    return { exito: true };
+  }, [negocio]);
+
+  const subirLogo = useCallback(async (usuarioId, file) => {
+    if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
+
+    const extension = file.name.split('.').pop();
+    const ruta = `${usuarioId}/logo.${extension}`;
+
+    const { error: errorSubida } = await supabase.storage
+      .from('negocios')
+      .upload(ruta, file, { upsert: true });
+
+    if (errorSubida) {
+      console.error('Error subiendo logo:', errorSubida);
+      return { exito: false, mensaje: 'No se pudo subir el logo. Intenta de nuevo.' };
+    }
+
+    const { data: urlPublica } = supabase.storage.from('negocios').getPublicUrl(ruta);
+    const logoUrlConCache = `${urlPublica.publicUrl}?t=${Date.now()}`;
+
+    const { data, error } = await supabase
+      .from('negocio')
+      .update({ logo_url: logoUrlConCache })
+      .eq('id', negocio.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error guardando logo_url:', error);
+      return { exito: false, mensaje: 'El logo se subió pero no se pudo guardar. Intenta de nuevo.' };
+    }
+
+    setNegocio(mapearNegocio(data));
+    return { exito: true };
+  }, [negocio]);
+
   // Pendientes de migrar en pasos siguientes (horarios, fotos, productos, QR):
   const actualizarHorarios = useCallback(() => {
     console.warn('actualizarHorarios: pendiente de migrar a Supabase.');
@@ -151,6 +212,8 @@ export function useNegocio(usuarioId) {
     simularRechazar,
     actualizarHorarios,
     actualizarUbicacion,
+    actualizarPerfil,
+    subirLogo,
     agregarProducto,
     eliminarProducto,
     generarQR,

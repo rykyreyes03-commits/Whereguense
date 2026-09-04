@@ -14,7 +14,6 @@ const HORARIOS_POR_DEFECTO = {
 };
 
 const MAX_FOTOS = 6;
-const LOGO_MAX_PX = 256;
 const FOTO_MAX_PX = 480;
 
 function leerJSON(clave, porDefecto) {
@@ -71,13 +70,11 @@ function PerfilNegocio({
   onNavigate,
   onActualizarHorarios,
   onActualizarUbicacion,
+  onActualizarPerfil,
+  onSubirLogo,
   onAgregarProducto,
   onEliminarProducto,
 }) {
-  const [perfilExtra, setPerfilExtra] = useState(() => leerJSON('negocioPerfil', {}));
-  const [logo, setLogo] = useState(() => {
-    try { return localStorage.getItem('negocioLogo') || null; } catch (e) { console.error(e); return null; }
-  });
   const [fotos, setFotos] = useState(() => leerJSON('negocioFotos', []));
 
   const [editandoPerfil, setEditandoPerfil] = useState(false);
@@ -108,8 +105,8 @@ function PerfilNegocio({
     );
   }
 
-  const nombre = perfilExtra.nombre || negocio?.nombre || 'Tu negocio';
-  const categoria = perfilExtra.categoria || negocio?.categoria || 'Sin categoría';
+  const nombre = negocio?.nombre || 'Tu negocio';
+  const categoria = negocio?.categoria || 'Sin categoría';
   const inicial = nombre.trim().charAt(0).toUpperCase() || 'N';
   const activo = negocio?.estado === 'activo';
   const diasRestantes = diasRestantesAnioGratis(negocio?.fechaEnvio);
@@ -120,18 +117,28 @@ function PerfilNegocio({
   };
 
   const abrirEdicionPerfil = () => {
-    setBorradorPerfil({ nombre, categoria });
+    setBorradorPerfil({
+      nombre,
+      categoria,
+      descripcion: negocio?.descripcion || '',
+      telefono: negocio?.telefono || '',
+    });
     setEditandoPerfil(true);
   };
 
-  const guardarPerfil = () => {
+  const guardarPerfil = async () => {
     const limpio = {
       nombre: (borradorPerfil.nombre || '').trim() || nombre,
       categoria: borradorPerfil.categoria || categoria,
+      descripcion: (borradorPerfil.descripcion ?? negocio?.descripcion ?? '').trim(),
+      telefono: (borradorPerfil.telefono ?? negocio?.telefono ?? '').trim(),
     };
-    setPerfilExtra(limpio);
-    guardarJSON('negocioPerfil', limpio);
-    setEditandoPerfil(false);
+    const resultado = await onActualizarPerfil(limpio);
+    if (resultado.exito) {
+      setEditandoPerfil(false);
+    } else {
+      window.alert(resultado.mensaje);
+    }
   };
 
   const handleLogo = async (e) => {
@@ -139,9 +146,10 @@ function PerfilNegocio({
     e.target.value = '';
     if (!file) return;
     try {
-      const dataUrl = await redimensionarImagen(file, LOGO_MAX_PX);
-      setLogo(dataUrl);
-      try { localStorage.setItem('negocioLogo', dataUrl); } catch (err) { console.error(err); }
+      const resultado = await onSubirLogo(file);
+      if (!resultado.exito) {
+        window.alert(resultado.mensaje);
+      }
     } catch (err) {
       console.error(err);
       window.alert('No se pudo usar esa imagen. Prueba con otra.');
@@ -187,11 +195,11 @@ function PerfilNegocio({
       <TopBar align="center" onMenuClick={() => onNavigate('menu')}>
         <button
           type="button"
-          className={`perfilnegocio-logo ${logo ? 'perfilnegocio-logo--img' : ''}`}
+          className={`perfilnegocio-logo ${negocio?.logoUrl ? 'perfilnegocio-logo--img' : ''}`}
           onClick={() => logoInputRef.current?.click()}
           aria-label="Cambiar logo del negocio"
         >
-          {logo ? <img src={logo} alt="Logo del negocio" /> : <span>{inicial}</span>}
+          {negocio?.logoUrl ? <img src={negocio.logoUrl} alt="Logo del negocio" /> : <span>{inicial}</span>}
           <span className="perfilnegocio-logo-camara" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
               <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h1.7l1-1.6A1 1 0 0 1 10 5h4a1 1 0 0 1 .85.4l1 1.6h1.65A1.5 1.5 0 0 1 20 8.5v9A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5v-9Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
@@ -254,6 +262,24 @@ function PerfilNegocio({
                 </button>
               ))}
             </div>
+            <label className="perfilnegocio-campo">
+              Descripción
+              <textarea
+                rows={3}
+                value={borradorPerfil.descripcion || ''}
+                onChange={(e) => setBorradorPerfil({ ...borradorPerfil, descripcion: e.target.value })}
+                placeholder="Cuéntale al turista qué ofreces..."
+              />
+            </label>
+            <label className="perfilnegocio-campo">
+              Teléfono
+              <input
+                type="tel"
+                value={borradorPerfil.telefono || ''}
+                onChange={(e) => setBorradorPerfil({ ...borradorPerfil, telefono: e.target.value })}
+                placeholder="Ej. 8888-8888"
+              />
+            </label>
             <button type="button" className="perfilnegocio-btn-primario" onClick={guardarPerfil}>
               Guardar cambios
             </button>

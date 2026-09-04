@@ -63,6 +63,8 @@ function App() {
     simularRechazar,
     actualizarHorarios,
     actualizarUbicacion,
+    actualizarPerfil,
+    subirLogo,
     agregarProducto,
     eliminarProducto,
     generarQR,
@@ -556,6 +558,8 @@ function App() {
         onNavigate={cambiarPantalla}
         onActualizarHorarios={actualizarHorarios}
         onActualizarUbicacion={actualizarUbicacion}
+        onActualizarPerfil={actualizarPerfil}
+        onSubirLogo={(file) => subirLogo(usuarioActual?.id, file)}
         onAgregarProducto={agregarProducto}
         onEliminarProducto={eliminarProducto}
       />
