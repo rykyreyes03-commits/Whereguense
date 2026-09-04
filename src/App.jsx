@@ -224,15 +224,19 @@ function App() {
     cambiarPantalla('mapa');
   };
 
+  const irAFlujoNegocio = () => {
+    if (negocio?.estado === 'activo') {
+      setPantalla('perfilNegocio');
+    } else if (negocio) {
+      setPantalla('estadoNegocio');
+    } else {
+      setPantalla('registroNegocio');
+    }
+  };
+
   const handleElegirProposito = (tipo) => {
     if (tipo === 'emprendimiento') {
-      if (negocio?.estado === 'activo') {
-        setPantalla('perfilNegocio');
-      } else if (negocio) {
-        setPantalla('estadoNegocio');
-      } else {
-        setPantalla('registroNegocio');
-      }
+      irAFlujoNegocio();
       return;
     }
     setPantalla('onboarding');
@@ -578,6 +582,7 @@ function App() {
         onNavigate={cambiarPantalla}
         onVolver={() => cambiarPantalla(pantallaAnterior)}
         onCerrarSesion={handleCerrarSesionGlobal}
+        onMiNegocio={irAFlujoNegocio}
       />
     );
   }
