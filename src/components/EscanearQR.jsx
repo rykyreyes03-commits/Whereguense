@@ -10,8 +10,8 @@ function EscanearQR({ onVolver, onEscaneoExitoso, onNavigate }) {
 
   const irAMisSellos = () => onNavigate?.('pasaporte');
 
-  const handleSimular = () => {
-    const sitio = onEscaneoExitoso?.();
+  const handleSimular = async () => {
+    const sitio = await onEscaneoExitoso?.();
     if (sitio) {
       setResultado(sitio);
       setSinPendientes(false);

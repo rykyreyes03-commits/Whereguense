@@ -55,7 +55,7 @@ function App() {
   const [eventoActivoId, setEventoActivoId] = useState(null);
   const [sitioSeleccionadoId, setSitioSeleccionadoId] = useState(null);
   const [sitioEnfocadoId, setSitioEnfocadoId] = useState(null);
-  const { sellos, sellar } = useSellos();
+  const { sellos, sellar } = useSellos(usuarioActual?.id);
   const {
     negocio,
     horarios,
@@ -191,8 +191,8 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id]);
 
-  const handleSellar = (sitio) => {
-    const resultado = sellar(sitio);
+  const handleSellar = async (sitio) => {
+    const resultado = await sellar(sitio);
     if (resultado.exito) {
       setToastSitio(sitio);
     } else {
@@ -200,8 +200,8 @@ function App() {
     }
   };
 
-  const intentarSellarPorGeofencing = (sitio) => {
-    const resultado = sellar(sitio);
+  const intentarSellarPorGeofencing = async (sitio) => {
+    const resultado = await sellar(sitio);
     if (resultado.exito) {
       setToastSitio(sitio);
     }
@@ -251,12 +251,12 @@ function App() {
     setPantalla('danzante');
   };
 
-  const handleEscaneoQR = () => {
+  const handleEscaneoQR = async () => {
     const pendiente = sitios.find(
       (s) => !sellos.some((sello) => sello.sitioId === s.id)
     );
     if (!pendiente) return null;
-    const resultado = sellar(pendiente);
+    const resultado = await sellar(pendiente);
     return resultado.exito ? pendiente : null;
   };
 
