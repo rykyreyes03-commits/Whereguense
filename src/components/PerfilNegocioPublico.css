@@ -17,6 +17,19 @@
   color: var(--color-text);
 }
 
+.perfilpublico-horarios {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.perfilpublico-horarios li {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
 .perfilpublico-nota {
   margin: 28px 0 0;
   font-size: 0.8rem;

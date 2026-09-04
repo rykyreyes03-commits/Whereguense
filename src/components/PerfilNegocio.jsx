@@ -3,15 +3,9 @@ import './PerfilNegocio.css';
 import TopBar from './TopBar';
 import SeleccionUbicacion from './SeleccionUbicacion';
 
-const DIAS_SEMANA = 'Lunes a viernes';
-const DIAS_FIN = 'Sábado a domingo';
+const NOMBRES_DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
 const CATEGORIAS = ['Cafetería', 'Restaurante', 'Arte', 'Artesanía', 'Hospedaje', 'Otro'];
-
-const HORARIOS_POR_DEFECTO = {
-  entreSemana: { inicio: '07:00', fin: '18:00' },
-  finDeSemana: { inicio: '09:00', fin: '15:00' },
-};
 
 const MAX_FOTOS = 6;
 const FOTO_MAX_PX = 480;
@@ -67,6 +61,7 @@ function diasRestantesAnioGratis(fechaEnvio) {
 
 function PerfilNegocio({
   negocio,
+  horarios,
   onNavigate,
   onActualizarHorarios,
   onActualizarUbicacion,
@@ -81,7 +76,7 @@ function PerfilNegocio({
   const [borradorPerfil, setBorradorPerfil] = useState({});
 
   const [editandoHorarios, setEditandoHorarios] = useState(false);
-  const [horarios, setHorarios] = useState(negocio?.horarios || HORARIOS_POR_DEFECTO);
+  const [horariosBorrador, setHorariosBorrador] = useState([]);
   const [mostrandoMapa, setMostrandoMapa] = useState(false);
   const [nuevoProducto, setNuevoProducto] = useState('');
 
@@ -111,9 +106,24 @@ function PerfilNegocio({
   const activo = negocio?.estado === 'activo';
   const diasRestantes = diasRestantesAnioGratis(negocio?.fechaEnvio);
 
-  const guardarHorarios = () => {
-    onActualizarHorarios(horarios);
-    setEditandoHorarios(false);
+  const abrirEdicionHorarios = () => {
+    setHorariosBorrador(horarios.map((h) => ({ ...h })));
+    setEditandoHorarios(true);
+  };
+
+  const actualizarDiaBorrador = (diaSemana, cambios) => {
+    setHorariosBorrador((prev) =>
+      prev.map((h) => (h.diaSemana === diaSemana ? { ...h, ...cambios } : h))
+    );
+  };
+
+  const guardarHorarios = async () => {
+    const resultado = await onActualizarHorarios(horariosBorrador);
+    if (resultado.exito) {
+      setEditandoHorarios(false);
+    } else {
+      window.alert(resultado.mensaje);
+    }
   };
 
   const abrirEdicionPerfil = () => {
@@ -291,7 +301,7 @@ function PerfilNegocio({
             <h2 className="perfilnegocio-seccion-titulo">Horarios</h2>
             <button
               className="perfilnegocio-editar-chip"
-              onClick={() => setEditandoHorarios(!editandoHorarios)}
+              onClick={() => (editandoHorarios ? setEditandoHorarios(false) : abrirEdicionHorarios())}
               type="button"
             >
               {editandoHorarios ? 'Cancelar' : 'Editar'}
@@ -300,70 +310,48 @@ function PerfilNegocio({
 
           {editandoHorarios ? (
             <div className="perfilnegocio-horarios-form">
-              <label className="perfilnegocio-campo-label">{DIAS_SEMANA}</label>
-              <div className="perfilnegocio-horarios-fila">
-                <input
-                  type="time"
-                  value={horarios.entreSemana.inicio}
-                  onChange={(e) =>
-                    setHorarios({
-                      ...horarios,
-                      entreSemana: { ...horarios.entreSemana, inicio: e.target.value },
-                    })
-                  }
-                />
-                <span>a</span>
-                <input
-                  type="time"
-                  value={horarios.entreSemana.fin}
-                  onChange={(e) =>
-                    setHorarios({
-                      ...horarios,
-                      entreSemana: { ...horarios.entreSemana, fin: e.target.value },
-                    })
-                  }
-                />
-              </div>
-
-              <label className="perfilnegocio-campo-label">{DIAS_FIN}</label>
-              <div className="perfilnegocio-horarios-fila">
-                <input
-                  type="time"
-                  value={horarios.finDeSemana.inicio}
-                  onChange={(e) =>
-                    setHorarios({
-                      ...horarios,
-                      finDeSemana: { ...horarios.finDeSemana, inicio: e.target.value },
-                    })
-                  }
-                />
-                <span>a</span>
-                <input
-                  type="time"
-                  value={horarios.finDeSemana.fin}
-                  onChange={(e) =>
-                    setHorarios({
-                      ...horarios,
-                      finDeSemana: { ...horarios.finDeSemana, fin: e.target.value },
-                    })
-                  }
-                />
-              </div>
-
+              {horariosBorrador.map((h) => (
+                <div key={h.diaSemana} className="perfilnegocio-horario-dia">
+                  <div className="perfilnegocio-horario-dia-header">
+                    <span>{NOMBRES_DIA[h.diaSemana]}</span>
+                    <label className="perfilnegocio-horario-cerrado">
+                      <input
+                        type="checkbox"
+                        checked={h.cerrado}
+                        onChange={(e) => actualizarDiaBorrador(h.diaSemana, { cerrado: e.target.checked })}
+                      />
+                      Cerrado
+                    </label>
+                  </div>
+                  {!h.cerrado && (
+                    <div className="perfilnegocio-horarios-fila">
+                      <input
+                        type="time"
+                        value={h.horaApertura || ''}
+                        onChange={(e) => actualizarDiaBorrador(h.diaSemana, { horaApertura: e.target.value })}
+                      />
+                      <span>a</span>
+                      <input
+                        type="time"
+                        value={h.horaCierre || ''}
+                        onChange={(e) => actualizarDiaBorrador(h.diaSemana, { horaCierre: e.target.value })}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
               <button className="perfilnegocio-btn-primario" onClick={guardarHorarios} type="button">
                 Guardar horarios
               </button>
             </div>
           ) : (
             <ul className="perfilnegocio-horarios-lista">
-              <li>
-                <span>{DIAS_SEMANA}</span>
-                <strong>{horarios.entreSemana.inicio} – {horarios.entreSemana.fin}</strong>
-              </li>
-              <li>
-                <span>{DIAS_FIN}</span>
-                <strong>{horarios.finDeSemana.inicio} – {horarios.finDeSemana.fin}</strong>
-              </li>
+              {horarios.map((h) => (
+                <li key={h.diaSemana}>
+                  <span>{NOMBRES_DIA[h.diaSemana]}</span>
+                  <strong>{h.cerrado ? 'Cerrado' : `${h.horaApertura} – ${h.horaCierre}`}</strong>
+                </li>
+              ))}
             </ul>
           )}
         </section>

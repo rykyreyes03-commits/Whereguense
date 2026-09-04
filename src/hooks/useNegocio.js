@@ -17,9 +17,19 @@ function mapearNegocio(fila) {
   };
 }
 
+function horarioPorDefecto() {
+  return Array.from({ length: 7 }, (_, diaSemana) => ({
+    diaSemana,
+    horaApertura: '08:00',
+    horaCierre: '18:00',
+    cerrado: false,
+  }));
+}
+
 export function useNegocio(usuarioId) {
   const [negocio, setNegocio] = useState(null);
   const [cargando, setCargando] = useState(false);
+  const [horarios, setHorarios] = useState([]);
 
   useEffect(() => {
     if (!usuarioId) {
@@ -48,6 +58,43 @@ export function useNegocio(usuarioId) {
 
     return () => { activo = false; };
   }, [usuarioId]);
+
+  useEffect(() => {
+    if (!negocio?.id) {
+      setHorarios([]);
+      return undefined;
+    }
+
+    let activo = true;
+
+    supabase
+      .from('negocio_horario')
+      .select('dia_semana, hora_apertura, hora_cierre, cerrado')
+      .eq('negocio_id', negocio.id)
+      .order('dia_semana')
+      .then(({ data, error }) => {
+        if (!activo) return;
+        if (error) {
+          console.error('Error cargando horarios:', error);
+          setHorarios(horarioPorDefecto());
+          return;
+        }
+        if (!data || data.length === 0) {
+          setHorarios(horarioPorDefecto());
+          return;
+        }
+        setHorarios(
+          data.map((f) => ({
+            diaSemana: f.dia_semana,
+            horaApertura: f.hora_apertura ? f.hora_apertura.slice(0, 5) : null,
+            horaCierre: f.hora_cierre ? f.hora_cierre.slice(0, 5) : null,
+            cerrado: f.cerrado,
+          }))
+        );
+      });
+
+    return () => { activo = false; };
+  }, [negocio?.id]);
 
   const registrar = useCallback(async (datos) => {
     if (!usuarioId) {
@@ -191,9 +238,29 @@ export function useNegocio(usuarioId) {
   }, [negocio]);
 
   // Pendientes de migrar en pasos siguientes (horarios, fotos, productos, QR):
-  const actualizarHorarios = useCallback(() => {
-    console.warn('actualizarHorarios: pendiente de migrar a Supabase.');
-  }, []);
+  const actualizarHorarios = useCallback(async (nuevosHorarios) => {
+    if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
+
+    const filas = nuevosHorarios.map((h) => ({
+      negocio_id: negocio.id,
+      dia_semana: h.diaSemana,
+      hora_apertura: h.cerrado ? null : h.horaApertura,
+      hora_cierre: h.cerrado ? null : h.horaCierre,
+      cerrado: h.cerrado,
+    }));
+
+    const { error } = await supabase
+      .from('negocio_horario')
+      .upsert(filas, { onConflict: 'negocio_id,dia_semana' });
+
+    if (error) {
+      console.error('Error guardando horarios:', error);
+      return { exito: false, mensaje: 'No se pudo guardar. Intenta de nuevo.' };
+    }
+
+    setHorarios(nuevosHorarios);
+    return { exito: true };
+  }, [negocio]);
   const agregarProducto = useCallback(() => {
     console.warn('agregarProducto: pendiente de migrar a Supabase.');
   }, []);
@@ -207,6 +274,7 @@ export function useNegocio(usuarioId) {
   return {
     negocio,
     cargando,
+    horarios,
     registrar,
     simularAprobar,
     simularRechazar,

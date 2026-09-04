@@ -58,6 +58,7 @@ function App() {
   const { sellos, sellar } = useSellos();
   const {
     negocio,
+    horarios,
     registrar,
     simularAprobar,
     simularRechazar,
@@ -559,6 +560,7 @@ function App() {
     return (
       <PerfilNegocio
         negocio={negocio}
+        horarios={horarios}
         onNavigate={cambiarPantalla}
         onActualizarHorarios={actualizarHorarios}
         onActualizarUbicacion={actualizarUbicacion}
