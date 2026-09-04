@@ -7,6 +7,8 @@ const NOMBRES_DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Vier
 
 function PerfilNegocioPublico({ negocio, onCerrar }) {
   const [horarios, setHorarios] = useState([]);
+  const [fotos, setFotos] = useState([]);
+  const [productos, setProductos] = useState([]);
 
   useEffect(() => {
     if (!negocio?.id) {
@@ -26,6 +28,52 @@ function PerfilNegocioPublico({ negocio, onCerrar }) {
           setHorarios([]);
         } else {
           setHorarios(data || []);
+        }
+      });
+    return () => { activo = false; };
+  }, [negocio?.id]);
+
+  useEffect(() => {
+    if (!negocio?.id) {
+      setFotos([]);
+      return undefined;
+    }
+    let activo = true;
+    supabase
+      .from('negocio_foto')
+      .select('url')
+      .eq('negocio_id', negocio.id)
+      .order('orden')
+      .then(({ data, error }) => {
+        if (!activo) return;
+        if (error) {
+          console.error('Error cargando fotos públicas:', error);
+          setFotos([]);
+        } else {
+          setFotos(data || []);
+        }
+      });
+    return () => { activo = false; };
+  }, [negocio?.id]);
+
+  useEffect(() => {
+    if (!negocio?.id) {
+      setProductos([]);
+      return undefined;
+    }
+    let activo = true;
+    supabase
+      .from('producto')
+      .select('id, nombre, orden')
+      .eq('negocio_id', negocio.id)
+      .order('orden')
+      .then(({ data, error }) => {
+        if (!activo) return;
+        if (error) {
+          console.error('Error cargando productos públicos:', error);
+          setProductos([]);
+        } else {
+          setProductos(data || []);
         }
       });
     return () => { activo = false; };
@@ -55,6 +103,13 @@ function PerfilNegocioPublico({ negocio, onCerrar }) {
         {negocio.telefono && (
           <p className="perfilpublico-telefono">📞 {negocio.telefono}</p>
         )}
+        {fotos.length > 0 && (
+          <div className="perfilpublico-fotos">
+            {fotos.map((f, i) => (
+              <img key={i} src={f.url} alt={`Foto ${i + 1} de ${negocio.name}`} />
+            ))}
+          </div>
+        )}
         {horarios.length > 0 && (
           <ul className="perfilpublico-horarios">
             {horarios.map((h) => (
@@ -67,9 +122,15 @@ function PerfilNegocioPublico({ negocio, onCerrar }) {
             ))}
           </ul>
         )}
-        <p className="perfilpublico-nota">
-          Fotos y productos próximamente.
-        </p>
+        {productos.length > 0 && (
+          <div className="perfilpublico-productos">
+            {productos.map((p) => (
+              <span key={p.id} className="perfilpublico-producto-chip">
+                {p.nombre}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
