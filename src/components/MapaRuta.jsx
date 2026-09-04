@@ -9,6 +9,9 @@ import RutaCalculada from './RutaCalculada';
 import PanelSitio from './PanelSitio';
 import HistoriaSitio from './HistoriaSitio';
 import { useGuardados } from '../hooks/useGuardados';
+import { useNegociosActivos } from '../hooks/useNegociosActivos';
+import PanelNegocio from './PanelNegocio';
+import PerfilNegocioPublico from './PerfilNegocioPublico';
 
 const RADIO_GEOFENCE_METROS = 80;
 
@@ -21,6 +24,16 @@ const iconoUbicacion = L.divIcon({
   `,
   iconSize: [60, 60],
   iconAnchor: [30, 30],
+});
+
+const iconoNegocio = L.divIcon({
+  className: 'negocio-marcador-icono',
+  html: `<svg viewBox="0 0 24 32" width="28" height="36">
+    <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z" fill="var(--color-coral)"/>
+    <circle cx="12" cy="12" r="5" fill="white"/>
+  </svg>`,
+  iconSize: [28, 36],
+  iconAnchor: [14, 36],
 });
 
 function normalizarTexto(s) {
@@ -85,6 +98,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
   const mapRef = useRef(null);
   const { ubicacion, error } = useUbicacionActual();
   const { estaGuardado: estaGuardadoSupabase, toggleGuardar } = useGuardados(usuarioId);
+  const { negocios } = useNegociosActivos();
   const [busqueda, setBusqueda] = useState('');
 
   const resultadosBusqueda = busqueda.trim()
@@ -100,6 +114,8 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
   };
 
   const [sitioSeleccionado, setSitioSeleccionado] = useState(null);
+  const [negocioSeleccionado, setNegocioSeleccionado] = useState(null);
+  const [negocioPerfilPublico, setNegocioPerfilPublico] = useState(null);
   const [sitioHistoria, setSitioHistoria] = useState(null);
   const [destinoRuta, setDestinoRuta] = useState(null);
   const [origenRuta, setOrigenRuta] = useState(null);
@@ -248,6 +264,17 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
           />
         ))}
 
+        {negocios.map(negocio => (
+          <Marker
+            key={`negocio-${negocio.id}`}
+            position={negocio.position}
+            icon={iconoNegocio}
+            eventHandlers={{
+              click: () => setNegocioSeleccionado(negocio),
+            }}
+          />
+        ))}
+
         {ubicacion && (
           <Marker position={[ubicacion.lat, ubicacion.lng]} icon={iconoUbicacion} zIndexOffset={1000} />
         )}
@@ -311,9 +338,34 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
         onHistoria={(sitio) => setSitioHistoria(sitio)}
       />
 
+      <PanelNegocio
+        negocio={negocioSeleccionado}
+        estaGuardado={negocioSeleccionado ? estaGuardadoSupabase('negocio', negocioSeleccionado.id) : false}
+        onCerrar={() => setNegocioSeleccionado(null)}
+        onComoLlegar={(negocio) => {
+          comoLlegar(negocio);
+          setNegocioSeleccionado(null);
+        }}
+        onGuardar={async (negocio) => {
+          const resultado = await toggleGuardar('negocio', negocio.id, { nombre: negocio.name });
+          if (!resultado.exito) {
+            console.error('Error al guardar negocio:', resultado.mensaje);
+          }
+        }}
+        onVerPerfil={(negocio) => {
+          setNegocioPerfilPublico(negocio);
+          setNegocioSeleccionado(null);
+        }}
+      />
+
       <HistoriaSitio
         sitio={sitioHistoria}
         onCerrar={() => setSitioHistoria(null)}
+      />
+
+      <PerfilNegocioPublico
+        negocio={negocioPerfilPublico}
+        onCerrar={() => setNegocioPerfilPublico(null)}
       />
 
       <button

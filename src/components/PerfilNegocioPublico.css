@@ -1,0 +1,25 @@
+/* =========================================================
+   PerfilNegocioPublico — ficha de solo lectura del turista.
+   Reusa el layout de HistoriaSitio.css; acá solo lo específico.
+   Tokens de src/index.css.
+   ========================================================= */
+
+.perfilpublico-categoria {
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85); /* va sobre el hero azul */
+}
+
+.perfilpublico-telefono {
+  margin: 8px 0 0;
+  font-size: 1rem;
+  color: var(--color-text);
+}
+
+.perfilpublico-nota {
+  margin: 28px 0 0;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--color-text-muted);
+}
