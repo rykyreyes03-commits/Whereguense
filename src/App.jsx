@@ -66,7 +66,7 @@ function App() {
     agregarProducto,
     eliminarProducto,
     generarQR,
-  } = useNegocio();
+  } = useNegocio(usuarioActual?.id);
   const {
     desbloqueados,
     seleccion,
@@ -504,9 +504,13 @@ function App() {
     return (
       <RegistroNegocio
         onVolver={() => cambiarPantalla('proposito')}
-        onRegistrar={(datos) => {
-          registrar(datos);
-          cambiarPantalla('registroEnviado');
+        onRegistrar={async (datos) => {
+          const resultado = await registrar(datos);
+          if (resultado.exito) {
+            cambiarPantalla('registroEnviado');
+          } else {
+            window.alert(resultado.mensaje);
+          }
         }}
       />
     );
@@ -526,11 +530,20 @@ function App() {
       <EstadoNegocio
         vista={negocio?.estado === 'rechazado' ? 'rechazado' : 'pendiente'}
         motivoRechazo={negocio?.motivoRechazo}
-        onSimularAprobar={() => {
-          simularAprobar();
-          cambiarPantalla('perfilNegocio');
+        onSimularAprobar={async () => {
+          const resultado = await simularAprobar();
+          if (resultado.exito) {
+            cambiarPantalla('perfilNegocio');
+          } else {
+            window.alert(resultado.mensaje);
+          }
         }}
-        onSimularRechazar={(motivo) => simularRechazar(motivo)}
+        onSimularRechazar={async (motivo) => {
+          const resultado = await simularRechazar(motivo);
+          if (!resultado.exito) {
+            window.alert(resultado.mensaje);
+          }
+        }}
         onCorregir={() => cambiarPantalla('registroNegocio')}
       />
     );

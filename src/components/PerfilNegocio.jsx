@@ -96,9 +96,13 @@ function PerfilNegocio({
       <SeleccionUbicacion
         ubicacionInicial={negocio?.ubicacion}
         onCancelar={() => setMostrandoMapa(false)}
-        onConfirmar={(punto) => {
-          onActualizarUbicacion(punto);
-          setMostrandoMapa(false);
+        onConfirmar={async (punto) => {
+          const resultado = await onActualizarUbicacion(punto);
+          if (resultado?.exito) {
+            setMostrandoMapa(false);
+          } else {
+            window.alert(resultado?.mensaje || 'No se pudo actualizar la ubicación.');
+          }
         }}
       />
     );
