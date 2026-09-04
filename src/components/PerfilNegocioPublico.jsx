@@ -97,38 +97,52 @@ function PerfilNegocioPublico({ negocio, onCerrar }) {
       </div>
 
       <div className="historia-sitio-contenido">
-        <p className="historia-sitio-texto">
-          {negocio.descripcion || 'Este negocio aún no agregó una descripción.'}
-        </p>
-        {negocio.telefono && (
-          <p className="perfilpublico-telefono">📞 {negocio.telefono}</p>
-        )}
+        <div className="perfilpublico-card">
+          <p className="historia-sitio-texto">
+            {negocio.descripcion || 'Este negocio aún no agregó una descripción.'}
+          </p>
+          {negocio.telefono && (
+            <p className="perfilpublico-telefono">📞 {negocio.telefono}</p>
+          )}
+        </div>
+
         {fotos.length > 0 && (
-          <div className="perfilpublico-fotos">
-            {fotos.map((f, i) => (
-              <img key={i} src={f.url} alt={`Foto ${i + 1} de ${negocio.name}`} />
-            ))}
+          <div className="perfilpublico-card">
+            <h3 className="perfilpublico-seccion-titulo">Fotos</h3>
+            <div className="perfilpublico-fotos">
+              {fotos.map((f, i) => (
+                <img key={i} src={f.url} alt={`Foto ${i + 1} de ${negocio.name}`} />
+              ))}
+            </div>
           </div>
         )}
+
         {horarios.length > 0 && (
-          <ul className="perfilpublico-horarios">
-            {horarios.map((h) => (
-              <li key={h.dia_semana}>
-                <span>{NOMBRES_DIA[h.dia_semana]}</span>
-                <strong>
-                  {h.cerrado ? 'Cerrado' : `${h.hora_apertura?.slice(0, 5)} – ${h.hora_cierre?.slice(0, 5)}`}
-                </strong>
-              </li>
-            ))}
-          </ul>
+          <div className="perfilpublico-card">
+            <h3 className="perfilpublico-seccion-titulo">Horarios</h3>
+            <ul className="perfilpublico-horarios">
+              {horarios.map((h) => (
+                <li key={h.dia_semana}>
+                  <span>{NOMBRES_DIA[h.dia_semana]}</span>
+                  <strong>
+                    {h.cerrado ? 'Cerrado' : `${h.hora_apertura?.slice(0, 5)} – ${h.hora_cierre?.slice(0, 5)}`}
+                  </strong>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
+
         {productos.length > 0 && (
-          <div className="perfilpublico-productos">
-            {productos.map((p) => (
-              <span key={p.id} className="perfilpublico-producto-chip">
-                {p.nombre}
-              </span>
-            ))}
+          <div className="perfilpublico-card">
+            <h3 className="perfilpublico-seccion-titulo">Productos</h3>
+            <div className="perfilpublico-productos">
+              {productos.map((p) => (
+                <span key={p.id} className="perfilpublico-producto-chip">
+                  {p.nombre}
+                </span>
+              ))}
+            </div>
           </div>
         )}
       </div>

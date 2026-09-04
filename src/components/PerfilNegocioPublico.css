@@ -11,6 +11,23 @@
   color: rgba(255, 255, 255, 0.85); /* va sobre el hero azul */
 }
 
+.perfilpublico-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.perfilpublico-seccion-titulo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-navy);
+  margin: 0 0 8px;
+}
+
 .perfilpublico-telefono {
   margin: 8px 0 0;
   font-size: 1rem;
@@ -21,7 +38,6 @@
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  margin: 16px 0;
   padding-bottom: 4px;
 }
 .perfilpublico-fotos img {
@@ -33,7 +49,7 @@
 }
 
 .perfilpublico-horarios {
-  margin: 16px 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -45,25 +61,18 @@
   color: var(--color-text);
 }
 
-.perfilpublico-nota {
-  margin: 28px 0 0;
-  font-size: 0.8rem;
-  font-style: italic;
-  color: var(--color-text-muted);
-}
-
 .perfilpublico-productos {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 20px 0 0;
 }
 .perfilpublico-producto-chip {
   display: inline-block;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--color-ultramarine);
+  border: none;
   font-size: 0.85rem;
-  color: var(--color-primary);
+  font-weight: 600;
+  color: #fff;
 }
