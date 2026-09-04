@@ -8,48 +8,7 @@ const NOMBRES_DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Vier
 const CATEGORIAS = ['Cafetería', 'Restaurante', 'Arte', 'Artesanía', 'Hospedaje', 'Otro'];
 
 const MAX_FOTOS = 6;
-const FOTO_MAX_PX = 480;
-
-function leerJSON(clave, porDefecto) {
-  try {
-    const v = JSON.parse(localStorage.getItem(clave));
-    return v ?? porDefecto;
-  } catch (error) {
-    console.error(`Error leyendo ${clave}:`, error);
-    return porDefecto;
-  }
-}
-
-function guardarJSON(clave, valor) {
-  try {
-    localStorage.setItem(clave, JSON.stringify(valor));
-  } catch (error) {
-    console.error(`Error guardando ${clave}:`, error);
-  }
-}
-
-function redimensionarImagen(file, maxPx) {
-  return new Promise((resolve, reject) => {
-    const lector = new FileReader();
-    lector.onerror = () => reject(new Error('No se pudo leer el archivo.'));
-    lector.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error('El archivo no es una imagen válida.'));
-      img.onload = () => {
-        const escala = Math.min(1, maxPx / Math.max(img.width, img.height));
-        const w = Math.round(img.width * escala);
-        const h = Math.round(img.height * escala);
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.82));
-      };
-      img.src = lector.result;
-    };
-    lector.readAsDataURL(file);
-  });
-}
+const TAMANO_MAX_MB = 5;
 
 function diasRestantesAnioGratis(fechaEnvio) {
   if (!fechaEnvio) return null;
@@ -62,16 +21,18 @@ function diasRestantesAnioGratis(fechaEnvio) {
 function PerfilNegocio({
   negocio,
   horarios,
+  fotos,
+  productos,
   onNavigate,
   onActualizarHorarios,
   onActualizarUbicacion,
   onActualizarPerfil,
   onSubirLogo,
+  onSubirFoto,
+  onEliminarFoto,
   onAgregarProducto,
   onEliminarProducto,
 }) {
-  const [fotos, setFotos] = useState(() => leerJSON('negocioFotos', []));
-
   const [editandoPerfil, setEditandoPerfil] = useState(false);
   const [borradorPerfil, setBorradorPerfil] = useState({});
 
@@ -172,33 +133,49 @@ function PerfilNegocio({
     if (archivos.length === 0) return;
     const espacio = MAX_FOTOS - fotos.length;
     if (espacio <= 0) return;
-    try {
-      const nuevas = await Promise.all(
-        archivos.slice(0, espacio).map((f) => redimensionarImagen(f, FOTO_MAX_PX))
-      );
-      const siguiente = [...fotos, ...nuevas];
-      setFotos(siguiente);
-      guardarJSON('negocioFotos', siguiente);
-    } catch (err) {
-      console.error(err);
-      window.alert('Alguna imagen no se pudo procesar. Prueba con otras.');
+
+    const archivosValidos = archivos.slice(0, espacio).filter((f) => {
+      const tamanoMB = f.size / (1024 * 1024);
+      if (tamanoMB > TAMANO_MAX_MB) {
+        window.alert(`"${f.name}" pesa demasiado (máximo ${TAMANO_MAX_MB} MB). Prueba con una foto más liviana.`);
+        return false;
+      }
+      return true;
+    });
+
+    for (const file of archivosValidos) {
+      const resultado = await onSubirFoto(file);
+      if (!resultado.exito) {
+        window.alert(resultado.mensaje);
+        break;
+      }
     }
   };
 
-  const quitarFoto = (indice) => {
-    const siguiente = fotos.filter((_, i) => i !== indice);
-    setFotos(siguiente);
-    guardarJSON('negocioFotos', siguiente);
+  const quitarFoto = async (fotoId) => {
+    const resultado = await onEliminarFoto(fotoId);
+    if (!resultado.exito) {
+      window.alert(resultado.mensaje);
+    }
   };
 
-  const handleAgregarProducto = () => {
+  const handleAgregarProducto = async () => {
     const valor = nuevoProducto.trim();
     if (!valor) return;
-    onAgregarProducto(valor);
+    const resultado = await onAgregarProducto(valor);
+    if (!resultado.exito) {
+      window.alert(resultado.mensaje);
+      return;
+    }
     setNuevoProducto('');
   };
 
-  const productos = negocio?.productos || [];
+  const quitarProducto = async (productoId) => {
+    const resultado = await onEliminarProducto(productoId);
+    if (!resultado.exito) {
+      window.alert(resultado.mensaje);
+    }
+  };
 
   return (
     <div className="perfilnegocio-wrapper">
@@ -407,13 +384,13 @@ function PerfilNegocio({
 
           {fotos.length > 0 ? (
             <div className="perfilnegocio-fotos-grid">
-              {fotos.map((src, i) => (
-                <div key={i} className="perfilnegocio-foto">
-                  <img src={src} alt={`Foto ${i + 1} del negocio`} />
+              {fotos.map((foto, i) => (
+                <div key={foto.id} className="perfilnegocio-foto">
+                  <img src={foto.url} alt={`Foto ${i + 1} del negocio`} />
                   <button
                     type="button"
                     className="perfilnegocio-foto-quitar"
-                    onClick={() => quitarFoto(i)}
+                    onClick={() => quitarFoto(foto.id)}
                     aria-label={`Quitar foto ${i + 1}`}
                   >
                     ✕
@@ -454,7 +431,7 @@ function PerfilNegocio({
                   {p.nombre}
                   <button
                     className="perfilnegocio-producto-quitar"
-                    onClick={() => onEliminarProducto(p.id)}
+                    onClick={() => quitarProducto(p.id)}
                     aria-label={`Quitar ${p.nombre}`}
                     type="button"
                   >

@@ -30,6 +30,8 @@ export function useNegocio(usuarioId) {
   const [negocio, setNegocio] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [horarios, setHorarios] = useState([]);
+  const [fotos, setFotos] = useState([]);
+  const [productos, setProductos] = useState([]);
 
   useEffect(() => {
     if (!usuarioId) {
@@ -93,6 +95,55 @@ export function useNegocio(usuarioId) {
         );
       });
 
+    return () => { activo = false; };
+  }, [negocio?.id]);
+
+  useEffect(() => {
+    if (!negocio?.id) {
+      setFotos([]);
+      return undefined;
+    }
+
+    let activo = true;
+
+    supabase
+      .from('negocio_foto')
+      .select('id, url, tipo, orden')
+      .eq('negocio_id', negocio.id)
+      .order('orden')
+      .then(({ data, error }) => {
+        if (!activo) return;
+        if (error) {
+          console.error('Error cargando fotos:', error);
+          setFotos([]);
+        } else {
+          setFotos(data || []);
+        }
+      });
+
+    return () => { activo = false; };
+  }, [negocio?.id]);
+
+  useEffect(() => {
+    if (!negocio?.id) {
+      setProductos([]);
+      return undefined;
+    }
+    let activo = true;
+    supabase
+      .from('producto')
+      .select('id, nombre, orden')
+      .eq('negocio_id', negocio.id)
+      .order('orden')
+      .then(({ data, error }) => {
+        if (!activo) return;
+        if (error) {
+          console.error('Error cargando productos:', error);
+          setProductos([]);
+        } else {
+          setProductos(data || []);
+        }
+      });
     return () => { activo = false; };
   }, [negocio?.id]);
 
@@ -237,6 +288,57 @@ export function useNegocio(usuarioId) {
     return { exito: true };
   }, [negocio]);
 
+  const subirFoto = useCallback(async (usuarioId, file) => {
+    if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
+
+    const extension = file.name.split('.').pop();
+    const ruta = `${usuarioId}/fotos/${Date.now()}.${extension}`;
+
+    const { error: errorSubida } = await supabase.storage
+      .from('negocios')
+      .upload(ruta, file);
+
+    if (errorSubida) {
+      console.error('Error subiendo foto:', errorSubida);
+      return { exito: false, mensaje: 'No se pudo subir la foto. Intenta de nuevo.' };
+    }
+
+    const { data: urlPublica } = supabase.storage.from('negocios').getPublicUrl(ruta);
+
+    const { data, error } = await supabase
+      .from('negocio_foto')
+      .insert({
+        negocio_id: negocio.id,
+        url: urlPublica.publicUrl,
+        orden: fotos.length,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error guardando foto:', error);
+      return { exito: false, mensaje: 'La foto se subió pero no se pudo guardar. Intenta de nuevo.' };
+    }
+
+    setFotos((prev) => [...prev, data]);
+    return { exito: true };
+  }, [negocio, fotos]);
+
+  const eliminarFoto = useCallback(async (fotoId) => {
+    const { error } = await supabase
+      .from('negocio_foto')
+      .delete()
+      .eq('id', fotoId);
+
+    if (error) {
+      console.error('Error eliminando foto:', error);
+      return { exito: false, mensaje: 'No se pudo quitar la foto. Intenta de nuevo.' };
+    }
+
+    setFotos((prev) => prev.filter((f) => f.id !== fotoId));
+    return { exito: true };
+  }, []);
+
   // Pendientes de migrar en pasos siguientes (horarios, fotos, productos, QR):
   const actualizarHorarios = useCallback(async (nuevosHorarios) => {
     if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
@@ -261,11 +363,41 @@ export function useNegocio(usuarioId) {
     setHorarios(nuevosHorarios);
     return { exito: true };
   }, [negocio]);
-  const agregarProducto = useCallback(() => {
-    console.warn('agregarProducto: pendiente de migrar a Supabase.');
-  }, []);
-  const eliminarProducto = useCallback(() => {
-    console.warn('eliminarProducto: pendiente de migrar a Supabase.');
+  const agregarProducto = useCallback(async (nombre) => {
+    if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
+
+    const { data, error } = await supabase
+      .from('producto')
+      .insert({
+        negocio_id: negocio.id,
+        nombre,
+        orden: productos.length,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error guardando producto:', error);
+      return { exito: false, mensaje: 'No se pudo guardar el producto. Intenta de nuevo.' };
+    }
+
+    setProductos((prev) => [...prev, data]);
+    return { exito: true };
+  }, [negocio, productos]);
+
+  const eliminarProducto = useCallback(async (productoId) => {
+    const { error } = await supabase
+      .from('producto')
+      .delete()
+      .eq('id', productoId);
+
+    if (error) {
+      console.error('Error eliminando producto:', error);
+      return { exito: false, mensaje: 'No se pudo quitar el producto. Intenta de nuevo.' };
+    }
+
+    setProductos((prev) => prev.filter((p) => p.id !== productoId));
+    return { exito: true };
   }, []);
   const generarQR = useCallback(() => {
     console.warn('generarQR: pendiente de migrar a Supabase.');
@@ -275,6 +407,8 @@ export function useNegocio(usuarioId) {
     negocio,
     cargando,
     horarios,
+    fotos,
+    productos,
     registrar,
     simularAprobar,
     simularRechazar,
@@ -282,6 +416,8 @@ export function useNegocio(usuarioId) {
     actualizarUbicacion,
     actualizarPerfil,
     subirLogo,
+    subirFoto,
+    eliminarFoto,
     agregarProducto,
     eliminarProducto,
     generarQR,

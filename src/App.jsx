@@ -59,6 +59,8 @@ function App() {
   const {
     negocio,
     horarios,
+    fotos,
+    productos,
     registrar,
     simularAprobar,
     simularRechazar,
@@ -66,6 +68,8 @@ function App() {
     actualizarUbicacion,
     actualizarPerfil,
     subirLogo,
+    subirFoto,
+    eliminarFoto,
     agregarProducto,
     eliminarProducto,
     generarQR,
@@ -561,11 +565,15 @@ function App() {
       <PerfilNegocio
         negocio={negocio}
         horarios={horarios}
+        fotos={fotos}
+        productos={productos}
         onNavigate={cambiarPantalla}
         onActualizarHorarios={actualizarHorarios}
         onActualizarUbicacion={actualizarUbicacion}
         onActualizarPerfil={actualizarPerfil}
         onSubirLogo={(file) => subirLogo(usuarioActual?.id, file)}
+        onSubirFoto={(file) => subirFoto(usuarioActual?.id, file)}
+        onEliminarFoto={eliminarFoto}
         onAgregarProducto={agregarProducto}
         onEliminarProducto={eliminarProducto}
       />
