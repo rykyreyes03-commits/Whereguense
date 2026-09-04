@@ -72,7 +72,9 @@ function App() {
     eliminarFoto,
     agregarProducto,
     eliminarProducto,
-    generarQR,
+    actividadesQR,
+    crearActividadQR,
+    eliminarActividadQR,
   } = useNegocio(usuarioActual?.id);
   const {
     desbloqueados,
@@ -582,7 +584,12 @@ function App() {
 
   if (pantalla === 'generarQR') {
     return (
-      <GenerarQR negocio={negocio} onGenerarQR={generarQR} onNavigate={cambiarPantalla} />
+      <GenerarQR
+        actividadesQR={actividadesQR}
+        onCrearActividad={crearActividadQR}
+        onEliminarActividad={eliminarActividadQR}
+        onNavigate={cambiarPantalla}
+      />
     );
   }
 

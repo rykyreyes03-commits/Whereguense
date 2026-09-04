@@ -32,6 +32,7 @@ export function useNegocio(usuarioId) {
   const [horarios, setHorarios] = useState([]);
   const [fotos, setFotos] = useState([]);
   const [productos, setProductos] = useState([]);
+  const [actividadesQR, setActividadesQR] = useState([]);
 
   useEffect(() => {
     if (!usuarioId) {
@@ -142,6 +143,29 @@ export function useNegocio(usuarioId) {
           setProductos([]);
         } else {
           setProductos(data || []);
+        }
+      });
+    return () => { activo = false; };
+  }, [negocio?.id]);
+
+  useEffect(() => {
+    if (!negocio?.id) {
+      setActividadesQR([]);
+      return undefined;
+    }
+    let activo = true;
+    supabase
+      .from('qr_sello')
+      .select('id, token, nombre_actividad, color, fecha_creacion, fecha_expiracion, limite_canjes')
+      .eq('negocio_id', negocio.id)
+      .order('fecha_creacion', { ascending: false })
+      .then(({ data, error }) => {
+        if (!activo) return;
+        if (error) {
+          console.error('Error cargando actividades QR:', error);
+          setActividadesQR([]);
+        } else {
+          setActividadesQR(data || []);
         }
       });
     return () => { activo = false; };
@@ -399,8 +423,68 @@ export function useNegocio(usuarioId) {
     setProductos((prev) => prev.filter((p) => p.id !== productoId));
     return { exito: true };
   }, []);
-  const generarQR = useCallback(() => {
-    console.warn('generarQR: pendiente de migrar a Supabase.');
+  const crearActividadQR = useCallback(async ({ nombre, color, limiteCanjes, fechaExpiracion }) => {
+    if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
+
+    const token = Math.random().toString(36).slice(2, 10).toUpperCase();
+
+    const { data, error } = await supabase
+      .from('qr_sello')
+      .insert({
+        negocio_id: negocio.id,
+        token,
+        nombre_actividad: nombre,
+        color,
+        limite_canjes: limiteCanjes || null,
+        fecha_expiracion: fechaExpiracion || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creando actividad QR:', error);
+      return { exito: false, mensaje: 'No se pudo crear la actividad. Intenta de nuevo.' };
+    }
+
+    setActividadesQR((prev) => [data, ...prev]);
+
+    if (fechaExpiracion) {
+      const { error: errorEvento } = await supabase
+        .from('evento')
+        .insert({
+          negocio_organizador_id: negocio.id,
+          nombre,
+          fecha_inicio: new Date().toISOString().slice(0, 10),
+          fecha_fin: fechaExpiracion,
+          ubicacion: negocio.nombre,
+          descripcion: `Actividad de sello: ${nombre}`,
+        });
+
+      if (errorEvento) {
+        console.error('Error creando evento para la actividad QR:', errorEvento);
+        // No bloqueamos el éxito de la actividad por esto: qr_sello ya se creó bien.
+      }
+    }
+
+    return { exito: true };
+  }, [negocio]);
+
+  const eliminarActividadQR = useCallback(async (id) => {
+    const { error } = await supabase
+      .from('qr_sello')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error eliminando actividad QR:', error);
+      if (error.code === '23503') {
+        return { exito: false, mensaje: 'No se puede eliminar: esta actividad ya tiene sellos canjeados.' };
+      }
+      return { exito: false, mensaje: 'No se pudo eliminar la actividad. Intenta de nuevo.' };
+    }
+
+    setActividadesQR((prev) => prev.filter((a) => a.id !== id));
+    return { exito: true };
   }, []);
 
   return {
@@ -420,6 +504,8 @@ export function useNegocio(usuarioId) {
     eliminarFoto,
     agregarProducto,
     eliminarProducto,
-    generarQR,
+    actividadesQR,
+    crearActividadQR,
+    eliminarActividadQR,
   };
 }
