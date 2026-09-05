@@ -5,6 +5,7 @@ import LandingNavbar from './components/LandingNavbar';
 import LandingEventos from './components/LandingEventos';
 import LandingMapas from './components/LandingMapas';
 import LandingRutaDetalle from './components/LandingRutaDetalle';
+import DatosPerfil from './components/DatosPerfil';
 import Onboarding from './components/Onboarding';
 import Login from './components/Login';
 import Proposito from './components/Proposito';
@@ -53,6 +54,8 @@ function App() {
   const [cargandoUsuario, setCargandoUsuario] = useState(false);
   const [guardandoDanzante, setGuardandoDanzante] = useState(false);
   const [errorDanzante, setErrorDanzante] = useState(null);
+  const [guardandoDatosPerfil, setGuardandoDatosPerfil] = useState(false);
+  const [errorDatosPerfil, setErrorDatosPerfil] = useState(null);
   const rutaAplicadaRef = useRef(false);
   const authCargando = !authInicializada || cargandoUsuario;
   const [rutaActivaId, setRutaActivaId] = useState(null);
@@ -254,7 +257,78 @@ function App() {
   };
 
   const handleTerminarOnboarding = () => {
+    setPantalla('datosPerfil');
+  };
+
+  const handleGuardarDatosPerfil = async (datos) => {
+    setErrorDatosPerfil(null);
+    setGuardandoDatosPerfil(true);
+
+    if (usuarioActual) {
+      const { error } = await supabase
+        .from('usuario')
+        .update({
+          nombre_usuario: datos.nombre,
+          pais: datos.pais || null,
+          idioma_preferido: datos.idioma,
+        })
+        .eq('id', usuarioActual.id);
+
+      setGuardandoDatosPerfil(false);
+
+      if (error) {
+        console.error('Error guardando datos de perfil:', error);
+        if (error.code === '23505') {
+          setErrorDatosPerfil('Ese nombre de usuario ya está en uso. Elige otro.');
+        } else {
+          setErrorDatosPerfil('No se pudo guardar tu información. Intenta de nuevo.');
+        }
+        return;
+      }
+
+      setUsuarioActual((u) =>
+        u ? { ...u, nombre_usuario: datos.nombre, pais: datos.pais, idioma_preferido: datos.idioma } : u
+      );
+    } else {
+      setGuardandoDatosPerfil(false);
+      try {
+        localStorage.setItem('perfilUsuario', JSON.stringify({
+          nombre: datos.nombre,
+          pais: datos.pais,
+          idioma: datos.idioma,
+        }));
+      } catch (e) {
+        console.error('Error guardando perfil local:', e);
+      }
+    }
+
     setPantalla('danzante');
+  };
+
+  const handleActualizarPerfilUsuario = async (datos) => {
+    if (!usuarioActual) return { exito: false, mensaje: 'Necesitas iniciar sesión.' };
+
+    const { error } = await supabase
+      .from('usuario')
+      .update({
+        nombre_usuario: datos.nombre,
+        pais: datos.pais || null,
+        idioma_preferido: datos.idioma,
+      })
+      .eq('id', usuarioActual.id);
+
+    if (error) {
+      console.error('Error actualizando perfil:', error);
+      if (error.code === '23505') {
+        return { exito: false, mensaje: 'Ese nombre de usuario ya está en uso. Elige otro.' };
+      }
+      return { exito: false, mensaje: 'No se pudo guardar tu perfil. Intenta de nuevo.' };
+    }
+
+    setUsuarioActual((u) =>
+      u ? { ...u, nombre_usuario: datos.nombre, pais: datos.pais, idioma_preferido: datos.idioma } : u
+    );
+    return { exito: true };
   };
 
   const handleElegirDanzante = async (avatar) => {
@@ -376,6 +450,22 @@ function App() {
     return <Onboarding onTerminar={handleTerminarOnboarding} />;
   }
 
+  if (pantalla === 'datosPerfil') {
+    return (
+      <DatosPerfil
+        valorInicial={{
+          nombre: usuarioActual?.nombre_usuario || '',
+          pais: usuarioActual?.pais || '',
+          idioma: usuarioActual?.idioma_preferido || 'es',
+        }}
+        onContinuar={handleGuardarDatosPerfil}
+        onVolverALanding={() => setPantalla('landing')}
+        guardando={guardandoDatosPerfil}
+        error={errorDatosPerfil}
+      />
+    );
+  }
+
   if (pantalla === 'danzante') {
     return (
       <SeleccionDanzante
@@ -481,6 +571,8 @@ function App() {
         total={sitios.length}
         onNavigate={cambiarPantalla}
         onCerrarSesion={handleCerrarSesionGlobal}
+        usuarioActual={usuarioActual}
+        onActualizarPerfil={handleActualizarPerfilUsuario}
       />
     );
   }

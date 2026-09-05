@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './Perfil.css';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
@@ -9,8 +9,18 @@ import { obtenerRango } from '../utils/rango';
 const PERFIL_POR_DEFECTO = {
   nombre: 'Invitado',
   pais: '',
-  idioma: 'Español',
+  idioma: 'es',
 };
+
+const IDIOMAS = { es: 'Español', en: 'English' };
+
+function perfilDesdeUsuario(usuarioActual) {
+  return {
+    nombre: usuarioActual.nombre_usuario || 'Invitado',
+    pais: usuarioActual.pais || '',
+    idioma: usuarioActual.idioma_preferido || 'es',
+  };
+}
 
 function cargarPerfil() {
   try {
@@ -67,9 +77,19 @@ function redimensionarImagen(file) {
   });
 }
 
-function Perfil({ sellos, total, onNavigate, onCerrarSesion }) {
-  const [perfil, setPerfil] = useState(cargarPerfil);
+function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onActualizarPerfil }) {
+  const [perfil, setPerfil] = useState(() =>
+    usuarioActual ? perfilDesdeUsuario(usuarioActual) : cargarPerfil()
+  );
+  const [guardandoPerfil, setGuardandoPerfil] = useState(false);
   const [editando, setEditando] = useState(false);
+
+  useEffect(() => {
+    if (usuarioActual) {
+      setPerfil(perfilDesdeUsuario(usuarioActual));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usuarioActual?.nombre_usuario, usuarioActual?.pais, usuarioActual?.idioma_preferido]);
   const [borrador, setBorrador] = useState(perfil);
   const [fotoPerfil, setFotoPerfil] = useState(cargarFoto);
   const inputFotoRef = useRef(null);
@@ -84,13 +104,23 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion }) {
     setEditando(true);
   };
 
-  const handleGuardar = () => {
-    setPerfil(borrador);
-    try {
-      localStorage.setItem('perfilUsuario', JSON.stringify(borrador));
-    } catch (error) {
-      console.error('Error guardando perfil:', error);
+  const handleGuardar = async () => {
+    if (usuarioActual && onActualizarPerfil) {
+      setGuardandoPerfil(true);
+      const resultado = await onActualizarPerfil(borrador);
+      setGuardandoPerfil(false);
+      if (!resultado?.exito) {
+        window.alert(resultado?.mensaje || 'No se pudo guardar tu perfil. Intenta de nuevo.');
+        return;
+      }
+    } else {
+      try {
+        localStorage.setItem('perfilUsuario', JSON.stringify(borrador));
+      } catch (error) {
+        console.error('Error guardando perfil:', error);
+      }
     }
+    setPerfil(borrador);
     setEditando(false);
   };
 
@@ -207,7 +237,7 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion }) {
               </li>
               <li>
                 <span>Idioma preferido</span>
-                <strong>{perfil.idioma}</strong>
+                <strong>{IDIOMAS[perfil.idioma] || perfil.idioma}</strong>
               </li>
             </ul>
           ) : (
@@ -234,16 +264,18 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion }) {
               </label>
               <label>
                 Idioma preferido
-                <input
-                  type="text"
+                <select
                   value={borrador.idioma}
                   onChange={(e) =>
                     setBorrador({ ...borrador, idioma: e.target.value })
                   }
-                />
+                >
+                  <option value="es">Español</option>
+                  <option value="en">English</option>
+                </select>
               </label>
-              <button className="perfil-guardar-btn" onClick={handleGuardar}>
-                Guardar
+              <button className="perfil-guardar-btn" onClick={handleGuardar} disabled={guardandoPerfil}>
+                {guardandoPerfil ? 'Guardando…' : 'Guardar'}
               </button>
             </div>
           )}

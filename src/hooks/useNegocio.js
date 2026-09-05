@@ -182,6 +182,8 @@ export function useNegocio(usuarioId) {
         usuario_id: usuarioId,
         nombre_negocio: datos.nombre,
         categoria: datos.categoria,
+        responsable: datos.responsable || null,
+        cedula_ruc: datos.cedulaRuc || null,
         latitud: datos.ubicacion.lat,
         longitud: datos.ubicacion.lng,
       })
