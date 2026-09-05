@@ -71,5 +71,34 @@ export function useSellos(usuarioId) {
     return { exito: true, mensaje: `¡Sello obtenido en ${sitio.name}!` };
   }, [usuarioId, sellos]);
 
-  return { sellos, sellar };
+  const canjearQR = useCallback(async (token) => {
+    if (!usuarioId) {
+      return { exito: false, mensaje: 'Necesitas iniciar sesión.' };
+    }
+
+    const { data, error } = await supabase.rpc('canjear_qr_sello', { p_token: token });
+
+    if (error) {
+      console.error('Error canjeando QR:', error);
+      return { exito: false, mensaje: 'No se pudo procesar el código. Intenta de nuevo.' };
+    }
+
+    if (!data.exito) {
+      return { exito: false, mensaje: data.mensaje };
+    }
+
+    const { data: filaSello, error: errorFila } = await supabase
+      .from('sello')
+      .select('id, sitio_id, qr_sello_id, tipo, fecha_sello, qr_sello(nombre_actividad)')
+      .eq('id', data.sello_id)
+      .single();
+
+    if (!errorFila && filaSello) {
+      setSellos((prev) => [...prev, mapearSello(filaSello)]);
+    }
+
+    return { exito: true, mensaje: data.mensaje };
+  }, [usuarioId]);
+
+  return { sellos, sellar, canjearQR };
 }
