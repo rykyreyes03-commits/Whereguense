@@ -6,6 +6,7 @@ import LandingEventos from './components/LandingEventos';
 import LandingMapas from './components/LandingMapas';
 import LandingRutaDetalle from './components/LandingRutaDetalle';
 import DatosPerfil from './components/DatosPerfil';
+import OnboardingEmprendedor from './components/OnboardingEmprendedor';
 import Onboarding from './components/Onboarding';
 import Login from './components/Login';
 import Proposito from './components/Proposito';
@@ -625,6 +626,10 @@ function App() {
     );
   }
 
+  if (pantalla === 'onboardingEmprendedor') {
+    return <OnboardingEmprendedor onTerminar={() => cambiarPantalla('registroEnviado')} />;
+  }
+
   if (pantalla === 'registroNegocio') {
     return (
       <RegistroNegocio
@@ -632,7 +637,7 @@ function App() {
         onRegistrar={async (datos) => {
           const resultado = await registrar(datos);
           if (resultado.exito) {
-            cambiarPantalla('registroEnviado');
+            cambiarPantalla('onboardingEmprendedor');
           } else {
             window.alert(resultado.mensaje);
           }
