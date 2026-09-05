@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Landing from './components/Landing';
+import LandingNavbar from './components/LandingNavbar';
+import LandingEventos from './components/LandingEventos';
+import LandingMapas from './components/LandingMapas';
+import LandingRutaDetalle from './components/LandingRutaDetalle';
 import Onboarding from './components/Onboarding';
 import Login from './components/Login';
 import Proposito from './components/Proposito';
@@ -55,7 +59,7 @@ function App() {
   const [eventoActivoId, setEventoActivoId] = useState(null);
   const [sitioSeleccionadoId, setSitioSeleccionadoId] = useState(null);
   const [sitioEnfocadoId, setSitioEnfocadoId] = useState(null);
-  const { sellos, sellar } = useSellos(usuarioActual?.id);
+  const { sellos, sellar, canjearQR } = useSellos(usuarioActual?.id);
   const {
     negocio,
     horarios,
@@ -83,7 +87,7 @@ function App() {
     nivel,
     candidatosPendientes,
     elegirDesbloqueo,
-  } = useAvatarPersonalizado(sellos.length);
+  } = useAvatarPersonalizado(usuarioActual?.id, sellos.length, localStorage.getItem('avatarElegido'));
   const [toastSitio, setToastSitio] = useState(null);
   const [sitioResaltadoPasaporte, setSitioResaltadoPasaporte] = useState(null);
   const [mostrarSubidaNivel, setMostrarSubidaNivel] = useState(false);
@@ -253,15 +257,6 @@ function App() {
     setPantalla('danzante');
   };
 
-  const handleEscaneoQR = async () => {
-    const pendiente = sitios.find(
-      (s) => !sellos.some((sello) => sello.sitioId === s.id)
-    );
-    if (!pendiente) return null;
-    const resultado = await sellar(pendiente);
-    return resultado.exito ? pendiente : null;
-  };
-
   const handleElegirDanzante = async (avatar) => {
     if (!usuarioActual) {
       localStorage.setItem('avatarElegido', avatar);
@@ -321,7 +316,32 @@ function App() {
   }
 
   if (pantalla === 'landing') {
-    return <Landing onComenzar={() => setPantalla('login')} />;
+    return <Landing onComenzar={() => setPantalla('login')} onNavigate={cambiarPantalla} />;
+  }
+
+  if (pantalla === 'landingEventos') {
+    return (
+      <LandingEventos
+        onNavigate={cambiarPantalla}
+        onComenzar={() => cambiarPantalla('login')}
+      />
+    );
+  }
+
+  if (pantalla === 'landingMapas') {
+    return <LandingMapas onNavigate={cambiarPantalla} onComenzar={() => cambiarPantalla('login')} />;
+  }
+
+  if (pantalla === 'landingRuta_dariana') {
+    return <LandingRutaDetalle tipo="dariana" onNavigate={cambiarPantalla} onComenzar={() => cambiarPantalla('login')} />;
+  }
+
+  if (pantalla === 'landingRuta_culturales') {
+    return <LandingRutaDetalle tipo="culturales" onNavigate={cambiarPantalla} onComenzar={() => cambiarPantalla('login')} />;
+  }
+
+  if (pantalla === 'landingRuta_creativos') {
+    return <LandingRutaDetalle tipo="creativos" onNavigate={cambiarPantalla} onComenzar={() => cambiarPantalla('login')} />;
   }
 
   if (pantalla === 'login') {
@@ -346,7 +366,7 @@ function App() {
     return (
       <EscanearQR
         onVolver={() => cambiarPantalla('inicio')}
-        onEscaneoExitoso={handleEscaneoQR}
+        onCanjearQR={canjearQR}
         onNavigate={cambiarPantalla}
       />
     );
