@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './Onboarding.css';
 import avatarCirculo from '../assets/flujo-inicial/avatar_transparente.png';
 import chibiFlanqueado from '../assets/flujo-inicial/chibi_transparente_final.png';
+import logoWheregueense from '../assets/logo_wheregueense.png';
 
 const PASOS = [
   {
@@ -65,7 +66,7 @@ function Onboarding({ onTerminar }) {
       <div className="onboarding-contenido" key={paso}>
         {actual.tipo === 'final' ? (
           <>
-            <h1 className="onboarding-logo">{actual.titulo}</h1>
+            <img src={logoWheregueense} alt={actual.titulo} className="onboarding-logo-img" />
             <p className="onboarding-subtitulo">{actual.subtitulo}</p>
           </>
         ) : (

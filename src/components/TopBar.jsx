@@ -1,5 +1,6 @@
 import './TopBar.css';
 import iconoMenu from '../assets/icons/icono_menu.svg';
+import logoWheregueense from '../assets/logo_wheregueense.png';
 
 function TopBar({ title, onBack, onMenuClick, rightSlot, align = 'left', children }) {
   return (
@@ -14,6 +15,7 @@ function TopBar({ title, onBack, onMenuClick, rightSlot, align = 'left', childre
             <img src={iconoMenu} alt="Menú" />
           </button>
         )}
+        {!title && <img src={logoWheregueense} alt="WhereGüense" className="topbar-logo" />}
         {rightSlot}
       </div>
       {title && <h1 className="topbar-titulo">{title}</h1>}
