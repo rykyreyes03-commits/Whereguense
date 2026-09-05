@@ -18,7 +18,7 @@ const DANZANTES = [
   },
 ];
 
-function SeleccionDanzante({ onElegir, onVolverALanding }) {
+function SeleccionDanzante({ onElegir, onVolverALanding, guardando, error }) {
   const [seleccion, setSeleccion] = useState(null);
 
   return (
@@ -57,13 +57,18 @@ function SeleccionDanzante({ onElegir, onVolverALanding }) {
           ))}
         </div>
 
+        {error && (
+          <p className="danzante-error" role="alert">
+            {error}
+          </p>
+        )}
         <button
           type="button"
           className="danzante-continuar"
-          disabled={!seleccion}
-          onClick={() => seleccion && onElegir(seleccion)}
+          disabled={!seleccion || guardando}
+          onClick={() => seleccion && !guardando && onElegir(seleccion)}
         >
-          Continuar
+          {guardando ? 'Guardando...' : 'Continuar'}
         </button>
       </div>
     </div>

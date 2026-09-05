@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.4",
+    "jsqr": "^1.4.0",
     "leaflet": "^1.9.4",
     "leaflet-routing-machine": "^3.2.12",
     "qrcode.react": "^4.2.0",

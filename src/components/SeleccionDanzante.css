@@ -159,6 +159,14 @@
   transform: scale(1);
 }
 
+/* Reutiliza el token de error ya usado en Login.css (.login-otp-error) */
+.danzante-error {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-coral);
+}
+
 .danzante-continuar {
   align-self: stretch;
   border: none;

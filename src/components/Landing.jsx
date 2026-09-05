@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import './Landing.css';
+import LandingNavbar from './LandingNavbar';
 import touristPresenting from '../assets/landing/tourist-presenting.png';
 import parejaTuristas from '../assets/landing/pareja-turistas.png';
 import foto1 from '../assets/landing/foto-1.png';
@@ -76,16 +77,6 @@ const IconMapPin = (p) => (
     <circle cx="12" cy="10" r="3" />
   </svg>
 );
-const IconMenu = (p) => (
-  <svg {...svgBase} width={p.size || 24} height={p.size || 24} aria-hidden="true">
-    <path d="M4 6h16M4 12h16M4 18h16" />
-  </svg>
-);
-const IconClose = (p) => (
-  <svg {...svgBase} width={p.size || 24} height={p.size || 24} aria-hidden="true">
-    <path d="M6 6l12 12M18 6 6 18" />
-  </svg>
-);
 
 const TRAJES = [
   trajeVestidoAzul,
@@ -105,8 +96,7 @@ const PASOS_PERSONALIZACION = [
   { Icono: IconShirt, texto: 'Personalización' },
 ];
 
-function Landing({ onComenzar }) {
-  const [menuAbierto, setMenuAbierto] = useState(false);
+function Landing({ onComenzar, onNavigate }) {
 
   useEffect(() => {
     const els = document.querySelectorAll('[data-reveal]');
@@ -130,53 +120,9 @@ function Landing({ onComenzar }) {
     return () => io.disconnect();
   }, []);
 
-  const irA = (id) => {
-    setMenuAbierto(false);
-    const destino = document.getElementById(id);
-    if (destino) destino.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  const NAV_LINKS = [
-    { id: 'landing-hero', texto: 'Inicio' },
-    { id: 'landing-que-es', texto: 'Eventos' },
-    { id: 'landing-ruta', texto: 'Mapas' },
-  ];
-
   return (
     <div className="landing">
-      {/* ===== Navbar ===== */}
-      <header className="landing-navbar">
-        <div className="landing-navbar-inner">
-          <button className="landing-logo" onClick={() => irA('landing-hero')} type="button">
-            Where<span>Güense</span>
-          </button>
-
-          <nav className={`landing-nav ${menuAbierto ? 'abierto' : ''}`}>
-            {NAV_LINKS.map((l, i) => (
-              <button key={i} className="landing-nav-link" onClick={() => irA(l.id)} type="button">
-                {l.texto}
-              </button>
-            ))}
-            <button className="landing-btn-registro landing-btn-registro--movil" onClick={onComenzar} type="button">
-              Registrarse
-            </button>
-          </nav>
-
-          <button className="landing-btn-registro landing-btn-registro--desktop" onClick={onComenzar} type="button">
-            Registrarse
-          </button>
-
-          <button
-            className="landing-hamburguesa"
-            onClick={() => setMenuAbierto((v) => !v)}
-            aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
-            aria-expanded={menuAbierto}
-            type="button"
-          >
-            {menuAbierto ? <IconClose size={22} /> : <IconMenu size={22} />}
-          </button>
-        </div>
-      </header>
+      <LandingNavbar activo="landing" onNavigate={onNavigate} onComenzar={onComenzar} />
 
       {/* ===== Hero ===== */}
       <section className="landing-hero" id="landing-hero">

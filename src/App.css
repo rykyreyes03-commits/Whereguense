@@ -6,6 +6,38 @@
   margin: 0 auto;
 }
 
+/* Splash mínimo mientras se resuelve la sesión de Supabase */
+.app-cargando {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: var(--color-surface);
+}
+.app-cargando-spinner {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  animation: appCargandoGirar 0.8s linear infinite;
+}
+.app-cargando-texto {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+@keyframes appCargandoGirar {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-cargando-spinner { animation-duration: 2.4s; }
+}
+
 @media (min-width: 640px) {
   .mapa-pantalla { max-width: 700px; }
 }

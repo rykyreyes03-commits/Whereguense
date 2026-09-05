@@ -7,11 +7,22 @@ import {
   ROSTROS, ROPAS, SOMBREROS, GIGANTONA,
   ROSTROS_IDS, ROPAS_IDS, SOMBREROS_IDS, GIGANTONA_IDS,
 } from '../data/avatarPiezas';
+import {
+  TIENDA_CABELLO, TIENDA_SOMBRERO, TIENDA_TRAJE, TIENDA_VESTIDO,
+} from '../data/avatarPiezasTienda';
 
 function Personalizacion({ sellos, onNavigate, desbloqueados, seleccion, elegir, nivel }) {
   const tipoAvatar = localStorage.getItem('avatarElegido') === 'gigantona' ? 'gigantona' : 'enano';
   const [tab, setTab] = useState('ropa');
   const faltantes = Math.max(0, sellosParaSiguienteNivel(sellos.length) - sellos.length);
+
+  const piezasTienda = tipoAvatar === 'gigantona'
+    ? [...TIENDA_CABELLO, ...TIENDA_VESTIDO]
+    : [...TIENDA_SOMBRERO, ...TIENDA_TRAJE];
+
+  const handleProximamente = () => {
+    window.alert('Esta prenda estará disponible próximamente 🚧');
+  };
 
   const catalogos = {
     rostro: { pool: ROSTROS, ids: ROSTROS_IDS },
@@ -78,6 +89,25 @@ function Personalizacion({ sellos, onNavigate, desbloqueados, seleccion, elegir,
             {renderGrid(tab)}
           </>
         )}
+
+        <div className="personalizacion-tienda">
+          <h2 className="personalizacion-tienda-titulo">🛍️ Tienda</h2>
+          <p className="personalizacion-tienda-sub">Próximamente podrás comprar prendas exclusivas.</p>
+          <div className="personalizacion-grid">
+            {piezasTienda.map((src, i) => (
+              <button
+                key={i}
+                type="button"
+                className="personalizacion-item bloqueado personalizacion-item--tienda"
+                onClick={handleProximamente}
+              >
+                <img src={src} alt="Prenda próximamente disponible" />
+                <span className="personalizacion-candado">🔒</span>
+                <span className="personalizacion-tienda-etiqueta">Próximamente</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

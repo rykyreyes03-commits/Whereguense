@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Landing from './components/Landing';
+import LandingNavbar from './components/LandingNavbar';
+import LandingEventos from './components/LandingEventos';
+import LandingMapas from './components/LandingMapas';
+import LandingRutaDetalle from './components/LandingRutaDetalle';
+import DatosPerfil from './components/DatosPerfil';
+import OnboardingEmprendedor from './components/OnboardingEmprendedor';
 import Onboarding from './components/Onboarding';
 import Login from './components/Login';
 import Proposito from './components/Proposito';
@@ -8,6 +14,7 @@ import SeleccionDanzante from './components/SeleccionDanzante';
 import Inicio from './components/Inicio';
 import MapaRuta from './components/MapaRuta';
 import MisSellos from './components/MisSellos';
+import MisGuardados from './components/MisGuardados';
 import DetalleSello from './components/DetalleSello';
 import Perfil from './components/Perfil';
 import RutasDestacadas from './components/RutasDestacadas';
@@ -30,6 +37,8 @@ import { eventos } from './data/eventos';
 import { useSellos } from './hooks/useSellos';
 import { useNegocio } from './hooks/useNegocio';
 import { useAvatarPersonalizado } from './hooks/useAvatarPersonalizado';
+import { supabase } from './lib/supabaseClient';
+import { aPersonajeDB, aPersonajeLocal } from './utils/avatarPersonaje';
 import L from 'leaflet';
 
 function pantallaInicial() {
@@ -40,22 +49,41 @@ function pantallaInicial() {
 function App() {
   const [pantalla, setPantalla] = useState(pantallaInicial);
   const [pantallaAnterior, setPantallaAnterior] = useState('inicio');
+  const [session, setSession] = useState(null);
+  const [usuarioActual, setUsuarioActual] = useState(null);
+  const [authInicializada, setAuthInicializada] = useState(false);
+  const [cargandoUsuario, setCargandoUsuario] = useState(false);
+  const [guardandoDanzante, setGuardandoDanzante] = useState(false);
+  const [errorDanzante, setErrorDanzante] = useState(null);
+  const [guardandoDatosPerfil, setGuardandoDatosPerfil] = useState(false);
+  const [errorDatosPerfil, setErrorDatosPerfil] = useState(null);
+  const rutaAplicadaRef = useRef(false);
+  const authCargando = !authInicializada || cargandoUsuario;
   const [rutaActivaId, setRutaActivaId] = useState(null);
   const [eventoActivoId, setEventoActivoId] = useState(null);
   const [sitioSeleccionadoId, setSitioSeleccionadoId] = useState(null);
   const [sitioEnfocadoId, setSitioEnfocadoId] = useState(null);
-  const { sellos, sellar } = useSellos();
+  const { sellos, sellar, canjearQR } = useSellos(usuarioActual?.id);
   const {
     negocio,
+    horarios,
+    fotos,
+    productos,
     registrar,
     simularAprobar,
     simularRechazar,
     actualizarHorarios,
     actualizarUbicacion,
+    actualizarPerfil,
+    subirLogo,
+    subirFoto,
+    eliminarFoto,
     agregarProducto,
     eliminarProducto,
-    generarQR,
-  } = useNegocio();
+    actividadesQR,
+    crearActividadQR,
+    eliminarActividadQR,
+  } = useNegocio(usuarioActual?.id);
   const {
     desbloqueados,
     seleccion,
@@ -63,7 +91,7 @@ function App() {
     nivel,
     candidatosPendientes,
     elegirDesbloqueo,
-  } = useAvatarPersonalizado(sellos.length);
+  } = useAvatarPersonalizado(usuarioActual?.id, sellos.length, localStorage.getItem('avatarElegido'));
   const [toastSitio, setToastSitio] = useState(null);
   const [sitioResaltadoPasaporte, setSitioResaltadoPasaporte] = useState(null);
   const [mostrarSubidaNivel, setMostrarSubidaNivel] = useState(false);
@@ -85,8 +113,96 @@ function App() {
     });
   }, []);
 
-  const handleSellar = (sitio) => {
-    const resultado = sellar(sitio);
+  // Arranque de auth: sesión inicial + suscripción a cambios de sesión.
+  useEffect(() => {
+    let activo = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!activo) return;
+      setSession(data.session ?? null);
+      setAuthInicializada(true);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_evento, nuevaSesion) => {
+      if (!activo) return;
+      setSession(nuevaSesion ?? null);
+      setAuthInicializada(true);
+      if (!nuevaSesion) {
+        setUsuarioActual(null);
+        rutaAplicadaRef.current = false;
+      }
+    });
+
+    return () => {
+      activo = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Con sesión: resolver la fila de `usuario` (crearla la primera vez) y, la
+  // primera vez por sesión, enrutar según onboarding_completado. El invitado sin
+  // sesión conserva el valor inicial de `pantalla` (pantallaInicial()).
+  useEffect(() => {
+    const userId = session?.user?.id;
+    if (!userId) return;
+
+    let activo = true;
+    // Marca de "sincronizando con Supabase Auth"; el resto de setState de este
+    // efecto ocurre dentro del callback async.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCargandoUsuario(true);
+
+    (async () => {
+      try {
+        let { data: fila, error } = await supabase
+          .from('usuario')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle();
+        if (error) throw error;
+
+        if (!fila) {
+          const email = session.user.email ?? '';
+          const nombre_usuario = email.split('@')[0] || 'usuario';
+          const creada = await supabase
+            .from('usuario')
+            .insert({ id: userId, email, nombre_usuario, rol: 'turista' })
+            .select()
+            .single();
+          if (creada.error) throw creada.error;
+          fila = creada.data;
+        }
+
+        if (!activo) return;
+        setUsuarioActual(fila);
+
+        if (!rutaAplicadaRef.current) {
+          rutaAplicadaRef.current = true;
+          if (fila.onboarding_completado) {
+            localStorage.setItem('avatarElegido', aPersonajeLocal(fila.avatar_personaje));
+            localStorage.setItem('flujoInicialCompletado', 'true');
+            setPantalla('inicio');
+          } else {
+            setPantalla('proposito');
+          }
+        }
+      } catch (e) {
+        console.error('Error resolviendo la fila de usuario:', e);
+        if (activo) setUsuarioActual(null);
+      } finally {
+        if (activo) setCargandoUsuario(false);
+      }
+    })();
+
+    return () => {
+      activo = false;
+      setCargandoUsuario(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
+
+  const handleSellar = async (sitio) => {
+    const resultado = await sellar(sitio);
     if (resultado.exito) {
       setToastSitio(sitio);
     } else {
@@ -94,8 +210,8 @@ function App() {
     }
   };
 
-  const intentarSellarPorGeofencing = (sitio) => {
-    const resultado = sellar(sitio);
+  const intentarSellarPorGeofencing = async (sitio) => {
+    const resultado = await sellar(sitio);
     if (resultado.exito) {
       setToastSitio(sitio);
     }
@@ -123,40 +239,139 @@ function App() {
     cambiarPantalla('mapa');
   };
 
+  const irAFlujoNegocio = () => {
+    if (negocio?.estado === 'activo') {
+      setPantalla('perfilNegocio');
+    } else if (negocio) {
+      setPantalla('estadoNegocio');
+    } else {
+      setPantalla('registroNegocio');
+    }
+  };
+
   const handleElegirProposito = (tipo) => {
     if (tipo === 'emprendimiento') {
-      if (negocio?.estado === 'activo') {
-        setPantalla('perfilNegocio');
-      } else if (negocio) {
-        setPantalla('estadoNegocio');
-      } else {
-        setPantalla('registroNegocio');
-      }
+      irAFlujoNegocio();
       return;
     }
     setPantalla('onboarding');
   };
 
   const handleTerminarOnboarding = () => {
+    setPantalla('datosPerfil');
+  };
+
+  const handleGuardarDatosPerfil = async (datos) => {
+    setErrorDatosPerfil(null);
+    setGuardandoDatosPerfil(true);
+
+    if (usuarioActual) {
+      const { error } = await supabase
+        .from('usuario')
+        .update({
+          nombre_usuario: datos.nombre,
+          pais: datos.pais || null,
+          idioma_preferido: datos.idioma,
+        })
+        .eq('id', usuarioActual.id);
+
+      setGuardandoDatosPerfil(false);
+
+      if (error) {
+        console.error('Error guardando datos de perfil:', error);
+        if (error.code === '23505') {
+          setErrorDatosPerfil('Ese nombre de usuario ya está en uso. Elige otro.');
+        } else {
+          setErrorDatosPerfil('No se pudo guardar tu información. Intenta de nuevo.');
+        }
+        return;
+      }
+
+      setUsuarioActual((u) =>
+        u ? { ...u, nombre_usuario: datos.nombre, pais: datos.pais, idioma_preferido: datos.idioma } : u
+      );
+    } else {
+      setGuardandoDatosPerfil(false);
+      try {
+        localStorage.setItem('perfilUsuario', JSON.stringify({
+          nombre: datos.nombre,
+          pais: datos.pais,
+          idioma: datos.idioma,
+        }));
+      } catch (e) {
+        console.error('Error guardando perfil local:', e);
+      }
+    }
+
     setPantalla('danzante');
   };
 
-  const handleEscaneoQR = () => {
-    const pendiente = sitios.find(
-      (s) => !sellos.some((sello) => sello.sitioId === s.id)
+  const handleActualizarPerfilUsuario = async (datos) => {
+    if (!usuarioActual) return { exito: false, mensaje: 'Necesitas iniciar sesión.' };
+
+    const { error } = await supabase
+      .from('usuario')
+      .update({
+        nombre_usuario: datos.nombre,
+        pais: datos.pais || null,
+        idioma_preferido: datos.idioma,
+      })
+      .eq('id', usuarioActual.id);
+
+    if (error) {
+      console.error('Error actualizando perfil:', error);
+      if (error.code === '23505') {
+        return { exito: false, mensaje: 'Ese nombre de usuario ya está en uso. Elige otro.' };
+      }
+      return { exito: false, mensaje: 'No se pudo guardar tu perfil. Intenta de nuevo.' };
+    }
+
+    setUsuarioActual((u) =>
+      u ? { ...u, nombre_usuario: datos.nombre, pais: datos.pais, idioma_preferido: datos.idioma } : u
     );
-    if (!pendiente) return null;
-    const resultado = sellar(pendiente);
-    return resultado.exito ? pendiente : null;
+    return { exito: true };
   };
 
-  const handleElegirDanzante = (avatar) => {
+  const handleElegirDanzante = async (avatar) => {
+    if (!usuarioActual) {
+      localStorage.setItem('avatarElegido', avatar);
+      localStorage.setItem('flujoInicialCompletado', 'true');
+      setPantalla('inicio');
+      return;
+    }
+
+    setErrorDanzante(null);
+    setGuardandoDanzante(true);
+
+    const avatarDB = aPersonajeDB(avatar);
+
+    const { error } = await supabase
+      .from('usuario')
+      .update({ avatar_personaje: avatarDB, onboarding_completado: true })
+      .eq('id', usuarioActual.id);
+
+    setGuardandoDanzante(false);
+
+    if (error) {
+      console.error('Error guardando el danzante en usuario:', error);
+      setErrorDanzante('No se pudo guardar tu elección. Revisa tu conexión e intenta de nuevo.');
+      return;
+    }
+
     localStorage.setItem('avatarElegido', avatar);
     localStorage.setItem('flujoInicialCompletado', 'true');
+    setUsuarioActual((u) =>
+      u ? { ...u, avatar_personaje: avatarDB, onboarding_completado: true } : u
+    );
     setPantalla('inicio');
   };
 
-  const handleCerrarSesionGlobal = () => {
+  const handleCerrarSesionGlobal = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.error('Error cerrando sesión en Supabase:', e);
+    }
     localStorage.removeItem('sellos');
     localStorage.removeItem('perfilUsuario');
     localStorage.removeItem('avatarElegido');
@@ -166,8 +381,42 @@ function App() {
     setPantalla('login');
   };
 
+  if (authCargando) {
+    return (
+      <div className="app-cargando">
+        <div className="app-cargando-spinner" aria-hidden="true" />
+        <p className="app-cargando-texto">Cargando…</p>
+      </div>
+    );
+  }
+
   if (pantalla === 'landing') {
-    return <Landing onComenzar={() => setPantalla('login')} />;
+    return <Landing onComenzar={() => setPantalla('login')} onNavigate={cambiarPantalla} />;
+  }
+
+  if (pantalla === 'landingEventos') {
+    return (
+      <LandingEventos
+        onNavigate={cambiarPantalla}
+        onComenzar={() => cambiarPantalla('login')}
+      />
+    );
+  }
+
+  if (pantalla === 'landingMapas') {
+    return <LandingMapas onNavigate={cambiarPantalla} onComenzar={() => cambiarPantalla('login')} />;
+  }
+
+  if (pantalla === 'landingRuta_dariana') {
+    return <LandingRutaDetalle tipo="dariana" onNavigate={cambiarPantalla} onComenzar={() => cambiarPantalla('login')} />;
+  }
+
+  if (pantalla === 'landingRuta_culturales') {
+    return <LandingRutaDetalle tipo="culturales" onNavigate={cambiarPantalla} onComenzar={() => cambiarPantalla('login')} />;
+  }
+
+  if (pantalla === 'landingRuta_creativos') {
+    return <LandingRutaDetalle tipo="creativos" onNavigate={cambiarPantalla} onComenzar={() => cambiarPantalla('login')} />;
   }
 
   if (pantalla === 'login') {
@@ -192,7 +441,7 @@ function App() {
     return (
       <EscanearQR
         onVolver={() => cambiarPantalla('inicio')}
-        onEscaneoExitoso={handleEscaneoQR}
+        onCanjearQR={canjearQR}
         onNavigate={cambiarPantalla}
       />
     );
@@ -202,11 +451,29 @@ function App() {
     return <Onboarding onTerminar={handleTerminarOnboarding} />;
   }
 
+  if (pantalla === 'datosPerfil') {
+    return (
+      <DatosPerfil
+        valorInicial={{
+          nombre: usuarioActual?.nombre_usuario || '',
+          pais: usuarioActual?.pais || '',
+          idioma: usuarioActual?.idioma_preferido || 'es',
+        }}
+        onContinuar={handleGuardarDatosPerfil}
+        onVolverALanding={() => setPantalla('landing')}
+        guardando={guardandoDatosPerfil}
+        error={errorDatosPerfil}
+      />
+    );
+  }
+
   if (pantalla === 'danzante') {
     return (
       <SeleccionDanzante
         onElegir={handleElegirDanzante}
         onVolverALanding={() => setPantalla('landing')}
+        guardando={guardandoDanzante}
+        error={errorDanzante}
       />
     );
   }
@@ -222,6 +489,7 @@ function App() {
         rutas={rutas}
         eventos={eventos}
         sellos={sellos}
+        usuarioId={usuarioActual?.id}
         onNavigate={cambiarPantalla}
         onSeleccionarRuta={setRutaActivaId}
         onSeleccionarSitio={setSitioSeleccionadoId}
@@ -242,6 +510,7 @@ function App() {
           onSellarAutomatico={intentarSellarPorGeofencing}
           sitioEnfocadoId={sitioEnfocadoId}
           onVolver={() => cambiarPantalla('inicio')}
+          usuarioId={usuarioActual?.id}
         />
         <Toast sitio={toastSitio} onClose={handleCerrarToast} onClick={handleClickToast} />
         {mostrarSubidaNivel && (
@@ -256,6 +525,16 @@ function App() {
           />
         )}
       </div>
+    );
+  }
+
+  if (pantalla === 'guardados') {
+    return (
+      <MisGuardados
+        usuarioId={usuarioActual?.id}
+        onVerSitio={irAlMapaConSitio}
+        onVolver={() => cambiarPantalla('inicio')}
+      />
     );
   }
 
@@ -293,6 +572,8 @@ function App() {
         total={sitios.length}
         onNavigate={cambiarPantalla}
         onCerrarSesion={handleCerrarSesionGlobal}
+        usuarioActual={usuarioActual}
+        onActualizarPerfil={handleActualizarPerfilUsuario}
       />
     );
   }
@@ -345,13 +626,21 @@ function App() {
     );
   }
 
+  if (pantalla === 'onboardingEmprendedor') {
+    return <OnboardingEmprendedor onTerminar={() => cambiarPantalla('registroEnviado')} />;
+  }
+
   if (pantalla === 'registroNegocio') {
     return (
       <RegistroNegocio
         onVolver={() => cambiarPantalla('proposito')}
-        onRegistrar={(datos) => {
-          registrar(datos);
-          cambiarPantalla('registroEnviado');
+        onRegistrar={async (datos) => {
+          const resultado = await registrar(datos);
+          if (resultado.exito) {
+            cambiarPantalla('onboardingEmprendedor');
+          } else {
+            window.alert(resultado.mensaje);
+          }
         }}
       />
     );
@@ -371,11 +660,20 @@ function App() {
       <EstadoNegocio
         vista={negocio?.estado === 'rechazado' ? 'rechazado' : 'pendiente'}
         motivoRechazo={negocio?.motivoRechazo}
-        onSimularAprobar={() => {
-          simularAprobar();
-          cambiarPantalla('perfilNegocio');
+        onSimularAprobar={async () => {
+          const resultado = await simularAprobar();
+          if (resultado.exito) {
+            cambiarPantalla('perfilNegocio');
+          } else {
+            window.alert(resultado.mensaje);
+          }
         }}
-        onSimularRechazar={(motivo) => simularRechazar(motivo)}
+        onSimularRechazar={async (motivo) => {
+          const resultado = await simularRechazar(motivo);
+          if (!resultado.exito) {
+            window.alert(resultado.mensaje);
+          }
+        }}
         onCorregir={() => cambiarPantalla('registroNegocio')}
       />
     );
@@ -385,9 +683,16 @@ function App() {
     return (
       <PerfilNegocio
         negocio={negocio}
+        horarios={horarios}
+        fotos={fotos}
+        productos={productos}
         onNavigate={cambiarPantalla}
         onActualizarHorarios={actualizarHorarios}
         onActualizarUbicacion={actualizarUbicacion}
+        onActualizarPerfil={actualizarPerfil}
+        onSubirLogo={(file) => subirLogo(usuarioActual?.id, file)}
+        onSubirFoto={(file) => subirFoto(usuarioActual?.id, file)}
+        onEliminarFoto={eliminarFoto}
         onAgregarProducto={agregarProducto}
         onEliminarProducto={eliminarProducto}
       />
@@ -396,7 +701,12 @@ function App() {
 
   if (pantalla === 'generarQR') {
     return (
-      <GenerarQR negocio={negocio} onGenerarQR={generarQR} onNavigate={cambiarPantalla} />
+      <GenerarQR
+        actividadesQR={actividadesQR}
+        onCrearActividad={crearActividadQR}
+        onEliminarActividad={eliminarActividadQR}
+        onNavigate={cambiarPantalla}
+      />
     );
   }
 
@@ -406,6 +716,7 @@ function App() {
         onNavigate={cambiarPantalla}
         onVolver={() => cambiarPantalla(pantallaAnterior)}
         onCerrarSesion={handleCerrarSesionGlobal}
+        onMiNegocio={irAFlujoNegocio}
       />
     );
   }

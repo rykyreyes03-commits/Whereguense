@@ -50,6 +50,12 @@ const IconoQR = () => (
   </svg>
 );
 
+const IconoNegocio = () => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+    <path d="M4 10l1-5h14l1 5M4 10v9a1 1 0 0 0 1 1h4v-6h6v6h4a1 1 0 0 0 1-1v-9M4 10h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 const Chevron = () => (
   <svg className="menu-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
     <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -58,6 +64,7 @@ const Chevron = () => (
 
 const OPCIONES = [
   { etiqueta: 'Escanear sello QR', Icono: IconoQR, pantalla: 'escanearQR' },
+  { etiqueta: 'Mi negocio', Icono: IconoNegocio, accion: 'miNegocio' },
   { etiqueta: 'Cambiar idioma', Icono: IconoIdioma },
   { etiqueta: 'Notificaciones', Icono: IconoNotificaciones },
   { etiqueta: 'Tema', Icono: IconoTema },
@@ -66,7 +73,7 @@ const OPCIONES = [
   { etiqueta: 'Acerca de', Icono: IconoAcerca },
 ];
 
-function Menu({ onNavigate, onVolver, onCerrarSesion }) {
+function Menu({ onNavigate, onVolver, onCerrarSesion, onMiNegocio }) {
   const handleOpcion = (opcion) => {
     window.alert(`${opcion}: próximamente 🚧`);
   };
@@ -86,11 +93,19 @@ function Menu({ onNavigate, onVolver, onCerrarSesion }) {
 
       <div className="menu-contenido">
         <nav className="menu-lista">
-          {OPCIONES.map(({ etiqueta, Icono, pantalla }) => (
+          {OPCIONES.map(({ etiqueta, Icono, pantalla, accion }) => (
             <button
               key={etiqueta}
               className="menu-item"
-              onClick={() => (pantalla ? onNavigate?.(pantalla) : handleOpcion(etiqueta))}
+              onClick={() => {
+                if (accion === 'miNegocio') {
+                  onMiNegocio?.();
+                } else if (pantalla) {
+                  onNavigate?.(pantalla);
+                } else {
+                  handleOpcion(etiqueta);
+                }
+              }}
             >
               <span className="menu-item-icono"><Icono /></span>
               <span className="menu-item-texto">{etiqueta}</span>

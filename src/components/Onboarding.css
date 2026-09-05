@@ -90,13 +90,10 @@
 .onboarding-ruta { width: 240px; height: auto; }
 
 /* ===== Slide final ===== */
-.onboarding-logo {
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-size: 3rem;
-  line-height: 1.05;
-  color: var(--color-white);
-  margin: 0;
+.onboarding-logo-img {
+  height: 60px;
+  width: auto;
+  max-width: 90%;
 }
 .onboarding-subtitulo {
   font-size: 1rem;
@@ -200,11 +197,11 @@
 /* ===== Tablet / Desktop ===== */
 @media (min-width: 640px) {
   .onboarding-wrapper { max-width: 700px; }
-  .onboarding-logo { font-size: 3.4rem; }
+  .onboarding-logo-img { height: 70px; }
 }
 @media (min-width: 1024px) {
   .onboarding-wrapper { max-width: 1100px; }
   .onboarding-contenido { max-width: 380px; }
   .onboarding-titulo { font-size: 1.9rem; }
-  .onboarding-logo { font-size: 4rem; }
+  .onboarding-logo-img { height: 84px; }
 }

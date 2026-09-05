@@ -14,11 +14,21 @@
 }
 
 .topbar-fila {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
   width: 100%;
+}
+.topbar-logo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  height: 22px;
+  width: auto;
+  pointer-events: none;
 }
 
 .topbar-volver {

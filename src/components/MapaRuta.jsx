@@ -1,31 +1,61 @@
 import { useEffect, useRef, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './MapaRuta.css';
 import { useUbicacionActual } from '../hooks/useUbicacionActual';
 import { calcularDistanciaMetros } from '../utils/geo';
+import RutaCalculada from './RutaCalculada';
+import PanelSitio from './PanelSitio';
+import HistoriaSitio from './HistoriaSitio';
+import { useGuardados } from '../hooks/useGuardados';
+import { useNegociosActivos } from '../hooks/useNegociosActivos';
+import PanelNegocio from './PanelNegocio';
+import PerfilNegocioPublico from './PerfilNegocioPublico';
 
 const RADIO_GEOFENCE_METROS = 80;
-const CLAVE_GUARDADOS = 'sitiosGuardados';
 
 const iconoUbicacion = L.divIcon({
   className: 'ubicacion-usuario-icono',
-  html: '<div class="ubicacion-usuario-punto"></div>',
-  iconSize: [18, 18],
+  html: `
+    <div class="ubicacion-usuario-anillo"></div>
+    <div class="ubicacion-usuario-anillo ubicacion-usuario-anillo-2"></div>
+    <div class="ubicacion-usuario-punto"></div>
+  `,
+  iconSize: [60, 60],
+  iconAnchor: [30, 30],
 });
 
-function cargarGuardados() {
-  try {
-    const g = JSON.parse(localStorage.getItem(CLAVE_GUARDADOS));
-    return Array.isArray(g) ? g : [];
-  } catch (error) {
-    console.error('Error leyendo sitios guardados:', error);
-    return [];
-  }
+const iconoNegocio = L.divIcon({
+  className: 'negocio-marcador-icono',
+  html: `<svg viewBox="0 0 24 32" width="28" height="36">
+    <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z" fill="var(--color-coral)"/>
+    <circle cx="12" cy="12" r="5" fill="white"/>
+  </svg>`,
+  iconSize: [28, 36],
+  iconAnchor: [14, 36],
+});
+
+function normalizarTexto(s) {
+  return s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
 }
 
-function EnfocarSitio({ sitios, sitioEnfocadoId, markerRefs }) {
+function distanciaMinimaARuta(lat, lng, coordenadasRuta) {
+  if (!coordenadasRuta || coordenadasRuta.length === 0) return Infinity;
+  let minima = Infinity;
+  for (const [rutaLat, rutaLng] of coordenadasRuta) {
+    const d = calcularDistanciaMetros(lat, lng, rutaLat, rutaLng);
+    if (d < minima) minima = d;
+  }
+  return minima;
+}
+
+const UMBRAL_DESVIO_METROS = 40;
+
+function EnfocarSitio({ sitios, sitioEnfocadoId, onEnfocar }) {
   const map = useMap();
 
   useEffect(() => {
@@ -34,18 +64,64 @@ function EnfocarSitio({ sitios, sitioEnfocadoId, markerRefs }) {
     if (!sitio) return;
 
     map.flyTo(sitio.position, 17);
-    markerRefs.current[sitio.id]?.openPopup();
+    onEnfocar(sitio);
   }, [sitioEnfocadoId]);
 
   return null;
 }
 
-function MapaRuta({ sitios, sellos = [], onSellar, onSellarAutomatico, sitioEnfocadoId, onVolver }) {
-  const markerRefs = useRef({});
+function SeguidorUbicacion({ ubicacion, activo, onSeguirDesactivado }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!activo) return undefined;
+
+    const handleDragStart = () => {
+      onSeguirDesactivado();
+    };
+
+    map.on('dragstart', handleDragStart);
+    return () => {
+      map.off('dragstart', handleDragStart);
+    };
+  }, [activo, map, onSeguirDesactivado]);
+
+  useEffect(() => {
+    if (!activo || !ubicacion) return;
+    map.setView([ubicacion.lat, ubicacion.lng], map.getZoom(), { animate: true });
+  }, [activo, ubicacion, map]);
+
+  return null;
+}
+
+function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuarioId }) {
   const mapRef = useRef(null);
   const { ubicacion, error } = useUbicacionActual();
+  const { estaGuardado: estaGuardadoSupabase, toggleGuardar } = useGuardados(usuarioId);
+  const { negocios } = useNegociosActivos();
   const [busqueda, setBusqueda] = useState('');
-  const [guardados, setGuardados] = useState(cargarGuardados);
+
+  const resultadosBusqueda = busqueda.trim()
+    ? sitios.filter((s) => normalizarTexto(s.name).includes(normalizarTexto(busqueda))).slice(0, 8)
+    : [];
+
+  const seleccionarResultadoBusqueda = (sitio) => {
+    setBusqueda('');
+    setSitioSeleccionado(sitio);
+    if (mapRef.current) {
+      mapRef.current.flyTo(sitio.position, 17);
+    }
+  };
+
+  const [sitioSeleccionado, setSitioSeleccionado] = useState(null);
+  const [negocioSeleccionado, setNegocioSeleccionado] = useState(null);
+  const [negocioPerfilPublico, setNegocioPerfilPublico] = useState(null);
+  const [sitioHistoria, setSitioHistoria] = useState(null);
+  const [destinoRuta, setDestinoRuta] = useState(null);
+  const [origenRuta, setOrigenRuta] = useState(null);
+  const [modoSeguir, setModoSeguir] = useState(false);
+  const [resumenRuta, setResumenRuta] = useState(null);
+  const [errorRuta, setErrorRuta] = useState(null);
 
   useEffect(() => {
     if (!ubicacion) return;
@@ -63,36 +139,42 @@ function MapaRuta({ sitios, sellos = [], onSellar, onSellarAutomatico, sitioEnfo
     });
   }, [ubicacion, sitios, onSellarAutomatico]);
 
+  useEffect(() => {
+    if (!ubicacion || !destinoRuta || !resumenRuta?.coordenadas) return;
+
+    const distancia = distanciaMinimaARuta(ubicacion.lat, ubicacion.lng, resumenRuta.coordenadas);
+    if (distancia > UMBRAL_DESVIO_METROS) {
+      setOrigenRuta({ lat: ubicacion.lat, lng: ubicacion.lng });
+    }
+  }, [ubicacion, destinoRuta, resumenRuta]);
+
   const centrarEnMiUbicacion = () => {
     if (ubicacion && mapRef.current) {
       mapRef.current.flyTo([ubicacion.lat, ubicacion.lng], 16);
+      if (destinoRuta) {
+        setModoSeguir(true);
+      }
     }
   };
 
-  const estaSellado = (sitio) => sellos.some(s => s.sitioId === sitio.id);
-  const estaGuardado = (sitio) => guardados.includes(sitio.id);
-
-  const toggleGuardado = (sitio) => {
-    setGuardados((prev) => {
-      const siguiente = prev.includes(sitio.id)
-        ? prev.filter(id => id !== sitio.id)
-        : [...prev, sitio.id];
-      try {
-        localStorage.setItem(CLAVE_GUARDADOS, JSON.stringify(siguiente));
-      } catch (err) {
-        console.error('Error guardando sitios guardados:', err);
-      }
-      return siguiente;
-    });
+  const comoLlegar = (sitio) => {
+    if (!ubicacion) {
+      setErrorRuta('Necesitas activar tu ubicación para trazar la ruta.');
+      return;
+    }
+    setErrorRuta(null);
+    setResumenRuta(null);
+    setDestinoRuta(sitio);
+    setOrigenRuta({ lat: ubicacion.lat, lng: ubicacion.lng });
+    setModoSeguir(true);
   };
 
-  const comoLlegar = (sitio) => {
-    const [lat, lng] = sitio.position;
-    window.open(
-      `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
-      '_blank',
-      'noopener,noreferrer'
-    );
+  const cancelarRuta = () => {
+    setDestinoRuta(null);
+    setOrigenRuta(null);
+    setResumenRuta(null);
+    setErrorRuta(null);
+    setModoSeguir(false);
   };
 
   return (
@@ -131,6 +213,24 @@ function MapaRuta({ sitios, sellos = [], onSellar, onSellarAutomatico, sitioEnfo
               ×
             </button>
           )}
+          {busqueda.trim() && (
+            <ul className="mapa-buscador-resultados">
+              {resultadosBusqueda.length > 0 ? (
+                resultadosBusqueda.map((sitio) => (
+                  <li key={sitio.id}>
+                    <button
+                      type="button"
+                      onClick={() => seleccionarResultadoBusqueda(sitio)}
+                    >
+                      {sitio.name}
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li className="mapa-buscador-sin-resultados">Sin resultados</li>
+              )}
+            </ul>
+          )}
         </div>
       </div>
 
@@ -142,8 +242,8 @@ function MapaRuta({ sitios, sellos = [], onSellar, onSellarAutomatico, sitioEnfo
         style={{ flex: 1, width: '100%' }}
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; OpenStreetMap contributors'
+          url={`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${import.meta.env.VITE_CARTO_API_KEY}`}
+          attribution='&copy; OpenStreetMap contributors &copy; CARTO'
         />
         {sitios.map(sitio => (
           <Circle
@@ -158,54 +258,118 @@ function MapaRuta({ sitios, sellos = [], onSellar, onSellarAutomatico, sitioEnfo
           <Marker
             key={sitio.id}
             position={sitio.position}
-            ref={(ref) => {
-              if (ref) markerRefs.current[sitio.id] = ref;
+            eventHandlers={{
+              click: () => setSitioSeleccionado(sitio),
             }}
-          >
-            <Popup>
-              <div className="mapa-popup">
-                <h3>{sitio.name}</h3>
-                <p>{sitio.desc}</p>
+          />
+        ))}
 
-                <div className="mapa-popup-acciones">
-                  <button
-                    className="mapa-popup-btn mapa-popup-btn-secundario"
-                    onClick={() => comoLlegar(sitio)}
-                  >
-                    Cómo llegar
-                  </button>
-                  <button
-                    className={`mapa-popup-btn mapa-popup-btn-ghost ${estaGuardado(sitio) ? 'activo' : ''}`}
-                    onClick={() => toggleGuardado(sitio)}
-                  >
-                    {estaGuardado(sitio) ? 'Guardado' : 'Guardar'}
-                  </button>
-                </div>
-
-                {estaSellado(sitio) ? (
-                  <span className="mapa-popup-sellado">Sello obtenido ✓</span>
-                ) : (
-                  <button
-                    className="mapa-popup-btn mapa-popup-btn-primario"
-                    onClick={() => onSellar(sitio)}
-                  >
-                    Sellar pasaporte
-                  </button>
-                )}
-              </div>
-            </Popup>
-          </Marker>
+        {negocios.map(negocio => (
+          <Marker
+            key={`negocio-${negocio.id}`}
+            position={negocio.position}
+            icon={iconoNegocio}
+            eventHandlers={{
+              click: () => setNegocioSeleccionado(negocio),
+            }}
+          />
         ))}
 
         {ubicacion && (
           <Marker position={[ubicacion.lat, ubicacion.lng]} icon={iconoUbicacion} zIndexOffset={1000} />
         )}
 
-        <EnfocarSitio sitios={sitios} sitioEnfocadoId={sitioEnfocadoId} markerRefs={markerRefs} />
+        <EnfocarSitio sitios={sitios} sitioEnfocadoId={sitioEnfocadoId} onEnfocar={setSitioSeleccionado} />
+
+        <SeguidorUbicacion
+          ubicacion={ubicacion}
+          activo={modoSeguir}
+          onSeguirDesactivado={() => setModoSeguir(false)}
+        />
+
+        {destinoRuta && origenRuta && (
+          <RutaCalculada
+            puntos={[[origenRuta.lat, origenRuta.lng], destinoRuta.position]}
+            onRutaCalculada={setResumenRuta}
+            onError={setErrorRuta}
+          />
+        )}
       </MapContainer>
 
+      {destinoRuta && (
+        <div className="mapa-ruta-resumen">
+          <div className="mapa-ruta-resumen-info">
+            <strong>Ruta hacia {destinoRuta.name}</strong>
+            {resumenRuta && (
+              <span>
+                {(resumenRuta.distanciaMetros / 1000).toFixed(1)} km ·{' '}
+                {Math.round(resumenRuta.duracionSegundos / 60)} min
+              </span>
+            )}
+            {destinoRuta && !modoSeguir && (
+              <span className="mapa-ruta-resumen-aviso">Toca el botón de ubicación para seguir la ruta</span>
+            )}
+            {errorRuta && <span className="mapa-ruta-resumen-error">{errorRuta}</span>}
+          </div>
+          <button
+            type="button"
+            className="mapa-ruta-resumen-cancelar"
+            onClick={cancelarRuta}
+          >
+            Cancelar
+          </button>
+        </div>
+      )}
+
+      <PanelSitio
+        sitio={sitioSeleccionado}
+        estaGuardado={sitioSeleccionado ? estaGuardadoSupabase('sitio', sitioSeleccionado.id) : false}
+        onCerrar={() => setSitioSeleccionado(null)}
+        onComoLlegar={(sitio) => {
+          comoLlegar(sitio);
+          setSitioSeleccionado(null);
+        }}
+        onGuardar={async (sitio) => {
+          const resultado = await toggleGuardar('sitio', sitio.id, { nombre: sitio.name });
+          if (!resultado.exito) {
+            console.error('Error al guardar sitio:', resultado.mensaje);
+          }
+        }}
+        onHistoria={(sitio) => setSitioHistoria(sitio)}
+      />
+
+      <PanelNegocio
+        negocio={negocioSeleccionado}
+        estaGuardado={negocioSeleccionado ? estaGuardadoSupabase('negocio', negocioSeleccionado.id) : false}
+        onCerrar={() => setNegocioSeleccionado(null)}
+        onComoLlegar={(negocio) => {
+          comoLlegar(negocio);
+          setNegocioSeleccionado(null);
+        }}
+        onGuardar={async (negocio) => {
+          const resultado = await toggleGuardar('negocio', negocio.id, { nombre: negocio.name });
+          if (!resultado.exito) {
+            console.error('Error al guardar negocio:', resultado.mensaje);
+          }
+        }}
+        onVerPerfil={(negocio) => {
+          setNegocioPerfilPublico(negocio);
+          setNegocioSeleccionado(null);
+        }}
+      />
+
+      <HistoriaSitio
+        sitio={sitioHistoria}
+        onCerrar={() => setSitioHistoria(null)}
+      />
+
+      <PerfilNegocioPublico
+        negocio={negocioPerfilPublico}
+        onCerrar={() => setNegocioPerfilPublico(null)}
+      />
+
       <button
-        className="mapa-mi-ubicacion-btn"
+        className={`mapa-mi-ubicacion-btn ${modoSeguir ? 'siguiendo' : ''}`}
         onClick={centrarEnMiUbicacion}
         disabled={!ubicacion}
         aria-label="Centrar en mi ubicación"
@@ -218,6 +382,7 @@ function MapaRuta({ sitios, sellos = [], onSellar, onSellarAutomatico, sitioEnfo
       </button>
 
       {error && <p className="mapa-ubicacion-error">{error}</p>}
+      {errorRuta && !destinoRuta && <p className="mapa-ubicacion-error">{errorRuta}</p>}
     </div>
   );
 }

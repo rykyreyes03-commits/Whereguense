@@ -8,6 +8,8 @@ const MIN_FOTOS = 3;
 function RegistroNegocio({ onRegistrar, onVolver }) {
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState('');
+  const [responsable, setResponsable] = useState('');
+  const [cedulaRuc, setCedulaRuc] = useState('');
   const [fotos, setFotos] = useState([]);
   const [ubicacion, setUbicacion] = useState(null);
   const [mostrandoMapa, setMostrandoMapa] = useState(false);
@@ -40,6 +42,10 @@ function RegistroNegocio({ onRegistrar, onVolver }) {
       setError('Selecciona una categoría.');
       return;
     }
+    if (!responsable.trim()) {
+      setError('Escribe el nombre del responsable.');
+      return;
+    }
     if (fotos.length < MIN_FOTOS) {
       setError(`Sube al menos ${MIN_FOTOS} fotos (exterior, interior y productos).`);
       return;
@@ -53,6 +59,8 @@ function RegistroNegocio({ onRegistrar, onVolver }) {
     onRegistrar({
       nombre: nombre.trim(),
       categoria,
+      responsable: responsable.trim(),
+      cedulaRuc: cedulaRuc.trim(),
       cantidadFotos: fotos.length,
       ubicacion,
     });
@@ -88,6 +96,24 @@ function RegistroNegocio({ onRegistrar, onVolver }) {
             </button>
           ))}
         </div>
+
+        <label className="registro-label">Nombre del responsable</label>
+        <input
+          className="registro-input"
+          type="text"
+          placeholder="Nombre completo"
+          value={responsable}
+          onChange={(e) => setResponsable(e.target.value)}
+        />
+
+        <label className="registro-label">Cédula o RUC (opcional)</label>
+        <input
+          className="registro-input"
+          type="text"
+          placeholder="Ej. 001-010101-0001A"
+          value={cedulaRuc}
+          onChange={(e) => setCedulaRuc(e.target.value)}
+        />
 
         <label className="registro-label">Fotos (mínimo {MIN_FOTOS})</label>
         <p className="registro-ayuda">Exterior, interior y productos</p>

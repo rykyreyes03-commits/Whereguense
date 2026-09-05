@@ -1,0 +1,114 @@
+/* =========================================================
+   MisGuardados — lista de favoritos del usuario
+   100% tokens de src/index.css
+   ========================================================= */
+
+.guardados-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--color-white);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  transition: max-width 0.2s ease;
+}
+
+/* ===== Pestañas ===== */
+.guardados-pestanas {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.guardados-pestanas::-webkit-scrollbar { display: none; }
+
+.guardados-pestana {
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.guardados-pestana.activa {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+/* ===== Contenido ===== */
+.guardados-contenido {
+  flex: 1;
+  padding: 16px 18px 24px;
+}
+
+.guardados-vacio {
+  margin: 48px 0;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+}
+
+.guardados-lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guardados-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  box-shadow: var(--shadow-sm);
+  font-family: var(--font-body);
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.guardados-item:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-strong);
+}
+
+.guardados-item-nombre {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* misma apariencia que .inicio-resultado-tipo (Inicio.css) */
+.guardados-item-tipo {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  background: rgba(30, 42, 120, 0.08);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+
+/* ===== Tablet / Desktop ===== */
+@media (min-width: 640px) {
+  .guardados-wrapper { max-width: 700px; }
+}
+@media (min-width: 1024px) {
+  .guardados-wrapper { max-width: 1100px; }
+}
