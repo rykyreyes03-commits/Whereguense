@@ -4,7 +4,8 @@ import TopBar from './TopBar';
 import BottomNav from './BottomNav';
 import { useGuardados } from '../hooks/useGuardados';
 import { INSIGNIAS } from '../data/insignias';
-import iconoUsuario from '../assets/icons/icono_usuario.svg';
+import iconoCabezon from '../assets/icons/icono_cabezon.svg';
+import iconoGigantona from '../assets/icons/icono_gigantona.svg';
 import iconoBuscar from '../assets/icons/icono_buscar.svg';
 import iconoArbol from '../assets/icons/icono_arbol.svg';
 import iconoRuta from '../assets/icons/icono_ruta.svg';
@@ -33,6 +34,8 @@ function Inicio({
 }) {
   const [busqueda, setBusqueda] = useState('');
   const { guardados } = useGuardados(usuarioId);
+
+  const iconoAvatar = localStorage.getItem('avatarElegido') === 'gigantona' ? iconoGigantona : iconoCabezon;
 
   const query = busqueda.trim().toLowerCase();
   const buscando = query.length > 0;
@@ -86,7 +89,7 @@ function Inicio({
             onClick={() => onNavigate?.('personalizacion')}
             aria-label="Personalizar avatar"
           >
-            <img src={iconoUsuario} alt="" />
+            <img src={iconoAvatar} alt="" />
           </button>
         }
       />
