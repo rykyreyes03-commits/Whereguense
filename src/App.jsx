@@ -7,6 +7,7 @@ import LandingMapas from './components/LandingMapas';
 import LandingRutaDetalle from './components/LandingRutaDetalle';
 import DatosPerfil from './components/DatosPerfil';
 import OnboardingEmprendedor from './components/OnboardingEmprendedor';
+import PanelAdmin from './components/PanelAdmin';
 import Onboarding from './components/Onboarding';
 import Login from './components/Login';
 import Proposito from './components/Proposito';
@@ -70,8 +71,6 @@ function App() {
     fotos,
     productos,
     registrar,
-    simularAprobar,
-    simularRechazar,
     actualizarHorarios,
     actualizarUbicacion,
     actualizarPerfil,
@@ -660,23 +659,13 @@ function App() {
       <EstadoNegocio
         vista={negocio?.estado === 'rechazado' ? 'rechazado' : 'pendiente'}
         motivoRechazo={negocio?.motivoRechazo}
-        onSimularAprobar={async () => {
-          const resultado = await simularAprobar();
-          if (resultado.exito) {
-            cambiarPantalla('perfilNegocio');
-          } else {
-            window.alert(resultado.mensaje);
-          }
-        }}
-        onSimularRechazar={async (motivo) => {
-          const resultado = await simularRechazar(motivo);
-          if (!resultado.exito) {
-            window.alert(resultado.mensaje);
-          }
-        }}
         onCorregir={() => cambiarPantalla('registroNegocio')}
       />
     );
+  }
+
+  if (pantalla === 'panelAdmin') {
+    return <PanelAdmin onVolver={() => cambiarPantalla('menu')} />;
   }
 
   if (pantalla === 'perfilNegocio') {
@@ -717,6 +706,7 @@ function App() {
         onVolver={() => cambiarPantalla(pantallaAnterior)}
         onCerrarSesion={handleCerrarSesionGlobal}
         onMiNegocio={irAFlujoNegocio}
+        esAdmin={usuarioActual?.rol === 'admin'}
       />
     );
   }

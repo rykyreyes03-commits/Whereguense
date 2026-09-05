@@ -1,10 +1,6 @@
-import { useState } from 'react';
 import './EstadoNegocio.css';
 
-function EstadoNegocio({ vista, motivoRechazo, onContinuar, onSimularAprobar, onSimularRechazar, onCorregir }) {
-  const [mostrarPruebas, setMostrarPruebas] = useState(false);
-  const [motivoInput, setMotivoInput] = useState('');
-
+function EstadoNegocio({ vista, motivoRechazo, onContinuar, onCorregir }) {
   if (vista === 'enviado') {
     return (
       <div className="estado-wrapper">
@@ -37,37 +33,6 @@ function EstadoNegocio({ vista, motivoRechazo, onContinuar, onSimularAprobar, on
       <div className="estado-icono estado-icono-pendiente">🕐</div>
       <h1 className="estado-titulo">Esperando respuesta</h1>
       <p className="estado-mensaje">Un administrador revisará tu solicitud (hasta 5 días).</p>
-
-      <button
-        className="estado-dev-toggle"
-        onClick={() => setMostrarPruebas(!mostrarPruebas)}
-        type="button"
-      >
-        🛠 Modo prueba: simular respuesta del admin
-      </button>
-
-      {mostrarPruebas && (
-        <div className="estado-dev-panel">
-          <button className="estado-dev-aprobar" onClick={onSimularAprobar} type="button">
-            ✅ Simular aprobación
-          </button>
-
-          <textarea
-            className="estado-dev-motivo"
-            placeholder="Motivo de rechazo (obligatorio)"
-            value={motivoInput}
-            onChange={(e) => setMotivoInput(e.target.value)}
-          />
-          <button
-            className="estado-dev-rechazar"
-            disabled={!motivoInput.trim()}
-            onClick={() => onSimularRechazar(motivoInput.trim())}
-            type="button"
-          >
-            ❌ Simular rechazo
-          </button>
-        </div>
-      )}
     </div>
   );
 }

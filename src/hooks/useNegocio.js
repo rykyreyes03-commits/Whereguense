@@ -199,44 +199,6 @@ export function useNegocio(usuarioId) {
     return { exito: true };
   }, [usuarioId]);
 
-  const simularAprobar = useCallback(async () => {
-    if (!negocio) return { exito: false, mensaje: 'No hay negocio para aprobar.' };
-
-    const { data, error } = await supabase
-      .from('negocio')
-      .update({ estado: 'activo', motivo_rechazo: null, fecha_aprobacion: new Date().toISOString() })
-      .eq('id', negocio.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error aprobando negocio:', error);
-      return { exito: false, mensaje: 'No se pudo actualizar. Intenta de nuevo.' };
-    }
-
-    setNegocio(mapearNegocio(data));
-    return { exito: true };
-  }, [negocio]);
-
-  const simularRechazar = useCallback(async (motivo) => {
-    if (!negocio) return { exito: false, mensaje: 'No hay negocio para rechazar.' };
-
-    const { data, error } = await supabase
-      .from('negocio')
-      .update({ estado: 'rechazado', motivo_rechazo: motivo || 'No especificado' })
-      .eq('id', negocio.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error rechazando negocio:', error);
-      return { exito: false, mensaje: 'No se pudo actualizar. Intenta de nuevo.' };
-    }
-
-    setNegocio(mapearNegocio(data));
-    return { exito: true };
-  }, [negocio]);
-
   const actualizarUbicacion = useCallback(async (ubicacion) => {
     if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
 
@@ -496,8 +458,6 @@ export function useNegocio(usuarioId) {
     fotos,
     productos,
     registrar,
-    simularAprobar,
-    simularRechazar,
     actualizarHorarios,
     actualizarUbicacion,
     actualizarPerfil,
