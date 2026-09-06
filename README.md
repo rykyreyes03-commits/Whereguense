@@ -130,14 +130,12 @@ docs/
 
 ## Roles y seguridad — estado actual
 
-Hoy la tabla `usuario` distingue el campo `rol` (`turista` por defecto), y cada negocio tiene un
+Hoy la tabla `usuario` distingue el campo `rol` (`turista`, `emprendedor`, `admin` o `auditor`), y cada negocio tiene un
 `usuario_id` dueño. El acceso a los datos está protegido por políticas de RLS en cada tabla de
 Supabase (cada usuario solo puede leer/escribir sus propias filas; los datos públicos como sitios,
 negocios aprobados y eventos son visibles para cualquiera).
 
-**Pendiente** (ver Roadmap): un panel de administrador real con rol `admin` para aprobar/rechazar
-negocios desde la interfaz (hoy la aprobación es manual vía Supabase directamente), un tercer rol
-`auditor` de solo lectura, y autenticación de 2 factores.
+**Ya implementado:** un Panel de Administrador real (`useAdmin.js` + `PanelAdmin.jsx`) con funciones RPC `admin_aprobar_negocio` / `admin_rechazar_negocio` que verifican `rol='admin'` antes de ejecutar cualquier cambio; las columnas `estado`, `motivo_rechazo` y `fecha_aprobacion` de un negocio están fuera del alcance de escritura del propio dueño a nivel de permisos de Postgres (no solo RLS), así que un emprendedor no puede auto-aprobarse; el rol `auditor` de solo lectura; y autenticación en dos factores (TOTP vía Supabase MFA, obligatoria en todo inicio de sesión por correo), con manejo explícito de expiración de sesión.
 
 ## Diagramas de base de datos y UML
 
@@ -147,9 +145,6 @@ Supabase (21 tablas) y del flujo de navegación real de la aplicación.
 
 ## Roadmap / próximos entregables
 
-- Panel de administrador (aprobación de negocios, roles admin/auditor)
-- Autenticación de 2 factores
-- Manejo explícito de expiración de sesión
 - Habilitar compra real en la sección "Tienda" del avatar
 - Traductor de voz para el emprendedor
 - Despliegue en producción
