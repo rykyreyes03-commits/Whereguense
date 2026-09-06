@@ -782,23 +782,19 @@ function App() {
   }
 
   return (
-    <div style={{ padding: '40px', textAlign: 'center' }}>
-      <h2>Pantalla: {pantalla}</h2>
-      <p>En construcción...</p>
-      <button
-        onClick={() => cambiarPantalla('inicio')}
-        style={{
-          marginTop: '20px',
-          padding: '10px 20px',
-          background: '#1a237e',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: 'pointer'
-        }}
-      >
-        Volver al Inicio
-      </button>
+    <div className="app-pantalla-desconocida">
+      <div className="app-pantalla-desconocida-panel">
+        <h2 className="app-pantalla-desconocida-titulo">Esta pantalla no está disponible</h2>
+        <p className="app-pantalla-desconocida-sub">
+          Algo te trajo a un lugar que todavía no existe en Wheregüense.
+        </p>
+        <button
+          className="app-pantalla-desconocida-btn"
+          onClick={() => cambiarPantalla('inicio')}
+        >
+          Volver al inicio
+        </button>
+      </div>
     </div>
   );
 }

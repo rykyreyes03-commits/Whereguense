@@ -60,6 +60,8 @@ npm run dev
 
 Abre `http://localhost:5173` en el navegador.
 
+Para desplegar a producción, ver [`DEPLOYMENT.md`](DEPLOYMENT.md).
+
 ### Scripts disponibles
 
 | Comando | Qué hace |
