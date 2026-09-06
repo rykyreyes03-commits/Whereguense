@@ -7,8 +7,11 @@ import LandingMapas from './components/LandingMapas';
 import LandingRutaDetalle from './components/LandingRutaDetalle';
 import DatosPerfil from './components/DatosPerfil';
 import OnboardingEmprendedor from './components/OnboardingEmprendedor';
+import PanelAdmin from './components/PanelAdmin';
 import Onboarding from './components/Onboarding';
 import Login from './components/Login';
+import MfaEnrolamiento from './components/MfaEnrolamiento';
+import MfaChallenge from './components/MfaChallenge';
 import Proposito from './components/Proposito';
 import SeleccionDanzante from './components/SeleccionDanzante';
 import Inicio from './components/Inicio';
@@ -70,8 +73,6 @@ function App() {
     fotos,
     productos,
     registrar,
-    simularAprobar,
-    simularRechazar,
     actualizarHorarios,
     actualizarUbicacion,
     actualizarPerfil,
@@ -113,6 +114,9 @@ function App() {
     });
   }, []);
 
+  const [avisoSesionExpirada, setAvisoSesionExpirada] = useState(false);
+  const cierreManualRef = useRef(false);
+
   // Arranque de auth: sesión inicial + suscripción a cambios de sesión.
   useEffect(() => {
     let activo = true;
@@ -123,13 +127,22 @@ function App() {
       setAuthInicializada(true);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_evento, nuevaSesion) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((evento, nuevaSesion) => {
       if (!activo) return;
       setSession(nuevaSesion ?? null);
       setAuthInicializada(true);
       if (!nuevaSesion) {
         setUsuarioActual(null);
         rutaAplicadaRef.current = false;
+        // Perdimos la sesión sin que fuera un clic nuestro en "Cerrar sesión"
+        // (cierreManualRef): el refresh token venció o se invalidó. Mandamos
+        // al usuario a Login con un aviso claro en vez de dejarlo varado en
+        // la pantalla en la que estaba.
+        if (evento === 'SIGNED_OUT' && !cierreManualRef.current) {
+          setAvisoSesionExpirada(true);
+          setPantalla('login');
+        }
+        cierreManualRef.current = false;
       }
     });
 
@@ -138,6 +151,41 @@ function App() {
       subscription.unsubscribe();
     };
   }, []);
+
+  // --- 2FA (MFA obligatorio con TOTP) ---
+  const [factoresMfa, setFactoresMfa] = useState([]);
+  const [aalMfa, setAalMfa] = useState(null);
+  const [verificandoMfa, setVerificandoMfa] = useState(false);
+  const [mfaRecargarTick, setMfaRecargarTick] = useState(0);
+
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setFactoresMfa([]);
+      setAalMfa(null);
+      setVerificandoMfa(false);
+      return;
+    }
+    let activo = true;
+    setVerificandoMfa(true);
+    (async () => {
+      const [{ data: factoresData, error: errFactores }, { data: aalData, error: errAal }] = await Promise.all([
+        supabase.auth.mfa.listFactors(),
+        supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+      ]);
+      if (!activo) return;
+      if (errFactores) console.error('Error listando factores MFA:', errFactores);
+      if (errAal) console.error('Error obteniendo nivel MFA:', errAal);
+      setFactoresMfa(factoresData?.totp ?? []);
+      setAalMfa(aalData ?? null);
+      setVerificandoMfa(false);
+    })();
+    return () => { activo = false; };
+  }, [session?.user?.id, mfaRecargarTick]);
+
+  const factorTotpVerificado = factoresMfa.find((f) => f.status === 'verified');
+  const necesitaEnrolarMfa = !!session && !verificandoMfa && !factorTotpVerificado;
+  const necesitaChallengeMfa = !!session && !verificandoMfa && !!factorTotpVerificado
+    && aalMfa?.currentLevel === 'aal1' && aalMfa?.nextLevel === 'aal2';
 
   // Con sesión: resolver la fila de `usuario` (crearla la primera vez) y, la
   // primera vez por sesión, enrutar según onboarding_completado. El invitado sin
@@ -367,6 +415,8 @@ function App() {
   };
 
   const handleCerrarSesionGlobal = async () => {
+    cierreManualRef.current = true;
+    setAvisoSesionExpirada(false);
     try {
       await supabase.auth.signOut();
     } catch (e) {
@@ -381,12 +431,30 @@ function App() {
     setPantalla('login');
   };
 
-  if (authCargando) {
+  if (authCargando || (session && verificandoMfa)) {
     return (
       <div className="app-cargando">
         <div className="app-cargando-spinner" aria-hidden="true" />
         <p className="app-cargando-texto">Cargando…</p>
       </div>
+    );
+  }
+
+  if (necesitaEnrolarMfa) {
+    return (
+      <MfaEnrolamiento
+        onCompletado={() => setMfaRecargarTick((t) => t + 1)}
+        onCerrarSesion={handleCerrarSesionGlobal}
+      />
+    );
+  }
+  if (necesitaChallengeMfa) {
+    return (
+      <MfaChallenge
+        factorId={factorTotpVerificado.id}
+        onVerificado={() => setMfaRecargarTick((t) => t + 1)}
+        onCerrarSesion={handleCerrarSesionGlobal}
+      />
     );
   }
 
@@ -424,6 +492,7 @@ function App() {
       <Login
         onIniciarComoInvitado={() => setPantalla('proposito')}
         onVolverALanding={() => setPantalla('landing')}
+        sesionExpirada={avisoSesionExpirada}
       />
     );
   }
@@ -660,23 +729,13 @@ function App() {
       <EstadoNegocio
         vista={negocio?.estado === 'rechazado' ? 'rechazado' : 'pendiente'}
         motivoRechazo={negocio?.motivoRechazo}
-        onSimularAprobar={async () => {
-          const resultado = await simularAprobar();
-          if (resultado.exito) {
-            cambiarPantalla('perfilNegocio');
-          } else {
-            window.alert(resultado.mensaje);
-          }
-        }}
-        onSimularRechazar={async (motivo) => {
-          const resultado = await simularRechazar(motivo);
-          if (!resultado.exito) {
-            window.alert(resultado.mensaje);
-          }
-        }}
         onCorregir={() => cambiarPantalla('registroNegocio')}
       />
     );
+  }
+
+  if (pantalla === 'panelAdmin') {
+    return <PanelAdmin onVolver={() => cambiarPantalla('menu')} />;
   }
 
   if (pantalla === 'perfilNegocio') {
@@ -717,28 +776,25 @@ function App() {
         onVolver={() => cambiarPantalla(pantallaAnterior)}
         onCerrarSesion={handleCerrarSesionGlobal}
         onMiNegocio={irAFlujoNegocio}
+        esAdmin={usuarioActual?.rol === 'admin'}
       />
     );
   }
 
   return (
-    <div style={{ padding: '40px', textAlign: 'center' }}>
-      <h2>Pantalla: {pantalla}</h2>
-      <p>En construcción...</p>
-      <button
-        onClick={() => cambiarPantalla('inicio')}
-        style={{
-          marginTop: '20px',
-          padding: '10px 20px',
-          background: '#1a237e',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: 'pointer'
-        }}
-      >
-        Volver al Inicio
-      </button>
+    <div className="app-pantalla-desconocida">
+      <div className="app-pantalla-desconocida-panel">
+        <h2 className="app-pantalla-desconocida-titulo">Esta pantalla no está disponible</h2>
+        <p className="app-pantalla-desconocida-sub">
+          Algo te trajo a un lugar que todavía no existe en Wheregüense.
+        </p>
+        <button
+          className="app-pantalla-desconocida-btn"
+          onClick={() => cambiarPantalla('inicio')}
+        >
+          Volver al inicio
+        </button>
+      </div>
     </div>
   );
 }

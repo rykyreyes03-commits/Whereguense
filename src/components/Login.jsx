@@ -5,7 +5,7 @@ import ilustracionGigantona from '../assets/flujo-inicial/gigantona.png';
 import iconoGoogle from '../assets/flujo-inicial/google_hd.png';
 import iconoCorreo from '../assets/flujo-inicial/email_hd.png';
 
-function Login({ onIniciarComoInvitado, onVolverALanding }) {
+function Login({ onIniciarComoInvitado, onVolverALanding, sesionExpirada }) {
   const [paso, setPaso] = useState('correo'); // 'correo' | 'codigo'
   const [email, setEmail] = useState('');
   const [codigo, setCodigo] = useState('');
@@ -103,6 +103,9 @@ function Login({ onIniciarComoInvitado, onVolverALanding }) {
       </div>
 
       <div className="login-panel">
+        {sesionExpirada && (
+          <p className="login-otp-error">Tu sesión expiró. Inicia sesión de nuevo.</p>
+        )}
         <button
           className="login-btn login-btn-invitado"
           onClick={onIniciarComoInvitado}

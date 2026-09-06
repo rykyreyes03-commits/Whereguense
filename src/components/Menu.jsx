@@ -62,18 +62,34 @@ const Chevron = () => (
   </svg>
 );
 
-const OPCIONES = [
-  { etiqueta: 'Escanear sello QR', Icono: IconoQR, pantalla: 'escanearQR' },
-  { etiqueta: 'Mi negocio', Icono: IconoNegocio, accion: 'miNegocio' },
-  { etiqueta: 'Cambiar idioma', Icono: IconoIdioma },
-  { etiqueta: 'Notificaciones', Icono: IconoNotificaciones },
-  { etiqueta: 'Tema', Icono: IconoTema },
-  { etiqueta: 'Privacidad', Icono: IconoPrivacidad },
-  { etiqueta: 'Ayuda y soporte', Icono: IconoAyuda },
-  { etiqueta: 'Acerca de', Icono: IconoAcerca },
-];
+const IconoAdmin = () => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+    <rect x="3" y="3" width="7" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+    <rect x="14" y="3" width="7" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+    <rect x="14" y="12" width="7" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+    <rect x="3" y="16" width="7" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+  </svg>
+);
 
-function Menu({ onNavigate, onVolver, onCerrarSesion, onMiNegocio }) {
+function opcionesMenu(esAdmin) {
+  const base = [
+    { etiqueta: 'Escanear sello QR', Icono: IconoQR, pantalla: 'escanearQR' },
+    { etiqueta: 'Mi negocio', Icono: IconoNegocio, accion: 'miNegocio' },
+    { etiqueta: 'Cambiar idioma', Icono: IconoIdioma },
+    { etiqueta: 'Notificaciones', Icono: IconoNotificaciones },
+    { etiqueta: 'Tema', Icono: IconoTema },
+    { etiqueta: 'Privacidad', Icono: IconoPrivacidad },
+    { etiqueta: 'Ayuda y soporte', Icono: IconoAyuda },
+    { etiqueta: 'Acerca de', Icono: IconoAcerca },
+  ];
+  if (esAdmin) {
+    base.unshift({ etiqueta: 'Panel Admin', Icono: IconoAdmin, pantalla: 'panelAdmin' });
+  }
+  return base;
+}
+
+function Menu({ onNavigate, onVolver, onCerrarSesion, onMiNegocio, esAdmin }) {
+  const OPCIONES = opcionesMenu(esAdmin);
   const handleOpcion = (opcion) => {
     window.alert(`${opcion}: próximamente 🚧`);
   };
