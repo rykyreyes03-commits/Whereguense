@@ -10,6 +10,8 @@ import OnboardingEmprendedor from './components/OnboardingEmprendedor';
 import PanelAdmin from './components/PanelAdmin';
 import Onboarding from './components/Onboarding';
 import Login from './components/Login';
+import MfaEnrolamiento from './components/MfaEnrolamiento';
+import MfaChallenge from './components/MfaChallenge';
 import Proposito from './components/Proposito';
 import SeleccionDanzante from './components/SeleccionDanzante';
 import Inicio from './components/Inicio';
@@ -137,6 +139,41 @@ function App() {
       subscription.unsubscribe();
     };
   }, []);
+
+  // --- 2FA (MFA obligatorio con TOTP) ---
+  const [factoresMfa, setFactoresMfa] = useState([]);
+  const [aalMfa, setAalMfa] = useState(null);
+  const [verificandoMfa, setVerificandoMfa] = useState(false);
+  const [mfaRecargarTick, setMfaRecargarTick] = useState(0);
+
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setFactoresMfa([]);
+      setAalMfa(null);
+      setVerificandoMfa(false);
+      return;
+    }
+    let activo = true;
+    setVerificandoMfa(true);
+    (async () => {
+      const [{ data: factoresData, error: errFactores }, { data: aalData, error: errAal }] = await Promise.all([
+        supabase.auth.mfa.listFactors(),
+        supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+      ]);
+      if (!activo) return;
+      if (errFactores) console.error('Error listando factores MFA:', errFactores);
+      if (errAal) console.error('Error obteniendo nivel MFA:', errAal);
+      setFactoresMfa(factoresData?.totp ?? []);
+      setAalMfa(aalData ?? null);
+      setVerificandoMfa(false);
+    })();
+    return () => { activo = false; };
+  }, [session?.user?.id, mfaRecargarTick]);
+
+  const factorTotpVerificado = factoresMfa.find((f) => f.status === 'verified');
+  const necesitaEnrolarMfa = !!session && !verificandoMfa && !factorTotpVerificado;
+  const necesitaChallengeMfa = !!session && !verificandoMfa && !!factorTotpVerificado
+    && aalMfa?.currentLevel === 'aal1' && aalMfa?.nextLevel === 'aal2';
 
   // Con sesión: resolver la fila de `usuario` (crearla la primera vez) y, la
   // primera vez por sesión, enrutar según onboarding_completado. El invitado sin
@@ -380,12 +417,30 @@ function App() {
     setPantalla('login');
   };
 
-  if (authCargando) {
+  if (authCargando || (session && verificandoMfa)) {
     return (
       <div className="app-cargando">
         <div className="app-cargando-spinner" aria-hidden="true" />
         <p className="app-cargando-texto">Cargando…</p>
       </div>
+    );
+  }
+
+  if (necesitaEnrolarMfa) {
+    return (
+      <MfaEnrolamiento
+        onCompletado={() => setMfaRecargarTick((t) => t + 1)}
+        onCerrarSesion={handleCerrarSesionGlobal}
+      />
+    );
+  }
+  if (necesitaChallengeMfa) {
+    return (
+      <MfaChallenge
+        factorId={factorTotpVerificado.id}
+        onVerificado={() => setMfaRecargarTick((t) => t + 1)}
+        onCerrarSesion={handleCerrarSesionGlobal}
+      />
     );
   }
 
