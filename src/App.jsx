@@ -114,6 +114,9 @@ function App() {
     });
   }, []);
 
+  const [avisoSesionExpirada, setAvisoSesionExpirada] = useState(false);
+  const cierreManualRef = useRef(false);
+
   // Arranque de auth: sesión inicial + suscripción a cambios de sesión.
   useEffect(() => {
     let activo = true;
@@ -124,13 +127,22 @@ function App() {
       setAuthInicializada(true);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_evento, nuevaSesion) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((evento, nuevaSesion) => {
       if (!activo) return;
       setSession(nuevaSesion ?? null);
       setAuthInicializada(true);
       if (!nuevaSesion) {
         setUsuarioActual(null);
         rutaAplicadaRef.current = false;
+        // Perdimos la sesión sin que fuera un clic nuestro en "Cerrar sesión"
+        // (cierreManualRef): el refresh token venció o se invalidó. Mandamos
+        // al usuario a Login con un aviso claro en vez de dejarlo varado en
+        // la pantalla en la que estaba.
+        if (evento === 'SIGNED_OUT' && !cierreManualRef.current) {
+          setAvisoSesionExpirada(true);
+          setPantalla('login');
+        }
+        cierreManualRef.current = false;
       }
     });
 
@@ -403,6 +415,8 @@ function App() {
   };
 
   const handleCerrarSesionGlobal = async () => {
+    cierreManualRef.current = true;
+    setAvisoSesionExpirada(false);
     try {
       await supabase.auth.signOut();
     } catch (e) {
@@ -478,6 +492,7 @@ function App() {
       <Login
         onIniciarComoInvitado={() => setPantalla('proposito')}
         onVolverALanding={() => setPantalla('landing')}
+        sesionExpirada={avisoSesionExpirada}
       />
     );
   }
