@@ -155,17 +155,17 @@ export function useNegocio(usuarioId) {
     }
     let activo = true;
     supabase
-      .from('qr_sello')
-      .select('id, token, nombre_actividad, color, fecha_creacion, fecha_expiracion, limite_canjes')
-      .eq('negocio_id', negocio.id)
-      .order('fecha_creacion', { ascending: false })
+      .rpc('mis_actividades_qr', { p_negocio_id: negocio.id })
       .then(({ data, error }) => {
         if (!activo) return;
         if (error) {
           console.error('Error cargando actividades QR:', error);
           setActividadesQR([]);
+        } else if (!data.exito) {
+          console.error('Error cargando actividades QR:', data.mensaje);
+          setActividadesQR([]);
         } else {
-          setActividadesQR(data || []);
+          setActividadesQR(data.actividades || []);
         }
       });
     return () => { activo = false; };
@@ -390,27 +390,24 @@ export function useNegocio(usuarioId) {
   const crearActividadQR = useCallback(async ({ nombre, color, limiteCanjes, fechaExpiracion }) => {
     if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
 
-    const token = Math.random().toString(36).slice(2, 10).toUpperCase();
-
-    const { data, error } = await supabase
-      .from('qr_sello')
-      .insert({
-        negocio_id: negocio.id,
-        token,
-        nombre_actividad: nombre,
-        color,
-        limite_canjes: limiteCanjes || null,
-        fecha_expiracion: fechaExpiracion || null,
-      })
-      .select()
-      .single();
+    const { data, error } = await supabase.rpc('crear_actividad_qr', {
+      p_negocio_id: negocio.id,
+      p_nombre_actividad: nombre,
+      p_color: color,
+      p_limite_canjes: limiteCanjes || null,
+      p_fecha_expiracion: fechaExpiracion || null,
+    });
 
     if (error) {
       console.error('Error creando actividad QR:', error);
       return { exito: false, mensaje: 'No se pudo crear la actividad. Intenta de nuevo.' };
     }
 
-    setActividadesQR((prev) => [data, ...prev]);
+    if (!data.exito) {
+      return { exito: false, mensaje: data.mensaje };
+    }
+
+    setActividadesQR((prev) => [data.actividad, ...prev]);
 
     if (fechaExpiracion) {
       const { error: errorEvento } = await supabase
