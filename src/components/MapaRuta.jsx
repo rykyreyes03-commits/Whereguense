@@ -13,7 +13,7 @@ import { useNegociosActivos } from '../hooks/useNegociosActivos';
 import PanelNegocio from './PanelNegocio';
 import PerfilNegocioPublico from './PerfilNegocioPublico';
 
-const RADIO_GEOFENCE_METROS = 80;
+const RADIO_GEOFENCE_DEFECTO = 80;
 
 const iconoUbicacion = L.divIcon({
   className: 'ubicacion-usuario-icono',
@@ -133,8 +133,9 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
         sitio.position[0],
         sitio.position[1]
       );
-      if (distancia <= RADIO_GEOFENCE_METROS) {
-        onSellarAutomatico?.(sitio);
+      const radio = sitio.radioSelloMetros ?? RADIO_GEOFENCE_DEFECTO;
+      if (distancia <= radio) {
+        onSellarAutomatico?.(sitio, ubicacion);
       }
     });
   }, [ubicacion, sitios, onSellarAutomatico]);
@@ -238,19 +239,25 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
         ref={mapRef}
         center={[12.4375, -86.8783]}
         zoom={13.5}
+        maxZoom={20}
         zoomControl={false}
         style={{ flex: 1, width: '100%' }}
       >
         <TileLayer
           url={`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${import.meta.env.VITE_CARTO_API_KEY}`}
+          maxZoom={20}
           attribution='&copy; OpenStreetMap contributors &copy; CARTO'
         />
         {sitios.map(sitio => (
           <Circle
             key={`radio-${sitio.id}`}
             center={sitio.position}
-            radius={RADIO_GEOFENCE_METROS}
-            pathOptions={{ className: 'mapa-geofence', weight: 1, fillOpacity: 0.08 }}
+            radius={sitio.radioSelloMetros ?? RADIO_GEOFENCE_DEFECTO}
+            pathOptions={{
+              className: `mapa-geofence mapa-geofence-delay-${sitio.id % 3}`,
+              weight: 1,
+              fillOpacity: 0.08,
+            }}
           />
         ))}
 

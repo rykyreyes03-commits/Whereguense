@@ -40,35 +40,39 @@ export function useSellos(usuarioId) {
     return () => { activo = false; };
   }, [usuarioId]);
 
-  const sellar = useCallback(async (sitio) => {
-    if (!usuarioId) {
-      return { exito: false, mensaje: 'Necesitas iniciar sesión.' };
-    }
+  const sellar = useCallback(async (sitio, ubicacionUsuario) => {
+    if (!usuarioId) return { exito: false, mensaje: 'Necesitas iniciar sesión.' };
+    if (!ubicacionUsuario) return { exito: false, mensaje: 'No se pudo obtener tu ubicación.' };
     if (sellos.some((s) => s.sitioId === sitio.id)) {
       return { exito: false, mensaje: `Ya tienes el sello de ${sitio.name}` };
     }
 
-    const { data, error } = await supabase
-      .from('sello')
-      .insert({
-        usuario_id: usuarioId,
-        sitio_id: sitio.id,
-        tipo: 'geolocalizacion',
-      })
-      .select('id, sitio_id, qr_sello_id, tipo, fecha_sello, qr_sello(nombre_actividad)')
-      .single();
+    const { data, error } = await supabase.rpc('sellar_por_geolocalizacion', {
+      p_sitio_id: sitio.id,
+      p_lat: ubicacionUsuario.lat,
+      p_lng: ubicacionUsuario.lng,
+    });
 
     if (error) {
-      if (error.code === '23505') {
-        return { exito: false, mensaje: `Ya tienes el sello de ${sitio.name}` };
-      }
       console.error('Error guardando sello:', error);
       return { exito: false, mensaje: 'No se pudo guardar el sello. Intenta de nuevo.' };
     }
 
-    const nuevoSello = mapearSello(data);
-    setSellos((prev) => [...prev, nuevoSello]);
-    return { exito: true, mensaje: `¡Sello obtenido en ${sitio.name}!` };
+    if (!data.exito) {
+      return { exito: false, mensaje: data.mensaje };
+    }
+
+    const { data: filaSello, error: errorFila } = await supabase
+      .from('sello')
+      .select('id, sitio_id, qr_sello_id, tipo, fecha_sello, qr_sello(nombre_actividad)')
+      .eq('id', data.sello_id)
+      .single();
+
+    if (!errorFila && filaSello) {
+      setSellos((prev) => [...prev, mapearSello(filaSello)]);
+    }
+
+    return { exito: true, mensaje: data.mensaje };
   }, [usuarioId, sellos]);
 
   const canjearQR = useCallback(async (token) => {

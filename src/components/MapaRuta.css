@@ -228,6 +228,28 @@
 .mapa-geofence {
   stroke: var(--color-turquoise);
   fill: var(--color-turquoise);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation-name: geofence-pulse;
+  animation-duration: 2.8s;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+}
+.mapa-geofence-delay-0 { animation-delay: 0s; }
+.mapa-geofence-delay-1 { animation-delay: 0.9s; }
+.mapa-geofence-delay-2 { animation-delay: 1.8s; }
+
+@keyframes geofence-pulse {
+  0%   { transform: scale(0.15); opacity: 0.55; }
+  70%  { opacity: 0.12; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mapa-geofence {
+    animation: none;
+    opacity: 0.08;
+  }
 }
 
 /* ===== Popup ===== */

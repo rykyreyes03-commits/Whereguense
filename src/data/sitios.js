@@ -3,6 +3,7 @@ export const sitios = [
     id: 1,
     name: "Catedral de León",
     position: [12.435035, -86.878133],
+    radioSelloMetros: 30,
     desc: "Basílica declarada Patrimonio Mundial de la UNESCO en 2011.",
     historia: "La Catedral de León, oficialmente Real e Insigne Basílica de la Asunción de la Bienaventurada Virgen María, es uno de los monumentos más importantes de Nicaragua. Su construcción comenzó en 1747 y llegó hasta las primeras décadas del siglo XIX, siguiendo diseños del arquitecto guatemalteco Diego José de Porres Esquivel; su lenguaje combina elementos barrocos y neoclásicos y expresa la transición entre ambos estilos. En su interior se conservan obras de arte, capillas, criptas y espacios relacionados con la historia religiosa y política del país, además de la tumba de Rubén Darío y la pila bautismal asociada a su bautismo. UNESCO la incorporó a la Lista del Patrimonio Mundial en 2011 por su valor arquitectónico, cultural e histórico. Obra mayor de la arquitectura religiosa nicaragüense y Patrimonio Mundial desde 2011.",
     badge: "cathedral"
@@ -19,6 +20,7 @@ export const sitios = [
     id: 3,
     name: "Casa de la Cultura",
     position: [12.435, -86.88],
+    radioSelloMetros: 30,
     desc: "Centro de expresiones artísticas y culturales",
     historia: "Espacio dedicado a la promoción de las artes en León.",
     badge: "guitar"
@@ -27,6 +29,7 @@ export const sitios = [
     id: 4,
     name: "Parque Central de León",
     position: [12.434634, -86.879385],
+    radioSelloMetros: 30,
     desc: "Principal plaza cívica del centro histórico de León.",
     historia: "Parque Central Máximo Jerez es un punto de interés dentro del patrimonio leonés. Este espacio urbano forma parte de la estructura histórica de León y ayuda a interpretar la relación entre plazas, monumentos, convivencia ciudadana y memoria colectiva. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Principal plaza cívica del centro histórico y nodo de la vida urbana tradicional.",
     badge: "flower"
@@ -35,6 +38,7 @@ export const sitios = [
     id: 5,
     name: "Iglesia de San Juan Bautista",
     position: [12.438, -86.88],
+    radioSelloMetros: 30,
     desc: "Templo colonial del sector San Juan.",
     historia: "Iglesia San Juan Bautista es un punto de interés dentro del patrimonio leonés. En el conjunto religioso de León, este templo o ruina forma parte del paisaje que hizo de la ciudad un referente del patrimonio colonial y de la tradición religiosa nicaragüense. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Templo colonial del sector San Juan, asociado al tejido histórico de la ciudad.",
     badge: "sun"
@@ -42,7 +46,8 @@ export const sitios = [
   {
     id: 6,
     name: "Museo de la Revolución",
-    position: [12.434634, -86.879385],
+    position: [12.434744, -86.879495],
+    radioSelloMetros: 30,
     desc: "Museo de memoria política y revolucionaria del centro histórico.",
     historia: "Museo de la Revolución es un punto de interés dentro del patrimonio leonés. Como espacio de memoria, investigación, exhibición o educación, este lugar contribuye a explicar la identidad histórica y cultural de León y de sus comunidades. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Museo de memoria política y revolucionaria del centro histórico de León.",
     badge: "vessel"
@@ -51,6 +56,7 @@ export const sitios = [
     id: 7,
     name: "Teatro Municipal",
     position: [12.433721, -86.880561],
+    radioSelloMetros: 30,
     desc: "Primer edificio teatral de Nicaragua.",
     historia: "El Teatro Municipal José de la Cruz Mena ocupa un lugar singular en la historia cultural de Nicaragua porque fue el primer edificio teatral del país. La primera piedra se colocó en febrero de 1884 y el proyecto fue ejecutado por el arquitecto costarricense Luis Cruz; el teatro abrió sus puertas en 1885 y se convirtió en un espacio de convergencia para teatro, ópera, música y actividades literarias. En el acto de colocación de la primera piedra, un joven Rubén Darío leyó el poema «El arte», lo que reforzó su vínculo con el circuito cultural de León. El edificio sufrió un incendio en 1956 que destruyó su interior, pero su fachada sobrevivió y posteriormente fue reconstruido con cooperación internacional. Hoy continúa siendo uno de los principales escenarios culturales de la ciudad. Primer edificio teatral de Nicaragua y escenario de actividad cultural histórica.",
     badge: "ruben_dario"
@@ -83,6 +89,7 @@ export const sitios = [
     id: 11,
     name: "Casa Museo y Archivo Rubén Darío",
     position: [12.434871, -86.882862],
+    radioSelloMetros: 30,
     desc: "Casa de infancia del poeta; hoy museo y archivo.",
     historia: "Casa Museo y Archivo Rubén Darío es la parada principal del circuito dariano en León y ocupa la casa solariega conocida como Las Cuatro Esquinas, donde Félix Rubén García Sarmiento vivió desde sus primeros días de vida hasta los 14 años. El museo fue creado por iniciativa del doctor Edgardo Buitrago e inaugurado en 1964; conserva espacios de la vivienda, objetos personales, documentos, manuscritos y una biblioteca especializada que permite reconstruir la infancia, formación y trayectoria del poeta. La importancia del lugar no depende únicamente de su relación con Darío: también muestra cómo era una casa leonesa de tradición colonial y cómo la arquitectura doméstica se convirtió en patrimonio cultural. Por ello funciona a la vez como museo literario, archivo histórico y punto de partida para comprender la identidad de León como ciudad de poetas. Casa de infancia del poeta; hoy museo y archivo.",
     badge: "casa_museo_y_archivo_ruben_dario"
@@ -91,6 +98,7 @@ export const sitios = [
     id: 12,
     name: "Estatua de Rubén Darío - Colegio La Salle",
     position: [12.435439, -86.883345],
+    radioSelloMetros: 30,
     desc: "Hito escultórico de la ruta relacionado con la memoria pública de Darío.",
     historia: "Estatua de Rubén Darío - Colegio La Salle es un punto de interés dentro del patrimonio leonés. Dentro del circuito dariano de León, este sitio adquiere valor por su relación directa o simbólica con la vida, educación, obra y memoria pública de Rubén Darío. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Hito escultórico de la ruta relacionado con la memoria pública de Darío.",
     badge: "estatua_de_ruben_dario_colegio_la_salle"
@@ -107,6 +115,7 @@ export const sitios = [
     id: 14,
     name: "Hotel El Convento / antiguo lugar vinculado a su infancia",
     position: [12.435732, -86.88164],
+    radioSelloMetros: 30,
     desc: "Lugar relacionado con la formación y vida temprana del poeta.",
     historia: "Hotel El Convento / antiguo lugar vinculado a su infancia es un punto de interés dentro del patrimonio leonés. Dentro del circuito dariano de León, este sitio adquiere valor por su relación directa o simbólica con la vida, educación, obra y memoria pública de Rubén Darío. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Lugar relacionado con la formación y vida temprana del poeta.",
     badge: "hotel_el_convento_antiguo_lugar"
@@ -123,6 +132,7 @@ export const sitios = [
     id: 16,
     name: "Parque de los Poetas",
     position: [12.437448, -86.880622],
+    radioSelloMetros: 30,
     desc: "Espacio dedicado a la tradición literaria leonesa.",
     historia: "Parque de los Poetas es un punto de interés dentro del patrimonio leonés. Dentro del circuito dariano de León, este sitio adquiere valor por su relación directa o simbólica con la vida, educación, obra y memoria pública de Rubén Darío. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Espacio dedicado a la tradición literaria leonesa.",
     badge: "parque_de_los_poetas"
@@ -147,6 +157,7 @@ export const sitios = [
     id: 19,
     name: "Antigua Casa de Salud Debayle",
     position: [12.43416, -86.877396],
+    radioSelloMetros: 30,
     desc: "Debayle y a la vida intelectual de León.",
     historia: "Antigua Casa de Salud Debayle es un punto de interés dentro del patrimonio leonés. Dentro del circuito dariano de León, este sitio adquiere valor por su relación directa o simbólica con la vida, educación, obra y memoria pública de Rubén Darío. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Inmueble histórico vinculado al doctor Luis H. Debayle y a la vida intelectual de León.",
     badge: "antigua_casa_de_salud_debayle"
@@ -179,6 +190,7 @@ export const sitios = [
     id: 23,
     name: "Iglesia La Merced",
     position: [12.436486, -86.878989],
+    radioSelloMetros: 30,
     desc: "Santuario histórico y una de las fachadas más reconocibles de León.",
     historia: "Iglesia La Merced es un punto de interés dentro del patrimonio leonés. En el conjunto religioso de León, este templo o ruina forma parte del paisaje que hizo de la ciudad un referente del patrimonio colonial y de la tradición religiosa nicaragüense. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Santuario histórico y una de las fachadas más reconocibles de León.",
     badge: "iglesia_la_merced"
@@ -187,6 +199,7 @@ export const sitios = [
     id: 24,
     name: "Iglesia El Calvario",
     position: [12.43179, -86.872782],
+    radioSelloMetros: 30,
     desc: "Templo histórico de marcada presencia urbana y vínculo con la memoria de la ciudad.",
     historia: "Iglesia El Calvario es un punto de interés dentro del patrimonio leonés. En el conjunto religioso de León, este templo o ruina forma parte del paisaje que hizo de la ciudad un referente del patrimonio colonial y de la tradición religiosa nicaragüense. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Templo histórico de marcada presencia urbana y vínculo con la memoria de la ciudad.",
     badge: "iglesia_el_calvario"
@@ -195,6 +208,7 @@ export const sitios = [
     id: 25,
     name: "Iglesia San Francisco de Asís",
     position: [12.4349, -86.8829],
+    radioSelloMetros: 30,
     desc: "Templo y convento histórico relacionado con la tradición franciscana y la ruta de Darío.",
     historia: "Iglesia San Francisco de Asís es un punto de interés dentro del patrimonio leonés. En el conjunto religioso de León, este templo o ruina forma parte del paisaje que hizo de la ciudad un referente del patrimonio colonial y de la tradición religiosa nicaragüense. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Templo y convento histórico relacionado con la tradición franciscana y la ruta de Darío.",
     badge: "iglesia_san_francisco_de_asis"
@@ -203,6 +217,7 @@ export const sitios = [
     id: 26,
     name: "Iglesia San Juan Bautista de Sutiaba",
     position: [12.4335, -86.892],
+    radioSelloMetros: 30,
     desc: "Principal templo histórico del barrio indígena de Sutiaba.",
     historia: "La Iglesia San Juan Bautista de Sutiaba se encuentra frente a la plaza principal del barrio indígena de Sutiaba y forma parte de un conjunto patrimonial que conecta la historia religiosa con la memoria indígena de León. Su arquitectura se reconoce por una fachada de cuerpos decrecientes, elementos clásicos y un interior sobrio con pinturas, adornos dorados y un púlpito de madera. El templo es especialmente importante porque Sutiaba conserva una tradición histórica anterior a la ciudad colonial y porque sus espacios religiosos fueron utilizados para reorganizar la vida comunitaria durante la época colonial. A su alrededor se encuentran la Casa Cural, el Museo de Arte Sacro, el Museo Comunitario Marina Maradiaga y el Museo Arqueológico Adiact, lo que convierte al sector en uno de los núcleos culturales más densos de León. Principal templo histórico del barrio indígena de Sutiaba.",
     badge: "iglesia_san_juan_bautista_de_sutiaba"
@@ -211,6 +226,7 @@ export const sitios = [
     id: 27,
     name: "Iglesia San Juan de Dios",
     position: [12.434, -86.88],
+    radioSelloMetros: 30,
     desc: "Templo tradicional declarado Patrimonio Artístico Nacional en 1983.",
     historia: "Iglesia San Juan de Dios es un punto de interés dentro del patrimonio leonés. En el conjunto religioso de León, este templo o ruina forma parte del paisaje que hizo de la ciudad un referente del patrimonio colonial y de la tradición religiosa nicaragüense. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Templo tradicional declarado Patrimonio Artístico Nacional en 1983.",
     badge: "iglesia_san_juan_de_dios"
@@ -248,30 +264,6 @@ export const sitios = [
     badge: "iglesia_nuestra_senora_del_pilar_de"
   },
   {
-    id: 32,
-    name: "Iglesia San José",
-    position: [12.434, -86.876],
-    desc: "Bien religioso incluido en la relación de patrimonio cultural de León.",
-    historia: "Iglesia San José es un punto de interés dentro del patrimonio leonés. En el conjunto religioso de León, este templo o ruina forma parte del paisaje que hizo de la ciudad un referente del patrimonio colonial y de la tradición religiosa nicaragüense. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Bien religioso incluido en la relación de patrimonio cultural de León.",
-    badge: "iglesia_san_jose"
-  },
-  {
-    id: 33,
-    name: "Iglesia San Sebastián",
-    position: [12.43, -86.894],
-    desc: "Ruinas y templo vinculados a episodios históricos de la ciudad.",
-    historia: "Iglesia San Sebastián es un punto de interés dentro del patrimonio leonés. En el conjunto religioso de León, este templo o ruina forma parte del paisaje que hizo de la ciudad un referente del patrimonio colonial y de la tradición religiosa nicaragüense. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Ruinas y templo vinculados a episodios históricos de la ciudad.",
-    badge: "iglesia_san_sebastian"
-  },
-  {
-    id: 34,
-    name: "Ermita Nuestra Señora de los Dolores / El Calvarito",
-    position: [12.432, -86.873],
-    desc: "Pequeño templo tradicional del paisaje religioso de León.",
-    historia: "Ermita Nuestra Señora de los Dolores / El Calvarito es un punto de interés dentro del patrimonio leonés. En el conjunto religioso de León, este templo o ruina forma parte del paisaje que hizo de la ciudad un referente del patrimonio colonial y de la tradición religiosa nicaragüense. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Pequeño templo tradicional del paisaje religioso de León.",
-    badge: "ermita_nuestra_senora_de_los_dolores_el"
-  },
-  {
     id: 35,
     name: "Iglesia San Isidro Labrador",
     position: [12.44, -86.9],
@@ -286,14 +278,6 @@ export const sitios = [
     desc: "Ermita del conjunto histórico-religioso de Sutiaba.",
     historia: "Ermita de San Pedro de Sutiaba es un punto de interés dentro del patrimonio leonés. En el conjunto religioso de León, este templo o ruina forma parte del paisaje que hizo de la ciudad un referente del patrimonio colonial y de la tradición religiosa nicaragüense. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Ermita del conjunto histórico-religioso de Sutiaba.",
     badge: "ermita_de_san_pedro_de_sutiaba"
-  },
-  {
-    id: 37,
-    name: "Capilla del Colegio La Asunción",
-    position: [12.435, -86.884],
-    desc: "Capilla neogótica integrada al antiguo conjunto episcopal y educativo.",
-    historia: "Capilla del Colegio La Asunción es un punto de interés dentro del patrimonio leonés. En el conjunto religioso de León, este templo o ruina forma parte del paisaje que hizo de la ciudad un referente del patrimonio colonial y de la tradición religiosa nicaragüense. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Capilla neogótica integrada al antiguo conjunto episcopal y educativo.",
-    badge: "capilla_del_colegio_la_asuncion"
   },
   {
     id: 38,
@@ -328,22 +312,6 @@ export const sitios = [
     badge: "ruinas_de_ermita_san_sebastian_sutiaba"
   },
   {
-    id: 42,
-    name: "Archivo Diocesano",
-    position: [12.4352, -86.878],
-    desc: "Archivo histórico religioso que conserva documentación de larga duración de la diócesis.",
-    historia: "Archivo Diocesano es un punto de interés dentro del patrimonio leonés. Como espacio de memoria, investigación, exhibición o educación, este lugar contribuye a explicar la identidad histórica y cultural de León y de sus comunidades. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Archivo histórico religioso que conserva documentación de larga duración de la diócesis.",
-    badge: "archivo_diocesano"
-  },
-  {
-    id: 43,
-    name: "Archivo Histórico Municipal de León",
-    position: [12.4353, -86.879],
-    desc: "Fondo documental de valor para estudiar la historia administrativa y urbana de León.",
-    historia: "Archivo Histórico Municipal de León es un punto de interés dentro del patrimonio leonés. Como espacio de memoria, investigación, exhibición o educación, este lugar contribuye a explicar la identidad histórica y cultural de León y de sus comunidades. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Fondo documental de valor para estudiar la historia administrativa y urbana de León.",
-    badge: "archivo_historico_municipal_de_leon"
-  },
-  {
     id: 44,
     name: "Museo Arqueológico Adiact",
     position: [12.434793, -86.8939],
@@ -363,6 +331,7 @@ export const sitios = [
     id: 46,
     name: "Centro Cultural y Museo Rigoberto López Pérez",
     position: [12.436583, -86.880774],
+    radioSelloMetros: 30,
     desc: "Antigua Casa del Obrero, hoy espacio museístico relacionado con la historia política de Nicaragua.",
     historia: "Centro Cultural y Museo Rigoberto López Pérez es un punto de interés dentro del patrimonio leonés. Como espacio de memoria, investigación, exhibición o educación, este lugar contribuye a explicar la identidad histórica y cultural de León y de sus comunidades. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Antigua Casa del Obrero, hoy espacio museístico relacionado con la historia política de Nicaragua.",
     badge: "centro_cultural_y_museo_rigoberto_lopez"
@@ -387,6 +356,7 @@ export const sitios = [
     id: 49,
     name: "Centro de Arte Fundación Ortiz-Gurdián",
     position: [12.43471, -86.881941],
+    radioSelloMetros: 30,
     desc: "Conjunto de casas patrimoniales convertido en importante espacio de arte y cultura.",
     historia: "El Centro de Arte Fundación Ortiz-Gurdián ocupa varias casas patrimoniales del centro histórico de León y combina conservación arquitectónica con exhibición de arte. El conjunto es importante porque muestra cómo la vivienda tradicional leonesa puede adaptarse a un uso cultural contemporáneo sin perder la lectura de sus patios, corredores, proporciones y materiales. Las casas Norberto Ramírez y Derbyshire, entre otras, forman parte del circuito y ayudan a explicar la evolución de la arquitectura doméstica de la ciudad durante los siglos XIX y XX. Además, el centro se convirtió en uno de los espacios artísticos más reconocidos de León, vinculando patrimonio construido y patrimonio artístico. Esta integración entre arquitectura histórica, exposiciones y actividades culturales es una de las razones por las que el centro ocupa un lugar destacado dentro del turismo cultural leonés. Conjunto de casas patrimoniales convertido en importante espacio de arte y cultura.",
     badge: "centro_de_arte_fundacion_ortiz_gurdian"
@@ -395,6 +365,7 @@ export const sitios = [
     id: 50,
     name: "Centro Sociocultural de Sutiaba Marina Maradiaga",
     position: [12.4347, -86.888],
+    radioSelloMetros: 30,
     desc: "Espacio comunitario dedicado a la cultura, memoria y creatividad de Sutiaba.",
     historia: "Centro Sociocultural de Sutiaba Marina Maradiaga es un punto de interés dentro del patrimonio leonés. Como espacio de memoria, investigación, exhibición o educación, este lugar contribuye a explicar la identidad histórica y cultural de León y de sus comunidades. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Espacio comunitario dedicado a la cultura, memoria y creatividad de Sutiaba.",
     badge: "centro_sociocultural_de_sutiaba_marina"
@@ -403,6 +374,7 @@ export const sitios = [
     id: 51,
     name: "Museo de Arte Sacro Monseñor César Bosco Vivas Robelo",
     position: [12.4351, -86.8782],
+    radioSelloMetros: 30,
     desc: "Colección y espacio de interpretación del patrimonio religioso de Sutiaba.",
     historia: "Museo de Arte Sacro Monseñor César Bosco Vivas Robelo es un punto de interés dentro del patrimonio leonés. Como espacio de memoria, investigación, exhibición o educación, este lugar contribuye a explicar la identidad histórica y cultural de León y de sus comunidades. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Colección y espacio de interpretación del patrimonio religioso de Sutiaba.",
     badge: "museo_de_arte_sacro_monsenor_cesar"
@@ -411,6 +383,7 @@ export const sitios = [
     id: 52,
     name: "Biblioteca Pública Rubén Darío",
     position: [12.4369, -86.8811],
+    radioSelloMetros: 30,
     desc: "Biblioteca pública que prolonga la tradición literaria de la ciudad y el legado de Darío.",
     historia: "Biblioteca Pública Rubén Darío es un punto de interés dentro del patrimonio leonés. Como espacio de memoria, investigación, exhibición o educación, este lugar contribuye a explicar la identidad histórica y cultural de León y de sus comunidades. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Biblioteca pública que prolonga la tradición literaria de la ciudad y el legado de Darío.",
     badge: "biblioteca_publica_ruben_dario"
@@ -419,6 +392,7 @@ export const sitios = [
     id: 53,
     name: "Centro Cultural Rubén Darío",
     position: [12.436989, -86.881184],
+    radioSelloMetros: 30,
     desc: "Espacio contemporáneo destinado a arte, literatura, biblioteca y tecnología.",
     historia: "Centro Cultural Rubén Darío es un punto de interés dentro del patrimonio leonés. Como espacio de memoria, investigación, exhibición o educación, este lugar contribuye a explicar la identidad histórica y cultural de León y de sus comunidades. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Espacio contemporáneo destinado a arte, literatura, biblioteca y tecnología.",
     badge: "centro_cultural_ruben_dario"
@@ -435,6 +409,7 @@ export const sitios = [
     id: 55,
     name: "Muralismo histórico de León",
     position: [12.435478, -86.87849],
+    radioSelloMetros: 30,
     desc: "Conjunto de murales y representaciones públicas que narran episodios de la historia leonesa.",
     historia: "Muralismo histórico de León es un punto de interés dentro del patrimonio leonés. Como espacio de memoria, investigación, exhibición o educación, este lugar contribuye a explicar la identidad histórica y cultural de León y de sus comunidades. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Conjunto de murales y representaciones públicas que narran episodios de la historia leonesa.",
     badge: "muralismo_historico_de_leon"
@@ -443,6 +418,7 @@ export const sitios = [
     id: 56,
     name: "Alcaldía Municipal de León / Edificio Central Marcos Somarriba",
     position: [12.435317, -86.879274],
+    radioSelloMetros: 30,
     desc: "Edificio institucional integrante del conjunto patrimonial del centro histórico.",
     historia: "Alcaldía Municipal de León / Edificio Central Marcos Somarriba es un punto de interés dentro del patrimonio leonés. El inmueble aparece dentro de los inventarios patrimoniales de León y ayuda a leer la evolución de la arquitectura civil, residencial, institucional o de servicios de la ciudad. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Edificio institucional integrante del conjunto patrimonial del centro histórico.",
     badge: "alcaldia_municipal_de_leon_edificio"
@@ -451,6 +427,7 @@ export const sitios = [
     id: 57,
     name: "Palacio Municipal, hoy Museo de la Insurrección",
     position: [12.434634, -86.879385],
+    radioSelloMetros: 30,
     desc: "Edificio civil reutilizado como espacio de memoria histórica.",
     historia: "Palacio Municipal, hoy Museo de la Insurrección es un punto de interés dentro del patrimonio leonés. El inmueble aparece dentro de los inventarios patrimoniales de León y ayuda a leer la evolución de la arquitectura civil, residencial, institucional o de servicios de la ciudad. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Edificio civil reutilizado como espacio de memoria histórica.",
     badge: "palacio_municipal_hoy_museo_de_la"
@@ -459,6 +436,7 @@ export const sitios = [
     id: 58,
     name: "Colegio Tridentino San Ramón",
     position: [12.436, -86.8795],
+    radioSelloMetros: 30,
     desc: "Edificio educativo de gran antigüedad y relevancia urbana, situado frente al parque central.",
     historia: "Colegio Tridentino San Ramón es un punto de interés dentro del patrimonio leonés. El inmueble aparece dentro de los inventarios patrimoniales de León y ayuda a leer la evolución de la arquitectura civil, residencial, institucional o de servicios de la ciudad. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Edificio educativo de gran antigüedad y relevancia urbana, situado frente al parque central.",
     badge: "colegio_tridentino_san_ramon"
@@ -467,6 +445,7 @@ export const sitios = [
     id: 59,
     name: "Palacio Episcopal",
     position: [12.4352, -86.8785],
+    radioSelloMetros: 30,
     desc: "Sede episcopal histórica del conjunto religioso y urbano alrededor de la Catedral.",
     historia: "Palacio Episcopal es un punto de interés dentro del patrimonio leonés. El inmueble aparece dentro de los inventarios patrimoniales de León y ayuda a leer la evolución de la arquitectura civil, residencial, institucional o de servicios de la ciudad. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Sede episcopal histórica del conjunto religioso y urbano alrededor de la Catedral.",
     badge: "palacio_episcopal"
@@ -494,14 +473,6 @@ export const sitios = [
     desc: "Uso cultural actual asociado al antiguo conjunto ferroviario.",
     historia: "Escuela de Música Municipal es un punto de interés dentro del patrimonio leonés. El inmueble aparece dentro de los inventarios patrimoniales de León y ayuda a leer la evolución de la arquitectura civil, residencial, institucional o de servicios de la ciudad. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Uso cultural actual asociado al antiguo conjunto ferroviario.",
     badge: "escuela_de_musica_municipal"
-  },
-  {
-    id: 63,
-    name: "Antiguo Cine González",
-    position: [12.4345, -86.879],
-    desc: "Testimonio de la historia urbana del entretenimiento y la vida social leonesa.",
-    historia: "Antiguo Cine González es un punto de interés dentro del patrimonio leonés. El inmueble aparece dentro de los inventarios patrimoniales de León y ayuda a leer la evolución de la arquitectura civil, residencial, institucional o de servicios de la ciudad. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Testimonio de la historia urbana del entretenimiento y la vida social leonesa.",
-    badge: "antiguo_cine_gonzalez"
   },
   {
     id: 64,
@@ -587,6 +558,7 @@ export const sitios = [
     id: 74,
     name: "Casa de la Familia Lacayo / Hotel La Perla",
     position: [12.437503, -86.87937],
+    radioSelloMetros: 30,
     desc: "Edificio de memoria hotelera y residencial integrado al patrimonio urbano.",
     historia: "Casa de la Familia Lacayo / Hotel La Perla es un punto de interés dentro del patrimonio leonés. El inmueble aparece dentro de los inventarios patrimoniales de León y ayuda a leer la evolución de la arquitectura civil, residencial, institucional o de servicios de la ciudad. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Edificio de memoria hotelera y residencial integrado al patrimonio urbano.",
     badge: "casa_de_la_familia_lacayo_hotel_la_perla"
@@ -627,6 +599,7 @@ export const sitios = [
     id: 79,
     name: "Conjunto de las Cuatro Esquinas",
     position: [12.434871, -86.882862],
+    radioSelloMetros: 30,
     desc: "Conjunto residencial asociado a la memoria familiar de Rubén Darío y a la arquitectura tradicional.",
     historia: "Conjunto de las Cuatro Esquinas es un punto de interés dentro del patrimonio leonés. El inmueble aparece dentro de los inventarios patrimoniales de León y ayuda a leer la evolución de la arquitectura civil, residencial, institucional o de servicios de la ciudad. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Conjunto residencial asociado a la memoria familiar de Rubén Darío y a la arquitectura tradicional.",
     badge: "conjunto_de_las_cuatro_esquinas"
@@ -656,14 +629,6 @@ export const sitios = [
     badge: "fortin_de_acosasco"
   },
   {
-    id: 83,
-    name: "Ruinas de la Casa de la Pólvora",
-    position: [12.44, -86.902],
-    desc: "Restos de arquitectura militar y almacén histórico vinculado a la defensa urbana.",
-    historia: "Ruinas de la Casa de la Pólvora es un punto de interés dentro del patrimonio leonés. Este lugar forma parte de la memoria política de León y permite comprender la importancia que tuvo la ciudad en los conflictos sociales y revolucionarios del siglo XX. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Restos de arquitectura militar y almacén histórico vinculado a la defensa urbana.",
-    badge: "ruinas_de_la_casa_de_la_polvora"
-  },
-  {
     id: 84,
     name: "Antiguo Ex Comando de la Guardia Nacional",
     position: [12.434, -86.879],
@@ -691,6 +656,7 @@ export const sitios = [
     id: 87,
     name: "Mausoleo a los Héroes y Mártires de la Revolución",
     position: [12.4348, -86.878],
+    radioSelloMetros: 30,
     desc: "Espacio funerario y conmemorativo de enorme carga simbólica en la ciudad.",
     historia: "Mausoleo a los Héroes y Mártires de la Revolución es un punto de interés dentro del patrimonio leonés. Este lugar forma parte de la memoria política de León y permite comprender la importancia que tuvo la ciudad en los conflictos sociales y revolucionarios del siglo XX. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Espacio funerario y conmemorativo de enorme carga simbólica en la ciudad.",
     badge: "mausoleo_a_los_heroes_y_martires_de_la"
@@ -715,6 +681,7 @@ export const sitios = [
     id: 90,
     name: "Galería Héroes y Mártires de León",
     position: [12.4348, -86.882],
+    radioSelloMetros: 30,
     desc: "Espacio de memoria comunitaria dedicado a personas vinculadas a la historia revolucionaria.",
     historia: "Galería Héroes y Mártires de León es un punto de interés dentro del patrimonio leonés. Este lugar forma parte de la memoria política de León y permite comprender la importancia que tuvo la ciudad en los conflictos sociales y revolucionarios del siglo XX. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Espacio de memoria comunitaria dedicado a personas vinculadas a la historia revolucionaria.",
     badge: "galeria_heroes_y_martires_de_leon"
@@ -731,6 +698,7 @@ export const sitios = [
     id: 92,
     name: "Placa a los Héroes y Mártires de Veracruz",
     position: [12.42683, -86.91279],
+    radioSelloMetros: 30,
     desc: "Elemento conmemorativo que preserva la memoria de los acontecimientos de Veracruz.",
     historia: "Placa a los Héroes y Mártires de Veracruz es un punto de interés dentro del patrimonio leonés. Este lugar forma parte de la memoria política de León y permite comprender la importancia que tuvo la ciudad en los conflictos sociales y revolucionarios del siglo XX. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Elemento conmemorativo que preserva la memoria de los acontecimientos de Veracruz.",
     badge: "placa_a_los_heroes_y_martires_de"
@@ -739,6 +707,7 @@ export const sitios = [
     id: 93,
     name: "Placa de la Iglesia El Calvario vinculada a los hechos de la insurrección",
     position: [12.43179, -86.872782],
+    radioSelloMetros: 30,
     desc: "Señal de memoria integrada al paisaje histórico del templo y su entorno.",
     historia: "Placa de la Iglesia El Calvario vinculada a los hechos de la insurrección es un punto de interés dentro del patrimonio leonés. Este lugar forma parte de la memoria política de León y permite comprender la importancia que tuvo la ciudad en los conflictos sociales y revolucionarios del siglo XX. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Señal de memoria integrada al paisaje histórico del templo y su entorno.",
     badge: "placa_de_la_iglesia_el_calvario"
@@ -747,6 +716,7 @@ export const sitios = [
     id: 94,
     name: "Cancha / espacio histórico 23 de Julio",
     position: [12.435, -86.88],
+    radioSelloMetros: 30,
     desc: "Espacio urbano relacionado con la memoria juvenil y política de León.",
     historia: "Cancha / espacio histórico 23 de Julio es un punto de interés dentro del patrimonio leonés. Este lugar forma parte de la memoria política de León y permite comprender la importancia que tuvo la ciudad en los conflictos sociales y revolucionarios del siglo XX. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Espacio urbano relacionado con la memoria juvenil y política de León.",
     badge: "cancha_espacio_historico_23_de_julio"
@@ -755,6 +725,7 @@ export const sitios = [
     id: 95,
     name: "Reparto Veracruz / sitio histórico de los Héroes de Veracruz",
     position: [12.42683, -86.91279],
+    radioSelloMetros: 30,
     desc: "Sector urbano asociado a hechos de memoria revolucionaria y comunitaria.",
     historia: "Reparto Veracruz / sitio histórico de los Héroes de Veracruz es un punto de interés dentro del patrimonio leonés. Este lugar forma parte de la memoria política de León y permite comprender la importancia que tuvo la ciudad en los conflictos sociales y revolucionarios del siglo XX. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Sector urbano asociado a hechos de memoria revolucionaria y comunitaria.",
     badge: "reparto_veracruz_sitio_historico_de_los"
@@ -768,11 +739,11 @@ export const sitios = [
     badge: "cementerio_de_guadalupe"
   },
   {
-    id: 97,
-    name: "Nicho de Piedra de Sutiaba",
-    position: [12.434, -86.892],
-    desc: "Vestigio indígena asociado a memoria ancestral y prácticas ceremoniales de Sutiaba.",
-    historia: "Nicho de Piedra de Sutiaba es un punto de interés dentro del patrimonio leonés. Este vestigio pertenece al entorno cultural de Sutiaba y permite acercarse a las capas indígenas y ancestrales que preceden y acompañan la historia colonial de León. Los inventarios y guías consultados lo relacionan con el tejido histórico de la ciudad, ya sea por su arquitectura, por los acontecimientos que se desarrollaron en el lugar o por su función cultural. Su valor se entiende mejor al observarlo dentro del conjunto urbano: calles, plazas, templos, viviendas, instituciones y espacios de memoria forman una red que conserva distintas capas de la historia de León, desde la época colonial y republicana hasta la vida intelectual, universitaria y política del siglo XX. Más que un edificio aislado, este sitio funciona como evidencia de cómo la sociedad leonesa construyó su identidad y cómo esa identidad sigue presente en el patrimonio material y en las prácticas culturales actuales. Vestigio indígena asociado a memoria ancestral y prácticas ceremoniales de Sutiaba.",
-    badge: "nicho_de_piedra_de_sutiaba"
+    id: 98,
+    name: "Puerto Salvador Allende",
+    position: [12.164023, -86.278134],
+    desc: "Malecón turístico sobre el Lago Xolotlán, en Managua, con restaurantes, paseos en bote y vista al volcán Momotombo.",
+    historia: "El Puerto Salvador Allende está en la orilla sur del Lago Xolotlán (Lago de Managua), en el antiguo centro de la capital, cerca del Teatro Nacional Rubén Darío y la vieja Catedral de Managua. Lleva el nombre del expresidente chileno Salvador Allende y se desarrolló como un malecón moderno con restaurantes, kioscos y paseos en bote hacia la Isla del Amor, desde donde se aprecia el volcán Momotombo al otro lado del lago.",
+    badge: "puerto_salvador_allende"
   },
 ];

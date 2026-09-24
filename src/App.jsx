@@ -249,8 +249,8 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id]);
 
-  const handleSellar = async (sitio) => {
-    const resultado = await sellar(sitio);
+  const handleSellar = async (sitio, ubicacion) => {
+    const resultado = await sellar(sitio, ubicacion);
     if (resultado.exito) {
       setToastSitio(sitio);
     } else {
@@ -258,8 +258,8 @@ function App() {
     }
   };
 
-  const intentarSellarPorGeofencing = async (sitio) => {
-    const resultado = await sellar(sitio);
+  const intentarSellarPorGeofencing = async (sitio, ubicacion) => {
+    const resultado = await sellar(sitio, ubicacion);
     if (resultado.exito) {
       setToastSitio(sitio);
     }
