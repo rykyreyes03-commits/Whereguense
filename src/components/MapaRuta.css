@@ -337,12 +337,17 @@
   bottom: calc(88px + env(safe-area-inset-bottom));
   z-index: 1001;
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 10px;
   padding: 12px 14px;
   background: var(--color-white);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
+}
+.mapa-ruta-resumen-fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 .mapa-ruta-resumen-info {
   flex: 1;
@@ -386,6 +391,35 @@
   transition: background 0.15s ease;
 }
 .mapa-ruta-resumen-cancelar:hover { background: rgba(30, 42, 120, 0.06); }
+
+/* Selector de modo de transporte -- mismo tratamiento "activo" que las
+   pestañas de Personalizacion.css (borde + relleno var(--color-ultramarine)
+   cuando esta seleccionado), solo que mas chico para caber en esta tarjeta. */
+.mapa-ruta-modos {
+  display: flex;
+  gap: 8px;
+}
+.mapa-ruta-modos button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  color: var(--color-primary);
+  padding: 6px 8px;
+  font-family: var(--font-body);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.mapa-ruta-modos button.activo {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
 
 /* ===== Aviso de error de ubicación ===== */
 .mapa-ubicacion-error {

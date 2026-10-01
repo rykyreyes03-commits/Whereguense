@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -122,6 +122,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
   const [modoSeguir, setModoSeguir] = useState(false);
   const [resumenRuta, setResumenRuta] = useState(null);
   const [errorRuta, setErrorRuta] = useState(null);
+  const [modoRuta, setModoRuta] = useState('foot'); // 'foot' | 'bike' | 'car'
 
   useEffect(() => {
     if (!ubicacion) return;
@@ -158,6 +159,11 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
     }
   };
 
+  const puntosRuta = useMemo(() => {
+    if (!origenRuta || !destinoRuta) return null;
+    return [[origenRuta.lat, origenRuta.lng], destinoRuta.position];
+  }, [origenRuta, destinoRuta]);
+
   const comoLlegar = (sitio) => {
     if (!ubicacion) {
       setErrorRuta('Necesitas activar tu ubicación para trazar la ruta.');
@@ -165,6 +171,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
     }
     setErrorRuta(null);
     setResumenRuta(null);
+    setModoRuta('foot');
     setDestinoRuta(sitio);
     setOrigenRuta({ lat: ubicacion.lat, lng: ubicacion.lng });
     setModoSeguir(true);
@@ -294,9 +301,10 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
           onSeguirDesactivado={() => setModoSeguir(false)}
         />
 
-        {destinoRuta && origenRuta && (
+        {destinoRuta && origenRuta && puntosRuta && (
           <RutaCalculada
-            puntos={[[origenRuta.lat, origenRuta.lng], destinoRuta.position]}
+            puntos={puntosRuta}
+            modo={modoRuta}
             onRutaCalculada={setResumenRuta}
             onError={setErrorRuta}
           />
@@ -305,26 +313,64 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
 
       {destinoRuta && (
         <div className="mapa-ruta-resumen">
-          <div className="mapa-ruta-resumen-info">
-            <strong>Ruta hacia {destinoRuta.name}</strong>
-            {resumenRuta && (
-              <span>
-                {(resumenRuta.distanciaMetros / 1000).toFixed(1)} km ·{' '}
-                {Math.round(resumenRuta.duracionSegundos / 60)} min
-              </span>
-            )}
-            {destinoRuta && !modoSeguir && (
-              <span className="mapa-ruta-resumen-aviso">Toca el botón de ubicación para seguir la ruta</span>
-            )}
-            {errorRuta && <span className="mapa-ruta-resumen-error">{errorRuta}</span>}
+          <div className="mapa-ruta-resumen-fila">
+            <div className="mapa-ruta-resumen-info">
+              <strong>Ruta hacia {destinoRuta.name}</strong>
+              {resumenRuta && (
+                <span>
+                  {(resumenRuta.distanciaMetros / 1000).toFixed(1)} km ·{' '}
+                  {Math.round(resumenRuta.duracionSegundos / 60)} min
+                </span>
+              )}
+              {destinoRuta && !modoSeguir && (
+                <span className="mapa-ruta-resumen-aviso">Toca el botón de ubicación para seguir la ruta</span>
+              )}
+              {errorRuta && <span className="mapa-ruta-resumen-error">{errorRuta}</span>}
+            </div>
+            <button
+              type="button"
+              className="mapa-ruta-resumen-cancelar"
+              onClick={cancelarRuta}
+            >
+              Cancelar
+            </button>
           </div>
-          <button
-            type="button"
-            className="mapa-ruta-resumen-cancelar"
-            onClick={cancelarRuta}
-          >
-            Cancelar
-          </button>
+          <div className="mapa-ruta-modos">
+            <button
+              type="button"
+              className={modoRuta === 'foot' ? 'activo' : ''}
+              onClick={() => setModoRuta('foot')}
+            >
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="13" cy="4" r="2" />
+                <path d="M10 22l1-6-3-2 1-5 4-1 3 3v5l2 6" />
+                <path d="M8 10l-3 2" />
+              </svg>
+              Caminar
+            </button>
+            <button
+              type="button"
+              className={modoRuta === 'bike' ? 'activo' : ''}
+              onClick={() => setModoRuta('bike')}
+            >
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="5.5" cy="17.5" r="3.5" />
+                <circle cx="18.5" cy="17.5" r="3.5" />
+                <path d="M5.5 17.5L9 8h6l3 5.5H9M9 8L7 5H5" />
+              </svg>
+              Bicicleta
+            </button>
+            <button
+              type="button"
+              className={modoRuta === 'car' ? 'activo' : ''}
+              onClick={() => setModoRuta('car')}
+            >
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 17h14M5 17a2 2 0 104 0M15 17a2 2 0 104 0M5 17v-4l2-5h10l2 5v4" />
+              </svg>
+              Vehículo
+            </button>
+          </div>
         </div>
       )}
 
