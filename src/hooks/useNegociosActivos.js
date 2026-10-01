@@ -12,6 +12,9 @@ export function useNegociosActivos() {
       .from('negocio')
       .select('id, nombre_negocio, categoria, descripcion, telefono, latitud, longitud')
       .eq('estado', 'activo')
+      // Mismo criterio que la RLS (migración 016). Además cubre al dueño de un negocio
+      // vencido: la RLS se lo deja ver, pero en el mapa debe verse igual que para todos.
+      .gt('fecha_vencimiento_suscripcion', new Date().toISOString())
       .then(({ data, error }) => {
         if (!activo) return;
         if (error) {

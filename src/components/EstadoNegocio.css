@@ -51,3 +51,12 @@
 .estado-dev-motivo { border: 1px solid #ccc; border-radius: var(--radius-sm); padding: 8px; font-family: var(--font-body); font-size: 0.85rem; min-height: 60px; resize: vertical; }
 .estado-dev-rechazar { border: none; border-radius: var(--radius-pill); background: var(--color-coral); color: #fff; font-weight: 700; padding: 10px; cursor: pointer; }
 .estado-dev-rechazar:disabled { background: #ddd; color: #999; cursor: not-allowed; }
+
+/* Suscripción vencida (016/017): el botón es un enlace a WhatsApp */
+.estado-icono-vencido { color: var(--color-coral); }
+.estado-boton-enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}

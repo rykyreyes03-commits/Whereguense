@@ -13,6 +13,7 @@ function mapearNegocio(fila) {
     estado: fila.estado,
     motivoRechazo: fila.motivo_rechazo,
     fechaEnvio: fila.fecha_envio,
+    vencimientoSuscripcion: fila.fecha_vencimiento_suscripcion,
     ubicacion: { lat: fila.latitud, lng: fila.longitud },
   };
 }

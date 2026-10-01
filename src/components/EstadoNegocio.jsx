@@ -1,7 +1,27 @@
-import { Mail, X, Clock } from 'lucide-react';
+import { Mail, X, Clock, CalendarX, MessageCircle } from 'lucide-react';
 import './EstadoNegocio.css';
 
-function EstadoNegocio({ vista, motivoRechazo, onContinuar, onCorregir }) {
+const WHATSAPP_RENOVACION = '50587074097';
+
+function EstadoNegocio({ vista, motivoRechazo, nombreNegocio, onContinuar, onCorregir }) {
+  if (vista === 'vencido') {
+    const mensaje = `Hola, quiero renovar la suscripción de mi negocio ${nombreNegocio || ''} en Wheregüense`
+      .replace(/\s+/g, ' ');
+    const urlWhatsApp = `https://wa.me/${WHATSAPP_RENOVACION}?text=${encodeURIComponent(mensaje)}`;
+    return (
+      <div className="estado-wrapper">
+        <div className="estado-icono estado-icono-vencido"><CalendarX size={56} strokeWidth={1.8} aria-hidden="true" /></div>
+        <h1 className="estado-titulo">Tu período de prueba gratis terminó</h1>
+        <p className="estado-mensaje">
+          Para seguir apareciendo en el mapa y usando tus herramientas de negocio, escríbenos por WhatsApp para renovar tu suscripción.
+        </p>
+        <a className="estado-boton estado-boton-enlace" href={urlWhatsApp} target="_blank" rel="noopener noreferrer">
+          <MessageCircle size={20} strokeWidth={2} aria-hidden="true" /> Renovar por WhatsApp
+        </a>
+      </div>
+    );
+  }
+
   if (vista === 'enviado') {
     return (
       <div className="estado-wrapper">

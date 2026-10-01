@@ -552,3 +552,8 @@
 
 /* Deja ver el final de la vista pública por encima del botón fijo (solo aquí, no en el mapa) */
 .perfilnegocio-wrapper .historia-sitio-contenido { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
+
+/* ===== Suscripción vencida ===== */
+.perfilnegocio-vencido { background: var(--color-white); }
+.perfilnegocio-vencido .topbar { padding-bottom: 20px; }
+.perfilnegocio-vencido .estado-wrapper { min-height: auto; padding-top: 48px; }

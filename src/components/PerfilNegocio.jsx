@@ -4,6 +4,7 @@ import './PerfilNegocio.css';
 import TopBar from './TopBar';
 import SeleccionUbicacion from './SeleccionUbicacion';
 import PerfilNegocioPublico from './PerfilNegocioPublico';
+import EstadoNegocio from './EstadoNegocio';
 
 const NOMBRES_DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -12,12 +13,21 @@ const CATEGORIAS = ['Cafetería', 'Restaurante', 'Arte', 'Artesanía', 'Hospedaj
 const MAX_FOTOS = 6;
 const TAMANO_MAX_MB = 5;
 
-function diasRestantesAnioGratis(fechaEnvio) {
-  if (!fechaEnvio) return null;
-  const inicio = new Date(fechaEnvio).getTime();
-  if (Number.isNaN(inicio)) return null;
-  const fin = inicio + 365 * 24 * 60 * 60 * 1000;
+// Días que faltan hasta el vencimiento real de la suscripción (null si no hay fecha).
+function diasRestantesSuscripcion(vencimiento) {
+  if (!vencimiento) return null;
+  const fin = new Date(vencimiento).getTime();
+  if (Number.isNaN(fin)) return null;
   return Math.ceil((fin - Date.now()) / (24 * 60 * 60 * 1000));
+}
+
+// Mismo criterio que el candado de la base (016): un negocio activo sin fecha de
+// vencimiento o con la fecha ya pasada no se ve en el mapa, así que tampoco ve su panel.
+function suscripcionVencida(negocio) {
+  if (negocio?.estado !== 'activo') return false;
+  if (!negocio.vencimientoSuscripcion) return true;
+  const fin = new Date(negocio.vencimientoSuscripcion).getTime();
+  return Number.isNaN(fin) || fin <= Date.now();
 }
 
 function PerfilNegocio({
@@ -47,6 +57,17 @@ function PerfilNegocio({
   const logoInputRef = useRef(null);
   const fotosInputRef = useRef(null);
 
+  // Suscripción vencida: reemplaza el panel entero (ninguna herramienta accesible).
+  // Solo queda el menú de la barra superior para poder salir del flujo del negocio.
+  if (suscripcionVencida(negocio)) {
+    return (
+      <div className="perfilnegocio-wrapper perfilnegocio-vencido">
+        <TopBar align="center" onMenuClick={() => onNavigate('menu')} />
+        <EstadoNegocio vista="vencido" nombreNegocio={negocio?.nombre} />
+      </div>
+    );
+  }
+
   if (mostrandoMapa) {
     return (
       <SeleccionUbicacion
@@ -68,7 +89,7 @@ function PerfilNegocio({
   const categoria = negocio?.categoria || 'Sin categoría';
   const inicial = nombre.trim().charAt(0).toUpperCase() || 'N';
   const activo = negocio?.estado === 'activo';
-  const diasRestantes = diasRestantesAnioGratis(negocio?.fechaEnvio);
+  const diasRestantes = diasRestantesSuscripcion(negocio?.vencimientoSuscripcion);
 
   const abrirEdicionHorarios = () => {
     setHorariosBorrador(horarios.map((h) => ({ ...h })));
@@ -209,12 +230,11 @@ function PerfilNegocio({
         <span className="perfilnegocio-categoria">{categoria}</span>
         <p className="perfilnegocio-estado">
           {activo ? 'Activo' : negocio?.estado === 'rechazado' ? 'Registro rechazado' : 'Registro pendiente'}
+          {/* Si llegó aquí estando activo, la suscripción está vigente (si no, se muestra el aviso). */}
           {activo && diasRestantes != null && (
             <>
               {' · '}
-              {diasRestantes > 0
-                ? `Año gratuito · ${diasRestantes} día${diasRestantes === 1 ? '' : 's'} restantes`
-                : 'Año gratuito vencido'}
+              {diasRestantes === 1 ? 'Suscripción: queda 1 día' : `Suscripción: quedan ${diasRestantes} días`}
             </>
           )}
         </p>
