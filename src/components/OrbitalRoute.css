@@ -1,0 +1,57 @@
+.orbital-route {
+  display: block;
+  overflow: visible;
+  /* El anillo ocupa solo y 38–162 del viewBox de 200: se descuenta ese aire
+     (38/200 × 96px ≈ 18px) para que el bloque se vea centrado de verdad */
+  margin: -18px 0;
+}
+.orbital-route-giro {
+  transform-origin: 100px 100px;
+  animation: orbitRotate 2.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+.orbital-route-trazo {
+  animation: orbitDraw 2.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+.orbital-route-destello {
+  transform-origin: 100px 100px;
+  animation: orbitFlash 2.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+.orbital-route-pin {
+  transform-origin: 100px 100px;
+  animation: pinBreath 2.5s ease-in-out infinite;
+}
+
+@keyframes orbitRotate {
+  0% { transform: rotate(-90deg); }
+  68% { transform: rotate(270deg); }
+  100% { transform: rotate(270deg); }
+}
+@keyframes orbitDraw {
+  0% { stroke-dasharray: 0 389; }
+  55% { stroke-dasharray: 292 97; }
+  68% { stroke-dasharray: 389 0; }
+  100% { stroke-dasharray: 389 0; }
+}
+@keyframes orbitFlash {
+  0%, 66% { transform: scale(0.4); opacity: 0; }
+  70% { transform: scale(1); opacity: 0.4; }
+  78% { transform: scale(1.9); opacity: 0; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+@keyframes pinBreath {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+/* Sin movimiento: anillo completo y quieto */
+@media (prefers-reduced-motion: reduce) {
+  .orbital-route-giro,
+  .orbital-route-trazo,
+  .orbital-route-destello,
+  .orbital-route-pin {
+    animation: none;
+  }
+  .orbital-route-trazo {
+    stroke-dasharray: 389 0;
+  }
+}

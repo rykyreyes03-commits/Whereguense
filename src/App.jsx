@@ -34,6 +34,8 @@ import GenerarQR from './components/GenerarQR';
 import EscanearQR from './components/EscanearQR';
 import Toast from './components/Toast';
 import LevelUpModal from './components/LevelUpModal';
+import OrbitalRoute from './components/OrbitalRoute';
+import parejaImg from './assets/flujo-inicial/whereguense_pareja.webp';
 import { sitios } from './data/sitios';
 import { rutas } from './data/rutas';
 import { eventos } from './data/eventos';
@@ -433,8 +435,11 @@ function App() {
 
   if (authCargando || (session && verificandoMfa)) {
     return (
-      <div className="app-cargando">
-        <div className="app-cargando-spinner" aria-hidden="true" />
+      <div className="app-cargando" role="status">
+        <div className="app-cargando-gigantona" aria-hidden="true">
+          <img src={parejaImg} alt="" />
+        </div>
+        <OrbitalRoute />
         <p className="app-cargando-texto">Cargando…</p>
       </div>
     );

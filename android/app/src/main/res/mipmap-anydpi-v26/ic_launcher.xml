@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Las capas mipmap-*/ic_launcher_foreground.png y ic_launcher_background.png
+    fueron generadas a mano por un bug conocido de @capacitor/assets 3.0.5 en modo
+    Custom (foreground/background por separado): filtra mal las plantillas y genera
+    tamaño legacy (48…192 px) en vez de adaptativo (108…432 px). En el launcher no
+    se nota, pero el splash de Android 12+ dibuja este mismo ícono y se ve borroso.
+
+    Si se vuelve a correr "npx capacitor-assets generate" con la opción android,
+    esos PNG se van a sobrescribir con la versión chica de nuevo. Hay que regenerarlos
+    a mano otra vez con este mismo proceso:
+        node scripts/regenerar-iconos-adaptativos.cjs
+    o esperar a que el bug esté corregido en una versión más nueva de la herramienta.
+
+    La capa de fondo va SIN inset (0%), a diferencia de lo que genera la herramienta
+    (16.7%). 16.7% es apenas más que 1/6: la capa quedaba un poco más chica que el
+    área que recorta la máscara, y el splash de Android 12+ (OriginOS 6, Vivo) mostraba
+    dos líneas negras de 2 px en el borde derecho e inferior del ícono. Con el fondo a
+    108dp completos desaparecen; el launcher no cambia (el fondo es navy sólido y la
+    máscara lo recorta igual). Si se regenera este XML, volver a poner el fondo en 0%.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background>
+        <inset android:drawable="@mipmap/ic_launcher_background" android:inset="0%" />
+    </background>
+    <foreground>
+        <inset android:drawable="@mipmap/ic_launcher_foreground" android:inset="16.7%" />
+    </foreground>
+</adaptive-icon>
