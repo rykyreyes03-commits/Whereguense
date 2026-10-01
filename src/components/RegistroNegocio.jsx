@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ArrowLeft, MapPin } from 'lucide-react';
 import './RegistroNegocio.css';
 import SeleccionUbicacion from './SeleccionUbicacion';
 
@@ -71,7 +72,9 @@ function RegistroNegocio({ onRegistrar, onVolver }) {
       <div className="registro-esquina"></div>
 
       <div className="registro-contenido">
-        <button className="registro-volver" onClick={onVolver} type="button">← Volver</button>
+        <button className="registro-volver" onClick={onVolver} type="button">
+          <ArrowLeft size={16} strokeWidth={2.2} aria-hidden="true" /> Volver
+        </button>
         <h1 className="registro-titulo">Registra tu negocio</h1>
 
         <label className="registro-label">Nombre</label>
@@ -130,7 +133,7 @@ function RegistroNegocio({ onRegistrar, onVolver }) {
 
         <label className="registro-label">Ubicación</label>
         <button className="registro-ubicacion-btn" onClick={() => setMostrandoMapa(true)} type="button">
-          📍 {ubicacion ? 'Ubicación marcada — tocar para ajustar' : 'Marcar ubicación en el mapa'}
+          <MapPin size={18} strokeWidth={2} aria-hidden="true" /> {ubicacion ? 'Ubicación marcada — tocar para ajustar' : 'Marcar ubicación en el mapa'}
         </button>
 
         {error && <p className="registro-error">{error}</p>}

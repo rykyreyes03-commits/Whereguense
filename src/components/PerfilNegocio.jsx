@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { Check, X, Camera } from 'lucide-react';
 import './PerfilNegocio.css';
 import TopBar from './TopBar';
 import SeleccionUbicacion from './SeleccionUbicacion';
@@ -349,7 +350,7 @@ function PerfilNegocio({
 
           {negocio?.ubicacion ? (
             <div className="perfilnegocio-ubicacion-ok">
-              <span className="perfilnegocio-ubicacion-check" aria-hidden="true">✓</span>
+              <span className="perfilnegocio-ubicacion-check" aria-hidden="true"><Check size={18} strokeWidth={2.6} /></span>
               <div>
                 <strong>Ubicación confirmada</strong>
                 <span>
@@ -393,14 +394,14 @@ function PerfilNegocio({
                     onClick={() => quitarFoto(foto.id)}
                     aria-label={`Quitar foto ${i + 1}`}
                   >
-                    ✕
+                    <X size={12} strokeWidth={2.6} aria-hidden="true" />
                   </button>
                 </div>
               ))}
             </div>
           ) : (
             <div className="perfilnegocio-empty">
-              <span className="perfilnegocio-empty-icono" aria-hidden="true">📷</span>
+              <span className="perfilnegocio-empty-icono" aria-hidden="true"><Camera size={28} strokeWidth={1.8} /></span>
               <p>Muestra tu local y tus productos. Las fotos ayudan a que los turistas te elijan.</p>
               <button
                 type="button"
@@ -435,7 +436,7 @@ function PerfilNegocio({
                     aria-label={`Quitar ${p.nombre}`}
                     type="button"
                   >
-                    ✕
+                    <X size={12} strokeWidth={2.6} aria-hidden="true" />
                   </button>
                 </span>
               ))}

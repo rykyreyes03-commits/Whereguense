@@ -35,6 +35,9 @@
   padding: 0;
   margin-bottom: 16px;
   font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 .registro-titulo {
   font-size: 1.6rem;
@@ -99,6 +102,10 @@
   color: var(--color-ultramarine);
   cursor: pointer;
   text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 .registro-error {
   color: var(--color-coral);

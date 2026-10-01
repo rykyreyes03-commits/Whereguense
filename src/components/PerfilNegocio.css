@@ -365,7 +365,7 @@
   text-align: center;
   padding: 8px 4px 4px;
 }
-.perfilnegocio-empty-icono { font-size: 1.8rem; line-height: 1; }
+.perfilnegocio-empty-icono { display: inline-flex; color: var(--color-text-muted); }
 .perfilnegocio-empty p {
   font-size: 0.85rem;
   color: var(--color-text-muted);
@@ -432,8 +432,9 @@
   background: none;
   color: var(--color-primary);
   cursor: pointer;
-  font-size: 0.75rem;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
   opacity: 0.7;
 }
 .perfilnegocio-producto-quitar:hover { opacity: 1; }

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
+import { Trash2, Download, Printer, QrCode } from 'lucide-react';
 import './GenerarQR.css';
 import TopBar from './TopBar';
 
@@ -107,7 +108,7 @@ function GenerarQR({ actividadesQR, onCrearActividad, onEliminarActividad, onNav
                       onClick={() => handleEliminar(actividad.id)}
                       aria-label={`Eliminar ${actividad.nombre_actividad}`}
                     >
-                      🗑️
+                      <Trash2 size={18} strokeWidth={1.8} aria-hidden="true" />
                     </button>
                   </div>
 
@@ -119,10 +120,10 @@ function GenerarQR({ actividadesQR, onCrearActividad, onEliminarActividad, onNav
                   {expandido && (
                     <div className="generarqr-acciones">
                       <button className="generarqr-accion" onClick={() => handleDescargar(actividad)} type="button">
-                        ⬇️ Descargar
+                        <Download size={16} strokeWidth={2} aria-hidden="true" /> Descargar
                       </button>
                       <button className="generarqr-accion" onClick={handleImprimir} type="button">
-                        🖨️ Imprimir
+                        <Printer size={16} strokeWidth={2} aria-hidden="true" /> Imprimir
                       </button>
                     </div>
                   )}
@@ -174,7 +175,11 @@ function GenerarQR({ actividadesQR, onCrearActividad, onEliminarActividad, onNav
         </div>
 
         <button className="generarqr-generar-btn" onClick={handleCrear} disabled={guardando} type="button">
-          {guardando ? 'Creando...' : '🔳 Crear actividad'}
+          {guardando ? 'Creando...' : (
+            <>
+              <QrCode size={18} strokeWidth={2} aria-hidden="true" /> Crear actividad
+            </>
+          )}
         </button>
       </div>
     </div>

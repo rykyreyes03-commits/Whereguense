@@ -10,12 +10,14 @@
   width: 100%; border: none; border-radius: var(--radius-pill);
   background: linear-gradient(90deg, var(--color-indigo), var(--color-ultramarine));
   color: #fff; padding: 14px; font-family: var(--font-body); font-weight: 700; font-size: 1rem; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
 }
 .generarqr-acciones { display: flex; gap: 12px; width: 100%; margin-top: 12px; }
 .generarqr-accion {
   flex: 1; border: 2px solid var(--color-ultramarine); border-radius: var(--radius-pill); background: #fff;
   color: var(--color-ultramarine); padding: 10px; font-family: var(--font-body); font-weight: 700;
   font-size: 0.9rem; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
 }
 .generarqr-label { font-family: var(--font-body); font-weight: 700; font-size: 0.9rem; margin: 28px 0 12px; align-self: flex-start; }
 .generarqr-colores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 220px; }
@@ -64,9 +66,11 @@
 .generarqr-item-eliminar {
   border: none;
   background: none;
-  font-size: 1.1rem;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
 }
 .generarqr-input {
   width: 100%;

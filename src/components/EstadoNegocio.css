@@ -10,7 +10,7 @@
   padding: 40px 24px;
   background: #ffffff;
 }
-.estado-icono { font-size: 4rem; margin-bottom: 16px; }
+.estado-icono { display: flex; justify-content: center; margin-bottom: 16px; color: var(--color-primary); }
 .estado-icono-rechazado { color: var(--color-coral); }
 .estado-titulo { font-size: 1.6rem; margin: 0 0 12px; }
 .estado-mensaje { font-size: 0.95rem; color: #444; margin: 0 0 8px; max-width: 320px; }

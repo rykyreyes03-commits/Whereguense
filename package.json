@@ -17,6 +17,7 @@
     "@supabase/supabase-js": "^2.112.4",
     "jsqr": "^1.4.0",
     "leaflet": "^1.9.4",
+    "lucide-react": "^1.49.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
