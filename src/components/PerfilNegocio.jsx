@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
-import { Check, X, Camera } from 'lucide-react';
+import { Check, X, Camera, Eye, ArrowLeft } from 'lucide-react';
 import './PerfilNegocio.css';
 import TopBar from './TopBar';
 import SeleccionUbicacion from './SeleccionUbicacion';
+import PerfilNegocioPublico from './PerfilNegocioPublico';
 
 const NOMBRES_DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -40,6 +41,7 @@ function PerfilNegocio({
   const [editandoHorarios, setEditandoHorarios] = useState(false);
   const [horariosBorrador, setHorariosBorrador] = useState([]);
   const [mostrandoMapa, setMostrandoMapa] = useState(false);
+  const [viendoComoTurista, setViendoComoTurista] = useState(false);
   const [nuevoProducto, setNuevoProducto] = useState('');
 
   const logoInputRef = useRef(null);
@@ -223,7 +225,38 @@ function PerfilNegocio({
         >
           {editandoPerfil ? 'Cancelar' : 'Editar perfil'}
         </button>
+        <button
+          type="button"
+          className="perfilnegocio-ver-turista"
+          onClick={() => setViendoComoTurista(true)}
+        >
+          <Eye size={16} strokeWidth={2} aria-hidden="true" /> Ver como te ven los turistas
+        </button>
       </TopBar>
+
+      {viendoComoTurista && (
+        <>
+          {/* Mismo componente que abre el turista en el mapa: carga horarios, fotos y
+              productos desde la base, así que muestra lo publicado, no borradores. */}
+          <PerfilNegocioPublico
+            negocio={{
+              id: negocio?.id,
+              name: negocio?.nombre,
+              categoria: negocio?.categoria,
+              descripcion: negocio?.descripcion,
+              telefono: negocio?.telefono,
+            }}
+            onCerrar={() => setViendoComoTurista(false)}
+          />
+          <button
+            type="button"
+            className="perfilnegocio-volver-panel"
+            onClick={() => setViendoComoTurista(false)}
+          >
+            <ArrowLeft size={18} strokeWidth={2.2} aria-hidden="true" /> Volver a mi panel
+          </button>
+        </>
+      )}
 
       <div className="perfilnegocio-contenido">
         {editandoPerfil && (

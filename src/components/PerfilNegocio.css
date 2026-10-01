@@ -510,3 +510,45 @@
   .perfilnegocio-wrapper { max-width: 1100px; }
   .perfilnegocio-contenido { max-width: 680px; margin: 0 auto; }
 }
+
+/* ===== Ver como turista ===== */
+.perfilnegocio-ver-turista {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.perfilnegocio-ver-turista:hover { color: var(--color-text-inverse); text-decoration: underline; }
+/* Encima del overlay público (.historia-sitio, z-index 1003) */
+.perfilnegocio-volver-panel {
+  position: fixed;
+  z-index: 1004;
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  padding: 12px 22px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 800;
+  box-shadow: 0 8px 24px rgba(26, 26, 46, 0.28);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Deja ver el final de la vista pública por encima del botón fijo (solo aquí, no en el mapa) */
+.perfilnegocio-wrapper .historia-sitio-contenido { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
