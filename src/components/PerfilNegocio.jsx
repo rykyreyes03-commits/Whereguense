@@ -1,10 +1,19 @@
 import { useRef, useState } from 'react';
-import { Check, X, Camera, Eye, ArrowLeft } from 'lucide-react';
+import { Check, X, Camera, Eye, ArrowLeft, Store, QrCode, Star, Palette, ChevronRight } from 'lucide-react';
 import './PerfilNegocio.css';
 import TopBar from './TopBar';
 import SeleccionUbicacion from './SeleccionUbicacion';
 import PerfilNegocioPublico from './PerfilNegocioPublico';
 import EstadoNegocio from './EstadoNegocio';
+import GenerarQR from './GenerarQR';
+
+const PESTANAS = [
+  { id: 'resumen', etiqueta: 'Resumen' },
+  { id: 'negocio', etiqueta: 'Mi negocio' },
+  { id: 'sellos', etiqueta: 'Sellos' },
+  { id: 'resenas', etiqueta: 'Reseñas' },
+  { id: 'diseno', etiqueta: 'Diseño' },
+];
 
 const NOMBRES_DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -44,7 +53,12 @@ function PerfilNegocio({
   onEliminarFoto,
   onAgregarProducto,
   onEliminarProducto,
+  actividadesQR,
+  onCrearActividad,
+  onEliminarActividad,
 }) {
+  // Pestaña activa: estado local (no es una pantalla de App.jsx).
+  const [pestana, setPestana] = useState('resumen');
   const [editandoPerfil, setEditandoPerfil] = useState(false);
   const [borradorPerfil, setBorradorPerfil] = useState({});
 
@@ -240,13 +254,6 @@ function PerfilNegocio({
         </p>
         <button
           type="button"
-          className="perfilnegocio-editar-perfil"
-          onClick={editandoPerfil ? () => setEditandoPerfil(false) : abrirEdicionPerfil}
-        >
-          {editandoPerfil ? 'Cancelar' : 'Editar perfil'}
-        </button>
-        <button
-          type="button"
           className="perfilnegocio-ver-turista"
           onClick={() => setViendoComoTurista(true)}
         >
@@ -278,260 +285,354 @@ function PerfilNegocio({
         </>
       )}
 
-      <div className="perfilnegocio-contenido">
-        {editandoPerfil && (
-          <div className="perfilnegocio-card">
-            <h2 className="perfilnegocio-seccion-titulo">Editar perfil</h2>
-            <label className="perfilnegocio-campo">
-              Nombre del negocio
-              <input
-                type="text"
-                value={borradorPerfil.nombre || ''}
-                onChange={(e) => setBorradorPerfil({ ...borradorPerfil, nombre: e.target.value })}
-              />
-            </label>
-            <span className="perfilnegocio-campo-label">Categoría</span>
-            <div className="perfilnegocio-chips">
-              {CATEGORIAS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  className={`perfilnegocio-chip ${borradorPerfil.categoria === c ? 'activo' : ''}`}
-                  onClick={() => setBorradorPerfil({ ...borradorPerfil, categoria: c })}
-                >
-                  {c}
-                </button>
-              ))}
+      <nav className="perfilnegocio-pestanas" role="tablist" aria-label="Secciones de tu panel">
+        {PESTANAS.map((p) => (
+          <button
+            key={p.id}
+            id={`perfilnegocio-tab-${p.id}`}
+            type="button"
+            role="tab"
+            aria-selected={pestana === p.id}
+            aria-controls="perfilnegocio-panel"
+            className={`perfilnegocio-pestana ${pestana === p.id ? 'activa' : ''}`}
+            onClick={() => setPestana(p.id)}
+          >
+            {p.etiqueta}
+          </button>
+        ))}
+      </nav>
+
+      {/* key: al cambiar de pestaña se vuelve a montar y se repite la entrada escalonada */}
+      <div
+        className="perfilnegocio-contenido"
+        key={pestana}
+        id="perfilnegocio-panel"
+        role="tabpanel"
+        aria-labelledby={`perfilnegocio-tab-${pestana}`}
+      >
+        {pestana === 'resumen' && (
+          <>
+            <section className="perfilnegocio-card perfilnegocio-saludo">
+              <h2 className="perfilnegocio-saludo-titulo">¡Hola, {nombre}!</h2>
+              <p className="perfilnegocio-saludo-texto">Esto es lo que puedes hacer hoy en tu panel.</p>
+            </section>
+
+            {/* Aquí irá el resumen de reseñas ("★ 4.6 · 12 reseñas"), como una tarjeta más
+                entre el saludo y los accesos rápidos. */}
+
+            <div className="perfilnegocio-accesos">
+              <button type="button" className="perfilnegocio-acceso" onClick={() => setPestana('negocio')}>
+                <span className="perfilnegocio-acceso-icono" aria-hidden="true"><Store size={22} strokeWidth={1.8} /></span>
+                <span className="perfilnegocio-acceso-texto">
+                  <strong>Editar tu información</strong>
+                  <span>Perfil, horarios, ubicación, fotos y productos</span>
+                </span>
+                <ChevronRight size={18} strokeWidth={2} aria-hidden="true" className="perfilnegocio-acceso-chevron" />
+              </button>
+              <button type="button" className="perfilnegocio-acceso" onClick={() => setPestana('sellos')}>
+                <span className="perfilnegocio-acceso-icono" aria-hidden="true"><QrCode size={22} strokeWidth={1.8} /></span>
+                <span className="perfilnegocio-acceso-texto">
+                  <strong>Generar un sello nuevo</strong>
+                  <span>Crea un QR para que los turistas sellen su pasaporte</span>
+                </span>
+                <ChevronRight size={18} strokeWidth={2} aria-hidden="true" className="perfilnegocio-acceso-chevron" />
+              </button>
             </div>
-            <label className="perfilnegocio-campo">
-              Descripción
-              <textarea
-                rows={3}
-                value={borradorPerfil.descripcion || ''}
-                onChange={(e) => setBorradorPerfil({ ...borradorPerfil, descripcion: e.target.value })}
-                placeholder="Cuéntale al turista qué ofreces..."
-              />
-            </label>
-            <label className="perfilnegocio-campo">
-              Teléfono
-              <input
-                type="tel"
-                value={borradorPerfil.telefono || ''}
-                onChange={(e) => setBorradorPerfil({ ...borradorPerfil, telefono: e.target.value })}
-                placeholder="Ej. 8888-8888"
-              />
-            </label>
-            <button type="button" className="perfilnegocio-btn-primario" onClick={guardarPerfil}>
-              Guardar cambios
-            </button>
-          </div>
+          </>
         )}
 
-        <section className="perfilnegocio-card">
-          <div className="perfilnegocio-seccion-header">
-            <h2 className="perfilnegocio-seccion-titulo">Horarios</h2>
-            <button
-              className="perfilnegocio-editar-chip"
-              onClick={() => (editandoHorarios ? setEditandoHorarios(false) : abrirEdicionHorarios())}
-              type="button"
-            >
-              {editandoHorarios ? 'Cancelar' : 'Editar'}
-            </button>
-          </div>
-
-          {editandoHorarios ? (
-            <div className="perfilnegocio-horarios-form">
-              {horariosBorrador.map((h) => (
-                <div key={h.diaSemana} className="perfilnegocio-horario-dia">
-                  <div className="perfilnegocio-horario-dia-header">
-                    <span>{NOMBRES_DIA[h.diaSemana]}</span>
-                    <label className="perfilnegocio-horario-cerrado">
-                      <input
-                        type="checkbox"
-                        checked={h.cerrado}
-                        onChange={(e) => actualizarDiaBorrador(h.diaSemana, { cerrado: e.target.checked })}
-                      />
-                      Cerrado
-                    </label>
-                  </div>
-                  {!h.cerrado && (
-                    <div className="perfilnegocio-horarios-fila">
-                      <input
-                        type="time"
-                        value={h.horaApertura || ''}
-                        onChange={(e) => actualizarDiaBorrador(h.diaSemana, { horaApertura: e.target.value })}
-                      />
-                      <span>a</span>
-                      <input
-                        type="time"
-                        value={h.horaCierre || ''}
-                        onChange={(e) => actualizarDiaBorrador(h.diaSemana, { horaCierre: e.target.value })}
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
-              <button className="perfilnegocio-btn-primario" onClick={guardarHorarios} type="button">
-                Guardar horarios
-              </button>
-            </div>
-          ) : (
-            <ul className="perfilnegocio-horarios-lista">
-              {horarios.map((h) => (
-                <li key={h.diaSemana}>
-                  <span>{NOMBRES_DIA[h.diaSemana]}</span>
-                  <strong>{h.cerrado ? 'Cerrado' : `${h.horaApertura} – ${h.horaCierre}`}</strong>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section className="perfilnegocio-card">
-          <div className="perfilnegocio-seccion-header">
-            <h2 className="perfilnegocio-seccion-titulo">Ubicación</h2>
-            {negocio?.ubicacion && (
-              <button
-                className="perfilnegocio-editar-chip"
-                onClick={() => setMostrandoMapa(true)}
-                type="button"
-              >
-                Cambiar
-              </button>
-            )}
-          </div>
-
-          {negocio?.ubicacion ? (
-            <div className="perfilnegocio-ubicacion-ok">
-              <span className="perfilnegocio-ubicacion-check" aria-hidden="true"><Check size={18} strokeWidth={2.6} /></span>
-              <div>
-                <strong>Ubicación confirmada</strong>
-                <span>
-                  {negocio.ubicacion.lat.toFixed(5)}, {negocio.ubicacion.lng.toFixed(5)}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <button
-              className="perfilnegocio-btn-primario"
-              onClick={() => setMostrandoMapa(true)}
-              type="button"
-            >
-              Confirmar ubicación en el mapa
-            </button>
-          )}
-        </section>
-
-        <section className="perfilnegocio-card">
-          <div className="perfilnegocio-seccion-header">
-            <h2 className="perfilnegocio-seccion-titulo">Fotos</h2>
-            {fotos.length > 0 && fotos.length < MAX_FOTOS && (
-              <button
-                className="perfilnegocio-editar-chip"
-                onClick={() => fotosInputRef.current?.click()}
-                type="button"
-              >
-                Agregar más
-              </button>
-            )}
-          </div>
-
-          {fotos.length > 0 ? (
-            <div className="perfilnegocio-fotos-grid">
-              {fotos.map((foto, i) => (
-                <div key={foto.id} className="perfilnegocio-foto">
-                  <img src={foto.url} alt={`Foto ${i + 1} del negocio`} />
-                  <button
-                    type="button"
-                    className="perfilnegocio-foto-quitar"
-                    onClick={() => quitarFoto(foto.id)}
-                    aria-label={`Quitar foto ${i + 1}`}
-                  >
-                    <X size={12} strokeWidth={2.6} aria-hidden="true" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="perfilnegocio-empty">
-              <span className="perfilnegocio-empty-icono" aria-hidden="true"><Camera size={28} strokeWidth={1.8} /></span>
-              <p>Muestra tu local y tus productos. Las fotos ayudan a que los turistas te elijan.</p>
+        {pestana === 'negocio' && (
+          <>
+            <div className="perfilnegocio-negocio-acciones">
               <button
                 type="button"
                 className="perfilnegocio-btn-secundario"
-                onClick={() => fotosInputRef.current?.click()}
+                onClick={editandoPerfil ? () => setEditandoPerfil(false) : abrirEdicionPerfil}
               >
-                Agregar fotos
+                {editandoPerfil ? 'Cancelar' : 'Editar perfil'}
               </button>
             </div>
-          )}
-          <input
-            ref={fotosInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFotos}
-            className="perfilnegocio-file-oculto"
-          />
-        </section>
 
-        <section className="perfilnegocio-card">
-          <h2 className="perfilnegocio-seccion-titulo">Tus productos</h2>
+            {editandoPerfil && (
+              <div className="perfilnegocio-card">
+                <h2 className="perfilnegocio-seccion-titulo">Editar perfil</h2>
+                <label className="perfilnegocio-campo">
+                  Nombre del negocio
+                  <input
+                    type="text"
+                    value={borradorPerfil.nombre || ''}
+                    onChange={(e) => setBorradorPerfil({ ...borradorPerfil, nombre: e.target.value })}
+                  />
+                </label>
+                <span className="perfilnegocio-campo-label">Categoría</span>
+                <div className="perfilnegocio-chips">
+                  {CATEGORIAS.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      className={`perfilnegocio-chip ${borradorPerfil.categoria === c ? 'activo' : ''}`}
+                      onClick={() => setBorradorPerfil({ ...borradorPerfil, categoria: c })}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+                <label className="perfilnegocio-campo">
+                  Descripción
+                  <textarea
+                    rows={3}
+                    value={borradorPerfil.descripcion || ''}
+                    onChange={(e) => setBorradorPerfil({ ...borradorPerfil, descripcion: e.target.value })}
+                    placeholder="Cuéntale al turista qué ofreces..."
+                  />
+                </label>
+                <label className="perfilnegocio-campo">
+                  Teléfono
+                  <input
+                    type="tel"
+                    value={borradorPerfil.telefono || ''}
+                    onChange={(e) => setBorradorPerfil({ ...borradorPerfil, telefono: e.target.value })}
+                    placeholder="Ej. 8888-8888"
+                  />
+                </label>
+                <button type="button" className="perfilnegocio-btn-primario" onClick={guardarPerfil}>
+                  Guardar cambios
+                </button>
+              </div>
+            )}
 
-          {productos.length > 0 ? (
-            <div className="perfilnegocio-productos">
-              {productos.map((p) => (
-                <span key={p.id} className="perfilnegocio-producto">
-                  {p.nombre}
+            <section className="perfilnegocio-card">
+              <div className="perfilnegocio-seccion-header">
+                <h2 className="perfilnegocio-seccion-titulo">Horarios</h2>
+                <button
+                  className="perfilnegocio-editar-chip"
+                  onClick={() => (editandoHorarios ? setEditandoHorarios(false) : abrirEdicionHorarios())}
+                  type="button"
+                >
+                  {editandoHorarios ? 'Cancelar' : 'Editar'}
+                </button>
+              </div>
+
+              {editandoHorarios ? (
+                <div className="perfilnegocio-horarios-form">
+                  {horariosBorrador.map((h) => (
+                    <div key={h.diaSemana} className="perfilnegocio-horario-dia">
+                      <div className="perfilnegocio-horario-dia-header">
+                        <span>{NOMBRES_DIA[h.diaSemana]}</span>
+                        <label className="perfilnegocio-horario-cerrado">
+                          <input
+                            type="checkbox"
+                            checked={h.cerrado}
+                            onChange={(e) => actualizarDiaBorrador(h.diaSemana, { cerrado: e.target.checked })}
+                          />
+                          Cerrado
+                        </label>
+                      </div>
+                      {!h.cerrado && (
+                        <div className="perfilnegocio-horarios-fila">
+                          <input
+                            type="time"
+                            value={h.horaApertura || ''}
+                            onChange={(e) => actualizarDiaBorrador(h.diaSemana, { horaApertura: e.target.value })}
+                          />
+                          <span>a</span>
+                          <input
+                            type="time"
+                            value={h.horaCierre || ''}
+                            onChange={(e) => actualizarDiaBorrador(h.diaSemana, { horaCierre: e.target.value })}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <button className="perfilnegocio-btn-primario" onClick={guardarHorarios} type="button">
+                    Guardar horarios
+                  </button>
+                </div>
+              ) : (
+                <ul className="perfilnegocio-horarios-lista">
+                  {horarios.map((h) => (
+                    <li key={h.diaSemana}>
+                      <span>{NOMBRES_DIA[h.diaSemana]}</span>
+                      <strong>{h.cerrado ? 'Cerrado' : `${h.horaApertura} – ${h.horaCierre}`}</strong>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="perfilnegocio-card">
+              <div className="perfilnegocio-seccion-header">
+                <h2 className="perfilnegocio-seccion-titulo">Ubicación</h2>
+                {negocio?.ubicacion && (
                   <button
-                    className="perfilnegocio-producto-quitar"
-                    onClick={() => quitarProducto(p.id)}
-                    aria-label={`Quitar ${p.nombre}`}
+                    className="perfilnegocio-editar-chip"
+                    onClick={() => setMostrandoMapa(true)}
                     type="button"
                   >
-                    <X size={12} strokeWidth={2.6} aria-hidden="true" />
+                    Cambiar
                   </button>
-                </span>
-              ))}
-            </div>
-          ) : (
-            <p className="perfilnegocio-productos-vacio">
-              Aún no agregas productos ni categorías. Añade lo que ofreces para que aparezca en tu ficha.
-            </p>
-          )}
+                )}
+              </div>
 
-          <div className="perfilnegocio-producto-nuevo">
-            <input
-              type="text"
-              placeholder="Ej. Máscaras, hamacas, café..."
-              value={nuevoProducto}
-              onChange={(e) => setNuevoProducto(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAgregarProducto()}
-            />
+              {negocio?.ubicacion ? (
+                <div className="perfilnegocio-ubicacion-ok">
+                  <span className="perfilnegocio-ubicacion-check" aria-hidden="true"><Check size={18} strokeWidth={2.6} /></span>
+                  <div>
+                    <strong>Ubicación confirmada</strong>
+                    <span>
+                      {negocio.ubicacion.lat.toFixed(5)}, {negocio.ubicacion.lng.toFixed(5)}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  className="perfilnegocio-btn-primario"
+                  onClick={() => setMostrandoMapa(true)}
+                  type="button"
+                >
+                  Confirmar ubicación en el mapa
+                </button>
+              )}
+            </section>
+
+            <section className="perfilnegocio-card">
+              <div className="perfilnegocio-seccion-header">
+                <h2 className="perfilnegocio-seccion-titulo">Fotos</h2>
+                {fotos.length > 0 && fotos.length < MAX_FOTOS && (
+                  <button
+                    className="perfilnegocio-editar-chip"
+                    onClick={() => fotosInputRef.current?.click()}
+                    type="button"
+                  >
+                    Agregar más
+                  </button>
+                )}
+              </div>
+
+              {fotos.length > 0 ? (
+                <div className="perfilnegocio-fotos-grid">
+                  {fotos.map((foto, i) => (
+                    <div key={foto.id} className="perfilnegocio-foto">
+                      <img src={foto.url} alt={`Foto ${i + 1} del negocio`} />
+                      <button
+                        type="button"
+                        className="perfilnegocio-foto-quitar"
+                        onClick={() => quitarFoto(foto.id)}
+                        aria-label={`Quitar foto ${i + 1}`}
+                      >
+                        <X size={12} strokeWidth={2.6} aria-hidden="true" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="perfilnegocio-empty">
+                  <span className="perfilnegocio-empty-icono" aria-hidden="true"><Camera size={28} strokeWidth={1.8} /></span>
+                  <p>Muestra tu local y tus productos. Las fotos ayudan a que los turistas te elijan.</p>
+                  <button
+                    type="button"
+                    className="perfilnegocio-btn-secundario"
+                    onClick={() => fotosInputRef.current?.click()}
+                  >
+                    Agregar fotos
+                  </button>
+                </div>
+              )}
+              <input
+                ref={fotosInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFotos}
+                className="perfilnegocio-file-oculto"
+              />
+            </section>
+
+            <section className="perfilnegocio-card">
+              <h2 className="perfilnegocio-seccion-titulo">Tus productos</h2>
+
+              {productos.length > 0 ? (
+                <div className="perfilnegocio-productos">
+                  {productos.map((p) => (
+                    <span key={p.id} className="perfilnegocio-producto">
+                      {p.nombre}
+                      <button
+                        className="perfilnegocio-producto-quitar"
+                        onClick={() => quitarProducto(p.id)}
+                        aria-label={`Quitar ${p.nombre}`}
+                        type="button"
+                      >
+                        <X size={12} strokeWidth={2.6} aria-hidden="true" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="perfilnegocio-productos-vacio">
+                  Aún no agregas productos ni categorías. Añade lo que ofreces para que aparezca en tu ficha.
+                </p>
+              )}
+
+              <div className="perfilnegocio-producto-nuevo">
+                <input
+                  type="text"
+                  placeholder="Ej. Máscaras, hamacas, café..."
+                  value={nuevoProducto}
+                  onChange={(e) => setNuevoProducto(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAgregarProducto()}
+                />
+                <button
+                  type="button"
+                  className="perfilnegocio-btn-secundario"
+                  onClick={handleAgregarProducto}
+                >
+                  Agregar
+                </button>
+              </div>
+            </section>
+
             <button
+              className="perfilnegocio-qr-btn"
+              onClick={() => setPestana('sellos')}
               type="button"
-              className="perfilnegocio-btn-secundario"
-              onClick={handleAgregarProducto}
             >
-              Agregar
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
+                <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <rect x="8.5" y="8.5" width="3" height="3" rx="0.6" fill="currentColor" />
+                <rect x="12.5" y="8.5" width="3" height="3" rx="0.6" fill="currentColor" />
+                <rect x="8.5" y="12.5" width="3" height="3" rx="0.6" fill="currentColor" />
+                <rect x="13" y="13" width="2" height="2" rx="0.5" fill="currentColor" />
+              </svg>
+              {negocio?.qr ? 'Ver QR de sello' : 'Generar QR de sello'}
             </button>
-          </div>
-        </section>
+          </>
+        )}
 
-        <button
-          className="perfilnegocio-qr-btn"
-          onClick={() => onNavigate('generarQR')}
-          type="button"
-        >
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
-            <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <rect x="8.5" y="8.5" width="3" height="3" rx="0.6" fill="currentColor" />
-            <rect x="12.5" y="8.5" width="3" height="3" rx="0.6" fill="currentColor" />
-            <rect x="8.5" y="12.5" width="3" height="3" rx="0.6" fill="currentColor" />
-            <rect x="13" y="13" width="2" height="2" rx="0.5" fill="currentColor" />
-          </svg>
-          {negocio?.qr ? 'Ver QR de sello' : 'Generar QR de sello'}
-        </button>
+        {pestana === 'sellos' && (
+          <section className="perfilnegocio-card">
+            <GenerarQR
+              embebido
+              actividadesQR={actividadesQR}
+              onCrearActividad={onCrearActividad}
+              onEliminarActividad={onEliminarActividad}
+            />
+          </section>
+        )}
+
+        {pestana === 'resenas' && (
+          <section className="perfilnegocio-card perfilnegocio-empty">
+            <span className="perfilnegocio-empty-icono" aria-hidden="true"><Star size={28} strokeWidth={1.8} /></span>
+            <p>Las reseñas de tus clientes van a aparecer aquí pronto.</p>
+          </section>
+        )}
+
+        {pestana === 'diseno' && (
+          <section className="perfilnegocio-card perfilnegocio-empty">
+            <span className="perfilnegocio-empty-icono" aria-hidden="true"><Palette size={28} strokeWidth={1.8} /></span>
+            <p>Personaliza tu perfil próximamente.</p>
+          </section>
+        )}
       </div>
     </div>
   );

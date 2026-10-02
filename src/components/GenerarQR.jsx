@@ -10,7 +10,9 @@ const COLORES = [
   '#54C8C0', '#78E33C', '#F24E50',
 ];
 
-function GenerarQR({ actividadesQR, onCrearActividad, onEliminarActividad, onNavigate }) {
+// embebido: se dibuja dentro de la pestaña "Sellos" de PerfilNegocio (sin barra
+// superior ni contenedor de pantalla completa). El contenido es el mismo.
+function GenerarQR({ actividadesQR, onCrearActividad, onEliminarActividad, onNavigate, embebido = false }) {
   const areaRef = useRef(null);
   const [nombre, setNombre] = useState('');
   const [limite, setLimite] = useState('');
@@ -71,11 +73,8 @@ function GenerarQR({ actividadesQR, onCrearActividad, onEliminarActividad, onNav
     window.print();
   };
 
-  return (
-    <div className="generarqr-wrapper">
-      <TopBar title="Actividades de sello" onBack={() => onNavigate('perfilNegocio')} />
-
-      <div className="generarqr-contenido">
+  const contenido = (
+      <div className={`generarqr-contenido ${embebido ? 'generarqr-contenido--embebido' : ''}`}>
         <h1 className="generarqr-titulo">Actividades de sello</h1>
 
         {actividadesQR.length > 0 ? (
@@ -182,6 +181,14 @@ function GenerarQR({ actividadesQR, onCrearActividad, onEliminarActividad, onNav
           )}
         </button>
       </div>
+  );
+
+  if (embebido) return contenido;
+
+  return (
+    <div className="generarqr-wrapper">
+      <TopBar title="Actividades de sello" onBack={() => onNavigate('perfilNegocio')} />
+      {contenido}
     </div>
   );
 }

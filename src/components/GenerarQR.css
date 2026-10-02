@@ -81,3 +81,6 @@
   font-size: 0.95rem;
   margin-bottom: 12px;
 }
+
+/* Dentro de la pestaña "Sellos" de PerfilNegocio: la tarjeta ya da el padding */
+.generarqr-contenido--embebido { padding: 0; }

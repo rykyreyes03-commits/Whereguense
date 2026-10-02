@@ -30,7 +30,6 @@ import Menu from './components/Menu';
 import RegistroNegocio from './components/RegistroNegocio';
 import EstadoNegocio from './components/EstadoNegocio';
 import PerfilNegocio from './components/PerfilNegocio';
-import GenerarQR from './components/GenerarQR';
 import EscanearQR from './components/EscanearQR';
 import Toast from './components/Toast';
 import LevelUpModal from './components/LevelUpModal';
@@ -759,17 +758,9 @@ function App() {
         onEliminarFoto={eliminarFoto}
         onAgregarProducto={agregarProducto}
         onEliminarProducto={eliminarProducto}
-      />
-    );
-  }
-
-  if (pantalla === 'generarQR') {
-    return (
-      <GenerarQR
         actividadesQR={actividadesQR}
         onCrearActividad={crearActividadQR}
         onEliminarActividad={eliminarActividadQR}
-        onNavigate={cambiarPantalla}
       />
     );
   }
