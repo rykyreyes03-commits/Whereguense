@@ -13,9 +13,24 @@ function mapearNegocioAdmin(fila) {
   };
 }
 
+function mapearSolicitudSello(fila) {
+  return {
+    id: fila.id,
+    nombre: fila.nombre,
+    descripcion: fila.descripcion,
+    fechaInicio: fila.fecha_inicio,
+    fechaFin: fila.fecha_fin,
+    justificacion: fila.justificacion_sello,
+    fechaCreacion: fila.fecha_creacion,
+    negocio: fila.negocio?.nombre_negocio || 'Negocio sin nombre',
+  };
+}
+
 export function useAdmin() {
   const [pendientes, setPendientes] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [solicitudesSello, setSolicitudesSello] = useState([]);
+  const [cargandoSellos, setCargandoSellos] = useState(true);
 
   const cargarPendientes = useCallback(async () => {
     setCargando(true);
@@ -34,9 +49,29 @@ export function useAdmin() {
     setPendientes((data || []).map(mapearNegocioAdmin));
   }, []);
 
+  // Actividades con solicitud de sello pendiente (021). El admin las lee por la
+  // política actividad_negocio_select_admin; el nombre del negocio, por la FK.
+  const cargarSolicitudesSello = useCallback(async () => {
+    setCargandoSellos(true);
+    const { data, error } = await supabase
+      .from('actividad_negocio')
+      .select('id, nombre, descripcion, fecha_inicio, fecha_fin, justificacion_sello, fecha_creacion, negocio:negocio_id (nombre_negocio)')
+      .eq('estado_sello', 'pendiente')
+      .order('fecha_creacion');
+
+    setCargandoSellos(false);
+    if (error) {
+      console.error('Error cargando solicitudes de sello:', error);
+      setSolicitudesSello([]);
+      return;
+    }
+    setSolicitudesSello((data || []).map(mapearSolicitudSello));
+  }, []);
+
   useEffect(() => {
     cargarPendientes();
-  }, [cargarPendientes]);
+    cargarSolicitudesSello();
+  }, [cargarPendientes, cargarSolicitudesSello]);
 
   const aprobar = useCallback(async (negocioId) => {
     const { data, error } = await supabase.rpc('admin_aprobar_negocio', { p_negocio_id: negocioId });
@@ -65,5 +100,41 @@ export function useAdmin() {
     return data;
   }, []);
 
-  return { pendientes, cargando, aprobar, rechazar };
+  const aprobarSello = useCallback(async (actividadId) => {
+    const { data, error } = await supabase.rpc('admin_aprobar_sello', { p_actividad_id: actividadId });
+    if (error) {
+      console.error('Error aprobando sello:', error);
+      return { exito: false, mensaje: 'No se pudo aprobar. Intenta de nuevo.' };
+    }
+    if (data.exito) {
+      setSolicitudesSello((prev) => prev.filter((s) => s.id !== actividadId));
+    }
+    return data;
+  }, []);
+
+  const rechazarSello = useCallback(async (actividadId, motivo) => {
+    const { data, error } = await supabase.rpc('admin_rechazar_sello', {
+      p_actividad_id: actividadId,
+      p_motivo: motivo,
+    });
+    if (error) {
+      console.error('Error rechazando sello:', error);
+      return { exito: false, mensaje: 'No se pudo rechazar. Intenta de nuevo.' };
+    }
+    if (data.exito) {
+      setSolicitudesSello((prev) => prev.filter((s) => s.id !== actividadId));
+    }
+    return data;
+  }, []);
+
+  return {
+    pendientes,
+    cargando,
+    aprobar,
+    rechazar,
+    solicitudesSello,
+    cargandoSellos,
+    aprobarSello,
+    rechazarSello,
+  };
 }

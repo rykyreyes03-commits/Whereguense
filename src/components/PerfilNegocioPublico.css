@@ -76,3 +76,47 @@
   font-weight: 600;
   color: #fff;
 }
+
+.perfilpublico-actividades {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.perfilpublico-actividades li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px 0;
+  border-top: 1px solid var(--color-border);
+}
+.perfilpublico-actividades li:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+.perfilpublico-actividades strong {
+  font-size: 0.95rem;
+  color: var(--color-navy);
+}
+.perfilpublico-actividades p {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-text-soft);
+}
+.perfilpublico-actividad-fecha,
+.perfilpublico-actividad-sello {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+.perfilpublico-actividad-sello {
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-turquoise) 20%, #fff);
+  color: var(--color-navy);
+  font-weight: 700;
+}

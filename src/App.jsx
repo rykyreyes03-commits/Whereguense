@@ -37,9 +37,9 @@ import OrbitalRoute from './components/OrbitalRoute';
 import parejaImg from './assets/flujo-inicial/whereguense_pareja.webp';
 import { sitios } from './data/sitios';
 import { rutas } from './data/rutas';
-import { eventos } from './data/eventos';
 import { useSellos } from './hooks/useSellos';
 import { useNegocio } from './hooks/useNegocio';
+import { useEventosPublicos } from './hooks/useEventosPublicos';
 import { useAvatarPersonalizado } from './hooks/useAvatarPersonalizado';
 import { supabase } from './lib/supabaseClient';
 import { aPersonajeDB, aPersonajeLocal } from './utils/avatarPersonaje';
@@ -82,10 +82,14 @@ function App() {
     eliminarFoto,
     agregarProducto,
     eliminarProducto,
+    actividades,
     actividadesQR,
-    crearActividadQR,
+    cargarActividades,
+    crearActividad,
+    reenviarSolicitudSello,
     eliminarActividadQR,
   } = useNegocio(usuarioActual?.id);
+  const { eventos, cargando: cargandoEventos, recargar: recargarEventos } = useEventosPublicos();
   const {
     desbloqueados,
     seleccion,
@@ -661,7 +665,15 @@ function App() {
   }
 
   if (pantalla === 'eventos') {
-    return <Eventos eventos={eventos} onNavigate={cambiarPantalla} onSeleccionarEvento={setEventoActivoId} />;
+    return (
+      <Eventos
+        eventos={eventos}
+        cargando={cargandoEventos}
+        onRecargar={recargarEventos}
+        onNavigate={cambiarPantalla}
+        onSeleccionarEvento={setEventoActivoId}
+      />
+    );
   }
 
   if (pantalla === 'detalleEvento') {
@@ -758,8 +770,11 @@ function App() {
         onEliminarFoto={eliminarFoto}
         onAgregarProducto={agregarProducto}
         onEliminarProducto={eliminarProducto}
+        actividades={actividades}
         actividadesQR={actividadesQR}
-        onCrearActividad={crearActividadQR}
+        onRecargarActividades={cargarActividades}
+        onCrearActividad={crearActividad}
+        onReenviarSello={reenviarSolicitudSello}
         onEliminarActividad={eliminarActividadQR}
       />
     );

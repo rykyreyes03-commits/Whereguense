@@ -53,8 +53,11 @@ function PerfilNegocio({
   onEliminarFoto,
   onAgregarProducto,
   onEliminarProducto,
+  actividades,
   actividadesQR,
+  onRecargarActividades,
   onCrearActividad,
+  onReenviarSello,
   onEliminarActividad,
 }) {
   // Pestaña activa: estado local (no es una pantalla de App.jsx).
@@ -613,8 +616,11 @@ function PerfilNegocio({
           <section className="perfilnegocio-card">
             <GenerarQR
               embebido
+              actividades={actividades}
               actividadesQR={actividadesQR}
+              onRecargar={onRecargarActividades}
               onCrearActividad={onCrearActividad}
+              onReenviarSello={onReenviarSello}
               onEliminarActividad={onEliminarActividad}
             />
           </section>

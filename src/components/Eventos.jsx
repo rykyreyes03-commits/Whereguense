@@ -1,9 +1,11 @@
+import { useEffect } from 'react';
 import './Eventos.css';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
 
-function esVigente(evento, hoy) {
-  return evento.fechaInicio <= hoy && hoy <= evento.fechaFin;
+// Vigentes y próximos: todo lo que todavía no terminó.
+function noTermino(evento, hoy) {
+  return hoy <= evento.fechaFin;
 }
 
 function formatearFecha(fechaISO) {
@@ -13,11 +15,16 @@ function formatearFecha(fechaISO) {
   });
 }
 
-function Eventos({ eventos, onNavigate, onSeleccionarEvento }) {
+function Eventos({ eventos, cargando, onRecargar, onNavigate, onSeleccionarEvento }) {
   const hoy = new Date().toISOString().slice(0, 10);
 
+  // Al entrar: traer de nuevo (actividades recién creadas por los negocios).
+  useEffect(() => {
+    onRecargar?.();
+  }, [onRecargar]);
+
   const eventosVigentes = eventos
-    .filter((evento) => esVigente(evento, hoy))
+    .filter((evento) => noTermino(evento, hoy))
     .sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio));
 
   const handleSeleccionar = (eventoId) => {
@@ -30,8 +37,10 @@ function Eventos({ eventos, onNavigate, onSeleccionarEvento }) {
       <TopBar title="Agenda de eventos" onMenuClick={() => onNavigate?.('menu')} />
 
       <div className="eventos-contenido">
-        {eventosVigentes.length === 0 ? (
-          <p className="eventos-vacio">Sin eventos activos esta semana</p>
+        {cargando && eventosVigentes.length === 0 ? (
+          <p className="eventos-vacio">Cargando eventos…</p>
+        ) : eventosVigentes.length === 0 ? (
+          <p className="eventos-vacio">No hay eventos próximos por ahora</p>
         ) : (
           <div className="card-wrap">
             {eventosVigentes.map((evento) => (
@@ -47,7 +56,7 @@ function Eventos({ eventos, onNavigate, onSeleccionarEvento }) {
                   <div className="barcode"></div>
                   <div className="guia">GUÍA:<br />Invitado</div>
                   <h3>{evento.nombre}</h3>
-                  <div className="ubicacion">{evento.ubicacion.toUpperCase()}</div>
+                  {evento.ubicacion && <div className="ubicacion">{evento.ubicacion.toUpperCase()}</div>}
                   <div className="pill">
                     {formatearFecha(evento.fechaInicio)} - {formatearFecha(evento.fechaFin)}
                   </div>

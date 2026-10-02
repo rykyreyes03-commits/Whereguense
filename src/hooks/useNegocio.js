@@ -34,6 +34,7 @@ export function useNegocio(usuarioId) {
   const [fotos, setFotos] = useState([]);
   const [productos, setProductos] = useState([]);
   const [actividadesQR, setActividadesQR] = useState([]);
+  const [actividades, setActividades] = useState([]);
 
   useEffect(() => {
     if (!usuarioId) {
@@ -149,28 +150,47 @@ export function useNegocio(usuarioId) {
     return () => { activo = false; };
   }, [negocio?.id]);
 
-  useEffect(() => {
-    if (!negocio?.id) {
+  // Actividades del negocio (actividad_negocio, el dueño ve todas) y sus QR
+  // (qr_sello vía mis_actividades_qr, que es lo único que devuelve el token).
+  // Se recarga al abrir la pestaña Sellos para ver los sellos que el admin aprobó.
+  const negocioId = negocio?.id;
+  const cargarActividades = useCallback(async () => {
+    if (!negocioId) {
+      setActividades([]);
       setActividadesQR([]);
-      return undefined;
+      return;
     }
-    let activo = true;
-    supabase
-      .rpc('mis_actividades_qr', { p_negocio_id: negocio.id })
-      .then(({ data, error }) => {
-        if (!activo) return;
-        if (error) {
-          console.error('Error cargando actividades QR:', error);
-          setActividadesQR([]);
-        } else if (!data.exito) {
-          console.error('Error cargando actividades QR:', data.mensaje);
-          setActividadesQR([]);
-        } else {
-          setActividadesQR(data.actividades || []);
-        }
-      });
-    return () => { activo = false; };
-  }, [negocio?.id]);
+
+    const [resActividades, resQR] = await Promise.all([
+      supabase
+        .from('actividad_negocio')
+        .select('id, nombre, descripcion, fecha_inicio, fecha_fin, solicita_sello, estado_sello, justificacion_sello, motivo_rechazo_sello, qr_sello_id, evento_id, fecha_creacion')
+        .eq('negocio_id', negocioId)
+        .order('fecha_creacion', { ascending: false }),
+      supabase.rpc('mis_actividades_qr', { p_negocio_id: negocioId }),
+    ]);
+
+    if (resActividades.error) {
+      console.error('Error cargando actividades:', resActividades.error);
+      setActividades([]);
+    } else {
+      setActividades(resActividades.data || []);
+    }
+
+    if (resQR.error) {
+      console.error('Error cargando actividades QR:', resQR.error);
+      setActividadesQR([]);
+    } else if (!resQR.data.exito) {
+      console.error('Error cargando actividades QR:', resQR.data.mensaje);
+      setActividadesQR([]);
+    } else {
+      setActividadesQR(resQR.data.actividades || []);
+    }
+  }, [negocioId]);
+
+  useEffect(() => {
+    cargarActividades();
+  }, [cargarActividades]);
 
   const registrar = useCallback(async (datos) => {
     if (!usuarioId) {
@@ -388,48 +408,74 @@ export function useNegocio(usuarioId) {
     setProductos((prev) => prev.filter((p) => p.id !== productoId));
     return { exito: true };
   }, []);
-  const crearActividadQR = useCallback(async ({ nombre, color, limiteCanjes, fechaExpiracion }) => {
+  // Crea la actividad en actividad_negocio. Si pide sello, queda 'pendiente' (lo
+  // decide el trigger) hasta que el admin la apruebe. Si tiene fechas, además se
+  // publica como evento con crear_evento_desde_actividad.
+  const crearActividad = useCallback(async ({ nombre, descripcion, fechaInicio, fechaFin, solicitaSello, justificacion }) => {
     if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
 
-    const { data, error } = await supabase.rpc('crear_actividad_qr', {
-      p_negocio_id: negocio.id,
-      p_nombre_actividad: nombre,
-      p_color: color,
-      p_limite_canjes: limiteCanjes || null,
-      p_fecha_expiracion: fechaExpiracion || null,
-    });
+    const { data, error } = await supabase
+      .from('actividad_negocio')
+      .insert({
+        negocio_id: negocio.id,
+        nombre,
+        descripcion: descripcion || null,
+        fecha_inicio: fechaInicio || null,
+        fecha_fin: fechaFin || null,
+        solicita_sello: solicitaSello,
+        justificacion_sello: solicitaSello ? justificacion : null,
+      })
+      .select('id, nombre, descripcion, fecha_inicio, fecha_fin, solicita_sello, estado_sello, justificacion_sello, motivo_rechazo_sello, qr_sello_id, evento_id, fecha_creacion')
+      .single();
 
     if (error) {
-      console.error('Error creando actividad QR:', error);
+      console.error('Error creando actividad:', error);
       return { exito: false, mensaje: 'No se pudo crear la actividad. Intenta de nuevo.' };
     }
 
-    if (!data.exito) {
-      return { exito: false, mensaje: data.mensaje };
-    }
+    let actividad = data;
+    let aviso = null;
 
-    setActividadesQR((prev) => [data.actividad, ...prev]);
-
-    if (fechaExpiracion) {
-      const { error: errorEvento } = await supabase
-        .from('evento')
-        .insert({
-          negocio_organizador_id: negocio.id,
-          nombre,
-          fecha_inicio: new Date().toISOString().slice(0, 10),
-          fecha_fin: fechaExpiracion,
-          ubicacion: negocio.nombre,
-          descripcion: `Actividad de sello: ${nombre}`,
-        });
+    if (data.fecha_inicio && data.fecha_fin) {
+      const { data: resEvento, error: errorEvento } = await supabase
+        .rpc('crear_evento_desde_actividad', { p_actividad_id: data.id });
 
       if (errorEvento) {
-        console.error('Error creando evento para la actividad QR:', errorEvento);
-        // No bloqueamos el éxito de la actividad por esto: qr_sello ya se creó bien.
+        console.error('Error publicando el evento de la actividad:', errorEvento);
+        aviso = 'La actividad se guardó, pero no se pudo publicar como evento.';
+      } else if (!resEvento.exito) {
+        aviso = `La actividad se guardó, pero no se publicó como evento: ${resEvento.mensaje}`;
+      } else {
+        actividad = { ...data, evento_id: resEvento.evento_id };
       }
     }
 
-    return { exito: true };
+    setActividades((prev) => [actividad, ...prev]);
+    return { exito: true, aviso };
   }, [negocio]);
+
+  // Reenvía una solicitud de sello rechazada sobre la MISMA actividad. El trigger
+  // actividad_negocio_estado_sello la vuelve a 'pendiente' solo si la justificación
+  // cambió (021); si no cambió, la deja 'rechazado' sin error, por eso se valida aquí.
+  const reenviarSolicitudSello = useCallback(async (actividadId, justificacion) => {
+    const { data, error } = await supabase
+      .from('actividad_negocio')
+      .update({ solicita_sello: true, justificacion_sello: justificacion })
+      .eq('id', actividadId)
+      .select('id, nombre, descripcion, fecha_inicio, fecha_fin, solicita_sello, estado_sello, justificacion_sello, motivo_rechazo_sello, qr_sello_id, evento_id, fecha_creacion')
+      .single();
+
+    if (error) {
+      console.error('Error reenviando la solicitud de sello:', error);
+      return { exito: false, mensaje: 'No se pudo reenviar la solicitud. Intenta de nuevo.' };
+    }
+    if (data.estado_sello !== 'pendiente') {
+      return { exito: false, mensaje: 'Cambia la explicación antes de volver a enviar la solicitud.' };
+    }
+
+    setActividades((prev) => prev.map((a) => (a.id === actividadId ? data : a)));
+    return { exito: true };
+  }, []);
 
   const eliminarActividadQR = useCallback(async (id) => {
     const { error } = await supabase
@@ -464,8 +510,11 @@ export function useNegocio(usuarioId) {
     eliminarFoto,
     agregarProducto,
     eliminarProducto,
+    actividades,
     actividadesQR,
-    crearActividadQR,
+    cargarActividades,
+    crearActividad,
+    reenviarSolicitudSello,
     eliminarActividadQR,
   };
 }

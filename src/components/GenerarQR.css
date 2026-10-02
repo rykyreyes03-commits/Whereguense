@@ -19,10 +19,6 @@
   font-size: 0.9rem; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
 }
-.generarqr-label { font-family: var(--font-body); font-weight: 700; font-size: 0.9rem; margin: 28px 0 12px; align-self: flex-start; }
-.generarqr-colores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 220px; }
-.generarqr-color { width: 100%; aspect-ratio: 1 / 1; border-radius: 50%; border: 3px solid transparent; cursor: pointer; }
-.generarqr-color-activo { border-color: var(--color-navy); box-shadow: 0 0 0 2px #fff inset; }
 @media (min-width: 640px) { .generarqr-wrapper { max-width: 700px; } }
 @media print {
   .generarqr-wrapper * { visibility: hidden; }
@@ -84,3 +80,132 @@
 
 /* Dentro de la pestaña "Sellos" de PerfilNegocio: la tarjeta ya da el padding */
 .generarqr-contenido--embebido { padding: 0; }
+
+/* --- Actividades (estado del sello, formulario) --- */
+.generarqr-item-fechas {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.generarqr-item-desc {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-soft);
+  line-height: 1.4;
+}
+.generarqr-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.generarqr-estado--pendiente { background: color-mix(in srgb, var(--color-sun) 22%, #fff); color: var(--color-navy); }
+.generarqr-estado--aprobado { background: color-mix(in srgb, var(--color-turquoise) 20%, #fff); color: var(--color-navy); }
+.generarqr-estado--rechazado { background: color-mix(in srgb, var(--color-coral) 16%, #fff); color: var(--color-coral); }
+.generarqr-motivo {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+  color: var(--color-text-soft);
+}
+.generarqr-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.generarqr-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.generarqr-campo em { font-style: normal; font-weight: 400; color: var(--color-text-muted); }
+.generarqr-campo small { font-weight: 400; color: var(--color-text-muted); font-size: 0.78rem; margin: -6px 0 12px; }
+.generarqr-campo .generarqr-input { font-weight: 400; }
+.generarqr-textarea { resize: vertical; min-height: 76px; line-height: 1.4; }
+.generarqr-fechas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.generarqr-fechas .generarqr-input { margin-bottom: 0; min-width: 0; }
+.generarqr-ayuda {
+  margin: 6px 0 18px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+.generarqr-ayuda--error { color: var(--color-coral); font-weight: 700; }
+.generarqr-sello {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 14px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.generarqr-switch {
+  flex-shrink: 0;
+  position: relative;
+  width: 48px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-strong);
+  cursor: pointer;
+  padding: 0;
+  transition: background 200ms ease;
+}
+.generarqr-switch--activo { background: var(--color-ultramarine); }
+.generarqr-switch-perilla {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.generarqr-switch--activo .generarqr-switch-perilla { transform: translateX(20px); }
+.generarqr-switch:focus-visible { outline: 2px solid var(--color-navy); outline-offset: 2px; }
+.generarqr-justificacion { animation: generarqr-aparecer 280ms cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes generarqr-aparecer {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.generarqr-generar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) {
+  .generarqr-switch, .generarqr-switch-perilla { transition: none; }
+  .generarqr-justificacion { animation: none; }
+}
+
+/* Reenvío de una solicitud de sello rechazada */
+.generarqr-reenvio {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+  animation: generarqr-aparecer 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.generarqr-reenvio .generarqr-acciones { margin-top: 0; }
+.generarqr-accion--primaria {
+  background: var(--color-ultramarine);
+  color: #fff;
+}
+.generarqr-accion:disabled { opacity: 0.5; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) {
+  .generarqr-reenvio { animation: none; }
+}
