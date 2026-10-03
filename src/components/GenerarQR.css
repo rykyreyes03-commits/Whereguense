@@ -211,3 +211,58 @@
 @media (prefers-reduced-motion: reduce) {
   .generarqr-reenvio { animation: none; }
 }
+
+/* Foto de la actividad y límite de canjes (026) */
+.generarqr-file-oculto { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.generarqr-foto-agregar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 18px 14px;
+  border: 1.5px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  color: var(--color-ultramarine);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.generarqr-foto {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface-soft);
+}
+.generarqr-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.generarqr-foto-quitar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(17, 25, 48, 0.72);
+  color: #fff;
+  cursor: pointer;
+}
+.generarqr-ayuda-foto { font-weight: 400; color: var(--color-text-muted); font-size: 0.78rem; margin: 0 0 14px; }
+.generarqr-limite input { margin-bottom: 4px; }
+.generarqr-input--error { border-color: var(--color-coral); }
+.generarqr-limite small.generarqr-ayuda--error { font-weight: 700; }
+.generarqr-item-foto {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-bottom: 10px;
+  display: block;
+}

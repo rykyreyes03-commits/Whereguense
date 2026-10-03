@@ -18,6 +18,9 @@ function mapearNegocio(fila) {
   };
 }
 
+// Columnas de actividad_negocio que ve el dueño (incluye foto_url y limite_canjes, 026).
+const COLUMNAS_ACTIVIDAD = 'id, nombre, descripcion, foto_url, fecha_inicio, fecha_fin, solicita_sello, limite_canjes, estado_sello, justificacion_sello, motivo_rechazo_sello, qr_sello_id, evento_id, fecha_creacion';
+
 function horarioPorDefecto() {
   return Array.from({ length: 7 }, (_, diaSemana) => ({
     diaSemana,
@@ -164,7 +167,7 @@ export function useNegocio(usuarioId) {
     const [resActividades, resQR] = await Promise.all([
       supabase
         .from('actividad_negocio')
-        .select('id, nombre, descripcion, fecha_inicio, fecha_fin, solicita_sello, estado_sello, justificacion_sello, motivo_rechazo_sello, qr_sello_id, evento_id, fecha_creacion')
+        .select(COLUMNAS_ACTIVIDAD)
         .eq('negocio_id', negocioId)
         .order('fecha_creacion', { ascending: false }),
       supabase.rpc('mis_actividades_qr', { p_negocio_id: negocioId }),
@@ -411,8 +414,23 @@ export function useNegocio(usuarioId) {
   // Crea la actividad en actividad_negocio. Si pide sello, queda 'pendiente' (lo
   // decide el trigger) hasta que el admin la apruebe. Si tiene fechas, además se
   // publica como evento con crear_evento_desde_actividad.
-  const crearActividad = useCallback(async ({ nombre, descripcion, fechaInicio, fechaFin, solicitaSello, justificacion }) => {
+  const crearActividad = useCallback(async ({ nombre, descripcion, fechaInicio, fechaFin, solicitaSello, justificacion, limiteCanjes, foto }) => {
     if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
+
+    // Foto: mismo bucket y mismo patrón que subirFoto (<uid>/<carpeta>/<timestamp>.<ext>),
+    // en la subcarpeta "actividades". Se sube antes de insertar para guardar la URL.
+    let fotoUrl = null;
+    let rutaFoto = null;
+    if (foto) {
+      const extension = foto.name.split('.').pop();
+      rutaFoto = `${usuarioId}/actividades/${Date.now()}.${extension}`;
+      const { error: errorSubida } = await supabase.storage.from('negocios').upload(rutaFoto, foto);
+      if (errorSubida) {
+        console.error('Error subiendo la foto de la actividad:', errorSubida);
+        return { exito: false, mensaje: 'No se pudo subir la foto. Intenta de nuevo.' };
+      }
+      fotoUrl = supabase.storage.from('negocios').getPublicUrl(rutaFoto).data.publicUrl;
+    }
 
     const { data, error } = await supabase
       .from('actividad_negocio')
@@ -420,16 +438,20 @@ export function useNegocio(usuarioId) {
         negocio_id: negocio.id,
         nombre,
         descripcion: descripcion || null,
+        foto_url: fotoUrl,
         fecha_inicio: fechaInicio || null,
         fecha_fin: fechaFin || null,
         solicita_sello: solicitaSello,
         justificacion_sello: solicitaSello ? justificacion : null,
+        limite_canjes: solicitaSello ? (limiteCanjes || null) : null,
       })
-      .select('id, nombre, descripcion, fecha_inicio, fecha_fin, solicita_sello, estado_sello, justificacion_sello, motivo_rechazo_sello, qr_sello_id, evento_id, fecha_creacion')
+      .select(COLUMNAS_ACTIVIDAD)
       .single();
 
     if (error) {
       console.error('Error creando actividad:', error);
+      // No dejar la foto huérfana en Storage si la actividad no se guardó.
+      if (rutaFoto) await supabase.storage.from('negocios').remove([rutaFoto]);
       return { exito: false, mensaje: 'No se pudo crear la actividad. Intenta de nuevo.' };
     }
 
@@ -452,7 +474,7 @@ export function useNegocio(usuarioId) {
 
     setActividades((prev) => [actividad, ...prev]);
     return { exito: true, aviso };
-  }, [negocio]);
+  }, [negocio, usuarioId]);
 
   // Reenvía una solicitud de sello rechazada sobre la MISMA actividad. El trigger
   // actividad_negocio_estado_sello la vuelve a 'pendiente' solo si la justificación
@@ -462,7 +484,7 @@ export function useNegocio(usuarioId) {
       .from('actividad_negocio')
       .update({ solicita_sello: true, justificacion_sello: justificacion })
       .eq('id', actividadId)
-      .select('id, nombre, descripcion, fecha_inicio, fecha_fin, solicita_sello, estado_sello, justificacion_sello, motivo_rechazo_sello, qr_sello_id, evento_id, fecha_creacion')
+      .select(COLUMNAS_ACTIVIDAD)
       .single();
 
     if (error) {

@@ -107,3 +107,13 @@
 @media (min-width: 640px) {
   .panelAdmin-wrapper { max-width: 700px; }
 }
+
+/* Foto de la actividad en la solicitud de sello (026) */
+.panelAdmin-foto {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  display: block;
+}

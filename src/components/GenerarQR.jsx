@@ -1,8 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Trash2, Download, Printer, CalendarDays, Clock, CircleCheck, CircleX, Plus, Send } from 'lucide-react';
+import { Trash2, Download, Printer, CalendarDays, Clock, CircleCheck, CircleX, Plus, Send, ImagePlus, X, Ticket } from 'lucide-react';
 import './GenerarQR.css';
 import TopBar from './TopBar';
+
+// Mismo límite de tamaño de foto que las fotos del negocio (PerfilNegocio).
+const TAMANO_MAX_MB = 5;
+// Máximo de canjes que se puede pedir para el sello de una actividad (026).
+const MAX_CANJES = 200;
 
 const ESTADOS_SELLO = {
   pendiente: { texto: 'Sello en revisión', Icono: Clock, clase: 'pendiente' },
@@ -35,17 +40,26 @@ function GenerarQR({
   embebido = false,
 }) {
   const areaRef = useRef(null);
+  const fotoInputRef = useRef(null);
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [quiereSello, setQuiereSello] = useState(false);
   const [justificacion, setJustificacion] = useState('');
+  const [limite, setLimite] = useState('');
+  const [foto, setFoto] = useState(null);
   const [guardando, setGuardando] = useState(false);
   const [expandidoId, setExpandidoId] = useState(null);
   // Reenvío de un sello rechazado: una actividad a la vez.
   const [reenvio, setReenvio] = useState(null); // { id, original, texto }
   const [reenviando, setReenviando] = useState(false);
+
+  // Vista previa de la foto elegida (se libera al cambiarla o al salir).
+  const fotoPrevia = useMemo(() => (foto ? URL.createObjectURL(foto) : null), [foto]);
+  useEffect(() => () => {
+    if (fotoPrevia) URL.revokeObjectURL(fotoPrevia);
+  }, [fotoPrevia]);
 
   // Al abrir la pestaña: traer de nuevo, por si el admin aprobó o rechazó algo.
   useEffect(() => {
@@ -60,7 +74,30 @@ function GenerarQR({
   const soloUnaFecha = Boolean(fechaInicio) !== Boolean(fechaFin);
   const fechasDesordenadas = fechaInicio && fechaFin && fechaFin < fechaInicio;
   const faltaJustificacion = quiereSello && !justificacion.trim();
-  const puedeEnviar = nombre.trim() && !soloUnaFecha && !fechasDesordenadas && !faltaJustificacion && !guardando;
+  // Límite de canjes: vacío = sin límite. Solo cuenta si pide sello.
+  const limiteNum = limite.trim() === '' ? null : Number(limite);
+  const limiteInvalido = quiereSello && limiteNum !== null
+    && (!Number.isInteger(limiteNum) || limiteNum < 1 || limiteNum > MAX_CANJES);
+  const mensajeLimite = limiteNum !== null && limiteNum > MAX_CANJES
+    ? `El máximo es ${MAX_CANJES} canjes.`
+    : 'Escribe un número entero de 1 en adelante.';
+  const puedeEnviar = nombre.trim() && !soloUnaFecha && !fechasDesordenadas
+    && !faltaJustificacion && !limiteInvalido && !guardando;
+
+  const handleFoto = (e) => {
+    const archivo = e.target.files?.[0];
+    e.target.value = '';
+    if (!archivo) return;
+    if (!archivo.type.startsWith('image/')) {
+      window.alert('Elige un archivo de imagen.');
+      return;
+    }
+    if (archivo.size / (1024 * 1024) > TAMANO_MAX_MB) {
+      window.alert(`"${archivo.name}" pesa demasiado (máximo ${TAMANO_MAX_MB} MB). Prueba con una foto más liviana.`);
+      return;
+    }
+    setFoto(archivo);
+  };
 
   const limpiarFormulario = () => {
     setNombre('');
@@ -69,6 +106,8 @@ function GenerarQR({
     setFechaFin('');
     setQuiereSello(false);
     setJustificacion('');
+    setLimite('');
+    setFoto(null);
   };
 
   const handleCrear = async (e) => {
@@ -83,6 +122,8 @@ function GenerarQR({
       fechaFin: fechaFin || null,
       solicitaSello: quiereSello,
       justificacion: justificacion.trim(),
+      limiteCanjes: quiereSello ? limiteNum : null,
+      foto,
     });
     setGuardando(false);
 
@@ -158,12 +199,21 @@ function GenerarQR({
             const expandido = expandidoId === clave;
             return (
               <div key={clave} className="generarqr-item">
+                {actividad.foto_url && (
+                  <img className="generarqr-item-foto" src={actividad.foto_url} alt="" loading="lazy" />
+                )}
                 <div className="generarqr-item-info">
                   <strong>{actividad.nombre}</strong>
                   <span className="generarqr-item-fechas">
                     <CalendarDays size={14} strokeWidth={2} aria-hidden="true" /> {textoFechas(actividad)}
                   </span>
                   {actividad.descripcion && <p className="generarqr-item-desc">{actividad.descripcion}</p>}
+                  {actividad.solicita_sello && (
+                    <span className="generarqr-item-fechas">
+                      <Ticket size={14} strokeWidth={2} aria-hidden="true" />
+                      {actividad.limite_canjes ? `Límite: ${actividad.limite_canjes} canjes` : 'Sin límite de canjes'}
+                    </span>
+                  )}
                 </div>
 
                 {estado && (
@@ -320,6 +370,38 @@ function GenerarQR({
           />
         </label>
 
+        <div className="generarqr-campo">
+          <span>Foto <em>(opcional)</em></span>
+          <input
+            ref={fotoInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFoto}
+            className="generarqr-file-oculto"
+            tabIndex={-1}
+          />
+          {fotoPrevia ? (
+            <div className="generarqr-foto">
+              <img src={fotoPrevia} alt="Vista previa de la foto de la actividad" />
+              <button
+                type="button"
+                className="generarqr-foto-quitar"
+                onClick={() => setFoto(null)}
+                aria-label="Quitar la foto"
+              >
+                <X size={16} strokeWidth={2.4} aria-hidden="true" />
+              </button>
+            </div>
+          ) : (
+            <button type="button" className="generarqr-foto-agregar" onClick={() => fotoInputRef.current?.click()}>
+              <ImagePlus size={20} strokeWidth={1.8} aria-hidden="true" /> Agregar una foto
+            </button>
+          )}
+          <small className="generarqr-ayuda-foto">
+            {fotoPrevia ? 'Se muestra como portada cuando los turistas abren la actividad.' : `Máximo ${TAMANO_MAX_MB} MB.`}
+          </small>
+        </div>
+
         <div className="generarqr-fechas">
           <label className="generarqr-campo">
             <span>Inicio</span>
@@ -376,6 +458,27 @@ function GenerarQR({
               onChange={(e) => setJustificacion(e.target.value)}
             />
             <small>Un administrador revisa la solicitud. Cuando la apruebe, el QR aparece aquí.</small>
+          </label>
+        )}
+
+        {quiereSello && (
+          <label className="generarqr-campo generarqr-limite">
+            <span>¿Cuántos canjes quieres permitir? <em>(opcional)</em></span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min="1"
+              max={MAX_CANJES}
+              step="1"
+              className={`generarqr-input ${limiteInvalido ? 'generarqr-input--error' : ''}`}
+              placeholder="Sin límite"
+              value={limite}
+              onChange={(e) => setLimite(e.target.value)}
+              aria-invalid={limiteInvalido}
+            />
+            <small className={limiteInvalido ? 'generarqr-ayuda--error' : ''}>
+              {limiteInvalido ? mensajeLimite : `Déjalo vacío para no poner límite. Máximo ${MAX_CANJES}.`}
+            </small>
           </label>
         )}
 

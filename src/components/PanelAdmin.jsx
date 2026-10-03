@@ -104,12 +104,25 @@ function PanelAdmin({ onVolver, usuarioId }) {
           const esPropio = Boolean(usuarioId) && s.duenioId === usuarioId;
           return (
             <div key={clave} className="panelAdmin-card">
+              {s.fotoUrl && (
+                <img className="panelAdmin-foto" src={s.fotoUrl} alt={`Foto de ${s.nombre}`} loading="lazy" />
+              )}
               <h2>{s.nombre}</h2>
               <p className="panelAdmin-detalle">{s.negocio}</p>
               <p className="panelAdmin-detalle">
                 {s.fechaInicio
                   ? `${formatearFecha(s.fechaInicio)} – ${formatearFecha(s.fechaFin)}`
                   : 'Sin fechas (sello permanente)'}
+              </p>
+              {s.descripcion && (
+                <>
+                  <p className="panelAdmin-etiqueta">Descripción</p>
+                  <p className="panelAdmin-justificacion">{s.descripcion}</p>
+                </>
+              )}
+              <p className="panelAdmin-etiqueta">Límite de canjes solicitado</p>
+              <p className="panelAdmin-justificacion">
+                {s.limiteCanjes ? `${s.limiteCanjes} canjes` : 'Sin límite'}
               </p>
               <p className="panelAdmin-etiqueta">Para qué lo va a usar</p>
               <p className="panelAdmin-justificacion">{s.justificacion}</p>

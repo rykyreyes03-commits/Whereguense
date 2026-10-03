@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import './DetalleEvento.css';
 
 function formatearFecha(fechaISO) {
@@ -9,6 +10,9 @@ function formatearFecha(fechaISO) {
 }
 
 function DetalleEvento({ evento, onNavigate }) {
+  // URL de portada que falló al cargar: se vuelve al encabezado de siempre, sin foto.
+  const [portadaFallida, setPortadaFallida] = useState(null);
+
   if (!evento) {
     return (
       <div className="detalle-evento-wrapper">
@@ -22,17 +26,40 @@ function DetalleEvento({ evento, onNavigate }) {
     );
   }
 
+  const conPortada = Boolean(evento.imagenUrl) && portadaFallida !== evento.imagenUrl;
+
   return (
     <div className="detalle-evento-wrapper">
-      <header className="detalle-evento-header">
-        <button className="volver-btn" onClick={() => onNavigate?.('eventos')}>
-          ← Volver
-        </button>
-        <h1>{evento.nombre}</h1>
-        <p className="detalle-evento-fechas">
-          {formatearFecha(evento.fechaInicio)} - {formatearFecha(evento.fechaFin)}
-        </p>
-      </header>
+      {conPortada ? (
+        // Tarjeta de invitación: foto de fondo, degradado oscuro abajo y el nombre encima.
+        <header className="detalle-evento-header detalle-evento-header--foto">
+          <img
+            className="detalle-evento-portada"
+            src={evento.imagenUrl}
+            alt=""
+            onError={() => setPortadaFallida(evento.imagenUrl)}
+          />
+          <button className="volver-btn" onClick={() => onNavigate?.('eventos')}>
+            ← Volver
+          </button>
+          <div className="detalle-evento-portada-texto">
+            <h1>{evento.nombre}</h1>
+            <p className="detalle-evento-fechas">
+              {formatearFecha(evento.fechaInicio)} - {formatearFecha(evento.fechaFin)}
+            </p>
+          </div>
+        </header>
+      ) : (
+        <header className="detalle-evento-header">
+          <button className="volver-btn" onClick={() => onNavigate?.('eventos')}>
+            ← Volver
+          </button>
+          <h1>{evento.nombre}</h1>
+          <p className="detalle-evento-fechas">
+            {formatearFecha(evento.fechaInicio)} - {formatearFecha(evento.fechaFin)}
+          </p>
+        </header>
+      )}
 
       <div className="detalle-evento-contenido">
         {evento.ubicacion && (

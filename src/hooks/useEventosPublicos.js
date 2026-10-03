@@ -65,7 +65,7 @@ export function useEventosPublicos() {
       ubicacion: nombresNegocio.get(a.negocio_id) || '',
       descripcion: a.descripcion || '',
       sitioRelacionado: null,
-      imagenUrl: null,
+      imagenUrl: a.foto_url || null,
       negocioId: a.negocio_id,
       tieneSello: a.estado_sello === 'aprobado',
     }));

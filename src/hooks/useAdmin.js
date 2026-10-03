@@ -18,6 +18,8 @@ function mapearSolicitudSello(fila) {
     id: fila.id,
     nombre: fila.nombre,
     descripcion: fila.descripcion,
+    fotoUrl: fila.foto_url,
+    limiteCanjes: fila.limite_canjes,
     fechaInicio: fila.fecha_inicio,
     fechaFin: fila.fecha_fin,
     justificacion: fila.justificacion_sello,
@@ -56,7 +58,7 @@ export function useAdmin() {
     setCargandoSellos(true);
     const { data, error } = await supabase
       .from('actividad_negocio')
-      .select('id, nombre, descripcion, fecha_inicio, fecha_fin, justificacion_sello, fecha_creacion, negocio:negocio_id (nombre_negocio, usuario_id)')
+      .select('id, nombre, descripcion, foto_url, limite_canjes, fecha_inicio, fecha_fin, justificacion_sello, fecha_creacion, negocio:negocio_id (nombre_negocio, usuario_id)')
       .eq('estado_sello', 'pendiente')
       .order('fecha_creacion');
 
