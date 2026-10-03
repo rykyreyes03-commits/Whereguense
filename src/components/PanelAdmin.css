@@ -83,6 +83,12 @@
   background: var(--color-coral);
   color: #fff;
 }
+.panelAdmin-aviso {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin: 6px 4px 0;
+  text-align: center;
+}
 .panelAdmin-btn:disabled {
   opacity: 0.6;
   cursor: default;

@@ -23,6 +23,7 @@ function mapearSolicitudSello(fila) {
     justificacion: fila.justificacion_sello,
     fechaCreacion: fila.fecha_creacion,
     negocio: fila.negocio?.nombre_negocio || 'Negocio sin nombre',
+    duenioId: fila.negocio?.usuario_id || null,
   };
 }
 
@@ -55,7 +56,7 @@ export function useAdmin() {
     setCargandoSellos(true);
     const { data, error } = await supabase
       .from('actividad_negocio')
-      .select('id, nombre, descripcion, fecha_inicio, fecha_fin, justificacion_sello, fecha_creacion, negocio:negocio_id (nombre_negocio)')
+      .select('id, nombre, descripcion, fecha_inicio, fecha_fin, justificacion_sello, fecha_creacion, negocio:negocio_id (nombre_negocio, usuario_id)')
       .eq('estado_sello', 'pendiente')
       .order('fecha_creacion');
 

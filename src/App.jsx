@@ -751,7 +751,7 @@ function App() {
   }
 
   if (pantalla === 'panelAdmin') {
-    return <PanelAdmin onVolver={() => cambiarPantalla('menu')} />;
+    return <PanelAdmin onVolver={() => cambiarPantalla('menu')} usuarioId={usuarioActual?.id} />;
   }
 
   if (pantalla === 'perfilNegocio') {

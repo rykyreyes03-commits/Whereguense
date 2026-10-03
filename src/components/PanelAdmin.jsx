@@ -8,7 +8,9 @@ function formatearFecha(fechaISO) {
   return new Date(`${fechaISO}T00:00:00`).toLocaleDateString('es-NI', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-function PanelAdmin({ onVolver }) {
+// usuarioId: el admin que mira el panel. No puede aprobar el sello de su propio negocio
+// (admin_aprobar_sello lo rechaza, 025); aquí se ve la tarjeta pero sin el botón activo.
+function PanelAdmin({ onVolver, usuarioId }) {
   const {
     pendientes,
     cargando,
@@ -99,6 +101,7 @@ function PanelAdmin({ onVolver }) {
 
         {solicitudesSello.map((s) => {
           const clave = `sello-${s.id}`;
+          const esPropio = Boolean(usuarioId) && s.duenioId === usuarioId;
           return (
             <div key={clave} className="panelAdmin-card">
               <h2>{s.nombre}</h2>
@@ -117,11 +120,14 @@ function PanelAdmin({ onVolver }) {
               <button
                 className="panelAdmin-btn panelAdmin-btn-aprobar"
                 onClick={() => ejecutar(clave, () => aprobarSello(s.id))}
-                disabled={procesando === clave}
+                disabled={procesando === clave || esPropio}
                 type="button"
               >
                 <Check size={16} strokeWidth={2.6} aria-hidden="true" /> Aprobar
               </button>
+              {esPropio && (
+                <p className="panelAdmin-aviso">No puedes aprobar el sello de tu propio negocio.</p>
+              )}
 
               <textarea
                 className="panelAdmin-motivo"
