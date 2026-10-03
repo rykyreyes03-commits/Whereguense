@@ -751,7 +751,9 @@ function App() {
   }
 
   if (pantalla === 'panelAdmin') {
-    return <PanelAdmin onVolver={() => cambiarPantalla('menu')} usuarioId={usuarioActual?.id} />;
+    // setPantalla y no cambiarPantalla: este Volver regresa al Menú, y cambiarPantalla('menu')
+    // guardaría 'panelAdmin' como pantallaAnterior (el Volver del Menú volvería al Panel).
+    return <PanelAdmin onVolver={() => setPantalla('menu')} usuarioId={usuarioActual?.id} />;
   }
 
   if (pantalla === 'perfilNegocio') {
