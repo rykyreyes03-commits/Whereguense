@@ -593,6 +593,7 @@ function PerfilNegocio({
           <section className="perfilnegocio-card">
             <GenerarQR
               embebido
+              negocioId={negocio?.id}
               actividades={actividades}
               actividadesQR={actividadesQR}
               onRecargar={onRecargarActividades}

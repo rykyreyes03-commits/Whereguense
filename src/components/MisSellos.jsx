@@ -1,10 +1,11 @@
+import { Ticket, ChevronRight } from 'lucide-react';
 import './MisSellos.css';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
 import { obtenerRango } from '../utils/rango';
 import { INSIGNIAS } from '../data/insignias';
 
-function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResaltadoId }) {
+function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResaltadoId, cuponesDisponibles = 0 }) {
   const nivel = obtenerRango(sellos.length);
   const total = sitios.length;
   const progreso = total > 0 ? Math.round((sellos.length / total) * 100) : 0;
@@ -32,6 +33,19 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResalt
           </div>
           <p>{sellos.length} de {total} sellos obtenidos ({progreso}%)</p>
         </div>
+
+        <button className="mis-sellos-cupones" type="button" onClick={() => onNavigate?.('misCupones')}>
+          <span className="mis-sellos-cupones-icono" aria-hidden="true"><Ticket size={22} strokeWidth={1.8} /></span>
+          <span className="mis-sellos-cupones-texto">
+            <strong>Mis cupones</strong>
+            <small>
+              {cuponesDisponibles > 0
+                ? `${cuponesDisponibles} disponible${cuponesDisponibles === 1 ? '' : 's'}`
+                : 'Descuentos de los negocios'}
+            </small>
+          </span>
+          <ChevronRight size={18} strokeWidth={2} aria-hidden="true" />
+        </button>
 
         <h2 className="seccion">PASAPORTE</h2>
         <div className="mis-sellos-grid">

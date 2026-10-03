@@ -31,6 +31,8 @@ import RegistroNegocio from './components/RegistroNegocio';
 import EstadoNegocio from './components/EstadoNegocio';
 import PerfilNegocio from './components/PerfilNegocio';
 import EscanearQR from './components/EscanearQR';
+import EscanearCupon from './components/EscanearCupon';
+import MisCupones from './components/MisCupones';
 import Toast from './components/Toast';
 import LevelUpModal from './components/LevelUpModal';
 import OrbitalRoute from './components/OrbitalRoute';
@@ -38,6 +40,7 @@ import parejaImg from './assets/flujo-inicial/whereguense_pareja.webp';
 import { sitios } from './data/sitios';
 import { rutas } from './data/rutas';
 import { useSellos } from './hooks/useSellos';
+import { useCuponesTurista } from './hooks/useCuponesTurista';
 import { useNegocio } from './hooks/useNegocio';
 import { useEventosPublicos } from './hooks/useEventosPublicos';
 import { useAvatarPersonalizado } from './hooks/useAvatarPersonalizado';
@@ -68,6 +71,14 @@ function App() {
   const [sitioSeleccionadoId, setSitioSeleccionadoId] = useState(null);
   const [sitioEnfocadoId, setSitioEnfocadoId] = useState(null);
   const { sellos, sellar, canjearQR } = useSellos(usuarioActual?.id);
+  const {
+    cupones,
+    cargando: cargandoCupones,
+    recargar: recargarCupones,
+    obtenerCupon,
+    iniciarCanje,
+    usarCupon,
+  } = useCuponesTurista(usuarioActual?.id);
   const {
     negocio,
     horarios,
@@ -524,6 +535,30 @@ function App() {
     );
   }
 
+  if (pantalla === 'escanearCupon') {
+    return (
+      <EscanearCupon
+        cupones={cupones}
+        onObtenerCupon={obtenerCupon}
+        onIniciarCanje={iniciarCanje}
+        onUsarCupon={usarCupon}
+        onVolver={() => cambiarPantalla('inicio')}
+        onNavigate={cambiarPantalla}
+      />
+    );
+  }
+
+  if (pantalla === 'misCupones') {
+    return (
+      <MisCupones
+        cupones={cupones}
+        cargando={cargandoCupones}
+        onRecargar={recargarCupones}
+        onNavigate={cambiarPantalla}
+      />
+    );
+  }
+
   if (pantalla === 'onboarding') {
     return <Onboarding onTerminar={handleTerminarOnboarding} />;
   }
@@ -623,6 +658,7 @@ function App() {
         onNavigate={cambiarPantalla}
         onSeleccionarSitio={setSitioSeleccionadoId}
         sitioResaltadoId={sitioResaltadoPasaporte}
+        cuponesDisponibles={cupones.filter((c) => c.disponible).length}
       />
     );
   }

@@ -3,6 +3,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { Trash2, Download, Printer, CalendarDays, Clock, CircleCheck, CircleX, Plus, Send, ImagePlus, X, Ticket } from 'lucide-react';
 import './GenerarQR.css';
 import TopBar from './TopBar';
+import CuponesNegocio from './CuponesNegocio';
 
 // Mismo límite de tamaño de foto que las fotos del negocio (PerfilNegocio).
 const TAMANO_MAX_MB = 5;
@@ -37,6 +38,7 @@ function GenerarQR({
   onReenviarSello,
   onEliminarActividad,
   onNavigate,
+  negocioId,
   embebido = false,
 }) {
   const areaRef = useRef(null);
@@ -490,6 +492,9 @@ function GenerarQR({
           )}
         </button>
       </form>
+
+      {/* Cupones (027): sección propia debajo de las actividades */}
+      {negocioId && <CuponesNegocio negocioId={negocioId} />}
     </div>
   );
 

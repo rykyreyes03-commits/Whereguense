@@ -266,3 +266,6 @@
   margin-bottom: 10px;
   display: block;
 }
+
+/* El mensaje de error de un campo debe ganarle a ".generarqr-campo small" */
+.generarqr-campo small.generarqr-ayuda--error { color: var(--color-coral); font-weight: 700; }

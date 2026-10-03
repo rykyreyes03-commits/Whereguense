@@ -199,7 +199,7 @@ function Inicio({
           <button type="button" className="inicio-acceso" onClick={handleEscanear}>
             <span className="inicio-acceso-icono"><img src={iconoQR} alt="" /></span>
             <span className="inicio-acceso-label">Escanear</span>
-            <span className="inicio-acceso-meta">Sello de negocio</span>
+            <span className="inicio-acceso-meta">Sello o cupón</span>
           </button>
         </div>
 

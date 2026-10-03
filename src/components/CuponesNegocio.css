@@ -1,0 +1,114 @@
+/* Cupones del negocio (027): dentro de la pestaña Sellos. Reusa las clases generarqr-* para
+   mantener el lenguaje visual del formulario de actividad. */
+
+.cupones-negocio {
+  width: 100%;
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+}
+.cupones-titulo {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--color-navy);
+  margin: 0 0 16px;
+  text-align: center;
+}
+.cupones-subtitulo {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--color-navy);
+  margin: 0 0 6px;
+}
+.cupones-canje {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px 16px;
+  margin-bottom: 20px;
+  background: var(--color-surface-soft);
+}
+.cupones-ayuda {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-text-soft);
+}
+.cupones-canje .generarqr-qr-area { background: var(--color-white); margin-bottom: 12px; }
+.cupones-vacio { max-width: none; text-align: center; margin: 0 0 24px; }
+
+.cupon-item-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cupon-item-porcentaje {
+  flex-shrink: 0;
+  min-width: 58px;
+  padding: 10px 8px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(150deg, var(--color-primary), var(--color-navy));
+  color: var(--color-white);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  text-align: center;
+}
+.cupon-item--inactivo .cupon-item-porcentaje { background: var(--color-border-strong); }
+.cupon-item--inactivo .generarqr-item-info strong { color: var(--color-text-muted); }
+.cupon-estado--inactivo {
+  background: color-mix(in srgb, var(--color-border-strong) 45%, #fff);
+  color: var(--color-text-soft);
+}
+.cupon-acciones { flex-wrap: wrap; }
+.cupon-acciones .generarqr-accion { flex: 1 1 140px; font-size: 0.84rem; padding: 10px 8px; white-space: nowrap; }
+.cupon-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 0;
+  border: none;
+  background: none;
+  color: var(--color-ultramarine);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cupon-nota {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--color-text-muted);
+}
+.cupon-qr-ayuda { margin: 14px 0 8px; text-align: center; }
+.cupon-item .generarqr-qr-area { margin-bottom: 0; }
+
+.cupon-otorgados {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--color-border);
+}
+.cupon-otorgados li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.88rem;
+}
+.cupon-otorgado-nombre { font-weight: 700; overflow-wrap: anywhere; }
+.cupon-otorgado-estado {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+.cupon-otorgado-estado--usado { color: var(--color-green); }
+.cupon-error { margin-top: 0; }
+.cupon-ayuda-campo { font-weight: 400; color: var(--color-text-muted); font-size: 0.78rem; margin: -6px 0 12px; }

@@ -1,6 +1,12 @@
 import './Menu.css';
 import TopBar from './TopBar';
 
+const IconoCupon = () => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+    <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h13A1.5 1.5 0 0 1 20 8.5V10a2 2 0 0 0 0 4v1.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 15.5V14a2 2 0 0 0 0-4V8.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    <path d="M14 7.5v9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeDasharray="1.6 2.2" />
+  </svg>
+);
 const IconoIdioma = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
     <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
@@ -74,6 +80,7 @@ const IconoAdmin = () => (
 function opcionesMenu(esAdmin) {
   const base = [
     { etiqueta: 'Escanear sello QR', Icono: IconoQR, pantalla: 'escanearQR' },
+    { etiqueta: 'Escanear cupón', Icono: IconoCupon, pantalla: 'escanearCupon' },
     { etiqueta: 'Mi negocio', Icono: IconoNegocio, accion: 'miNegocio' },
     { etiqueta: 'Cambiar idioma', Icono: IconoIdioma },
     { etiqueta: 'Notificaciones', Icono: IconoNotificaciones },
