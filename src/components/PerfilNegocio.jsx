@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Check, X, Camera, Eye, ArrowLeft, Store, QrCode, Star, Palette, ChevronRight } from 'lucide-react';
 import './PerfilNegocio.css';
 import TopBar from './TopBar';
@@ -6,14 +6,7 @@ import SeleccionUbicacion from './SeleccionUbicacion';
 import PerfilNegocioPublico from './PerfilNegocioPublico';
 import EstadoNegocio from './EstadoNegocio';
 import GenerarQR from './GenerarQR';
-
-const PESTANAS = [
-  { id: 'resumen', etiqueta: 'Resumen' },
-  { id: 'negocio', etiqueta: 'Mi negocio' },
-  { id: 'sellos', etiqueta: 'Sellos' },
-  { id: 'resenas', etiqueta: 'Reseñas' },
-  { id: 'diseno', etiqueta: 'Diseño' },
-];
+import BottomNavNegocio from './BottomNavNegocio';
 
 const NOMBRES_DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -60,7 +53,8 @@ function PerfilNegocio({
   onReenviarSello,
   onEliminarActividad,
 }) {
-  // Pestaña activa: estado local (no es una pantalla de App.jsx).
+  // Pestaña activa: estado local (no es una pantalla de App.jsx). Se cambia desde la
+  // barra inferior (BottomNavNegocio) y desde los accesos rápidos del Resumen.
   const [pestana, setPestana] = useState('resumen');
   const [editandoPerfil, setEditandoPerfil] = useState(false);
   const [borradorPerfil, setBorradorPerfil] = useState({});
@@ -73,6 +67,12 @@ function PerfilNegocio({
 
   const logoInputRef = useRef(null);
   const fotosInputRef = useRef(null);
+
+  // La barra de pestañas ya no está arriba, al alcance tras subir: al cambiar de pestaña
+  // se vuelve al inicio para no quedar a mitad del contenido de la anterior.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pestana]);
 
   // Suscripción vencida: reemplaza el panel entero (ninguna herramienta accesible).
   // Solo queda el menú de la barra superior para poder salir del flujo del negocio.
@@ -219,7 +219,7 @@ function PerfilNegocio({
   };
 
   return (
-    <div className="perfilnegocio-wrapper">
+    <div className="perfilnegocio-wrapper perfilnegocio-wrapper--con-barra">
       <TopBar align="center" onMenuClick={() => onNavigate('menu')}>
         <button
           type="button"
@@ -288,31 +288,8 @@ function PerfilNegocio({
         </>
       )}
 
-      <nav className="perfilnegocio-pestanas" role="tablist" aria-label="Secciones de tu panel">
-        {PESTANAS.map((p) => (
-          <button
-            key={p.id}
-            id={`perfilnegocio-tab-${p.id}`}
-            type="button"
-            role="tab"
-            aria-selected={pestana === p.id}
-            aria-controls="perfilnegocio-panel"
-            className={`perfilnegocio-pestana ${pestana === p.id ? 'activa' : ''}`}
-            onClick={() => setPestana(p.id)}
-          >
-            {p.etiqueta}
-          </button>
-        ))}
-      </nav>
-
       {/* key: al cambiar de pestaña se vuelve a montar y se repite la entrada escalonada */}
-      <div
-        className="perfilnegocio-contenido"
-        key={pestana}
-        id="perfilnegocio-panel"
-        role="tabpanel"
-        aria-labelledby={`perfilnegocio-tab-${pestana}`}
-      >
+      <div className="perfilnegocio-contenido" key={pestana}>
         {pestana === 'resumen' && (
           <>
             <section className="perfilnegocio-card perfilnegocio-saludo">
@@ -640,6 +617,8 @@ function PerfilNegocio({
           </section>
         )}
       </div>
+
+      <BottomNavNegocio activo={pestana} onCambiar={setPestana} />
     </div>
   );
 }

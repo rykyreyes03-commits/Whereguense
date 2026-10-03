@@ -133,10 +133,12 @@
 .generarqr-textarea { resize: vertical; min-height: 76px; line-height: 1.4; }
 .generarqr-fechas {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
-.generarqr-fechas .generarqr-input { margin-bottom: 0; min-width: 0; }
+/* Un input date tiene ancho mínimo propio: sin esto, a 360px la columna "Fin" se sale */
+.generarqr-fechas > * { min-width: 0; }
+.generarqr-fechas .generarqr-input { margin-bottom: 0; min-width: 0; max-width: 100%; }
 .generarqr-ayuda {
   margin: 6px 0 18px;
   font-size: 0.78rem;

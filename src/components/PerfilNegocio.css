@@ -544,34 +544,9 @@
 .perfilnegocio-vencido .topbar { padding-bottom: 20px; }
 .perfilnegocio-vencido .estado-wrapper { min-height: auto; padding-top: 48px; }
 
-/* ===== Pestañas (mismo patrón que MisGuardados: píldoras con scroll horizontal) ===== */
-.perfilnegocio-pestanas {
-  display: flex;
-  gap: 8px;
-  padding: 16px 18px 4px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.perfilnegocio-pestanas::-webkit-scrollbar { display: none; }
-.perfilnegocio-pestana {
-  flex-shrink: 0;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  padding: 8px 16px;
-  background: var(--color-white);
-  color: var(--color-text-muted);
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-.perfilnegocio-pestana.activa {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--color-text-inverse);
-}
+/* ===== Barra inferior (BottomNavNegocio): espacio para que no tape el final de la pestaña =====
+   Mismo valor que Inicio y Perfil del turista (96px), más la safe-area. */
+.perfilnegocio-wrapper--con-barra { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 
 /* ===== Resumen ===== */
 .perfilnegocio-saludo-titulo {
