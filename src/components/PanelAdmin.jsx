@@ -68,7 +68,7 @@ function PanelAdmin({ onVolver }) {
                 disabled={procesando === clave}
                 type="button"
               >
-                ✅ Aprobar
+                <Check size={16} strokeWidth={2.6} aria-hidden="true" /> Aprobar
               </button>
 
               <textarea
@@ -83,7 +83,7 @@ function PanelAdmin({ onVolver }) {
                 disabled={procesando === clave}
                 type="button"
               >
-                ❌ Rechazar
+                <X size={16} strokeWidth={2.6} aria-hidden="true" /> Rechazar
               </button>
             </div>
           );
