@@ -22,7 +22,12 @@ const TAMANO_MAX_MB = 5;
 // Máximo de canjes que se puede pedir para el sello de una actividad (026).
 const MAX_CANJES = 200;
 const TOTAL_PASOS = 3;
+// Mismo mínimo que el trigger de la base (029): la descripción de una actividad nueva tiene al menos 20 caracteres.
+const MIN_DESCRIPCION = 20;
 const TITULOS = ['¿Qué vas a publicar?', '¿Cuándo y dónde?', 'Últimos detalles'];
+
+// La base cuenta caracteres (char_length), no unidades UTF-16: un emoji vale 1.
+const largo = (texto) => [...texto].length;
 
 // "a", "a y b", "a, b y c"
 function unirConY(lista) {
@@ -74,7 +79,7 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
   }, [paso]);
 
   const hoy = hoyISO(); // día local: toISOString da el día UTC, que de noche en Nicaragua ya es mañana
-  // Límite de canjes: vacío = sin límite. Solo cuenta si pide sello.
+  // Límite de canjes: obligatorio si pide sello (el trigger de 029 lo exige); sin sello no cuenta.
   const limiteNum = limite.trim() === '' ? null : Number(limite);
   const limiteInvalido = quiereSello && limiteNum !== null
     && (!Number.isInteger(limiteNum) || limiteNum < 1 || limiteNum > MAX_CANJES);
@@ -83,26 +88,38 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
     : 'Escribe un número entero de 1 en adelante.';
   const fechasDesordenadas = Boolean(fechaInicio && fechaFin && fechaFin < fechaInicio);
   const horaIncompleta = horaInicioIncompleta || horaFinIncompleta;
+  // Un mismo día con la misma hora de inicio y de fin no tiene duración.
+  const horasIguales = Boolean(horaInicio) && horaInicio === horaFin && Boolean(fechaInicio) && fechaInicio === fechaFin;
   const notaHoras = notaDiaSiguiente(horaInicio, horaFin);
 
   // Lo que falta en cada paso (se muestra como "Falta: …") y los problemas que no son "falta" (se muestran tal cual).
   const faltanPorPaso = {
     1: [
       !nombre.trim() && 'nombre',
+      !categoria && 'categoría',
       categoria === 'otro' && !categoriaOtro.trim() && 'cuál es la categoría',
+      !descripcion.trim() ? 'descripción' : largo(descripcion.trim()) < MIN_DESCRIPCION && `descripción (mínimo ${MIN_DESCRIPCION} caracteres)`,
+      !foto && 'foto',
     ].filter(Boolean),
     2: [
-      Boolean(fechaInicio) !== Boolean(fechaFin) && (fechaInicio ? 'fecha de fin' : 'fecha de inicio'),
+      !fechaInicio && 'fecha de inicio',
+      !fechaFin && 'fecha de fin',
       horaIncompleta && 'AM o PM',
-      !horaIncompleta && Boolean(horaInicio) !== Boolean(horaFin) && (horaInicio ? 'hora de fin' : 'hora de inicio'),
+      !horaIncompleta && !horaInicio && 'hora de inicio',
+      !horaIncompleta && !horaFin && 'hora de fin',
+      !lugar.trim() && 'lugar',
     ].filter(Boolean),
     3: [
       quiereSello && !justificacion.trim() && 'justificación del sello',
+      quiereSello && limiteNum === null && 'límite de canjes',
     ].filter(Boolean),
   };
   const problemasPorPaso = {
     1: [],
-    2: [fechasDesordenadas && 'La fecha de fin no puede ser anterior a la de inicio.'].filter(Boolean),
+    2: [
+      fechasDesordenadas && 'La fecha de fin no puede ser anterior a la de inicio.',
+      horasIguales && 'La hora de fin no puede ser igual a la de inicio.',
+    ].filter(Boolean),
     3: [limiteInvalido && mensajeLimite].filter(Boolean),
   };
   const faltan = faltanPorPaso[paso];
@@ -294,7 +311,7 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
             </label>
 
             <div className="generarqr-campo">
-              <span>Categoría <em>(opcional)</em></span>
+              <span>Categoría</span>
               <div className="generarqr-pildoras" role="group" aria-label="Categoría de la actividad">
                 {CATEGORIAS.map((c) => (
                   <button
@@ -317,7 +334,7 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
             )}
 
             <label className="generarqr-campo">
-              <span>Descripción <em>(opcional)</em></span>
+              <span>Descripción</span>
               <textarea
                 className="generarqr-input generarqr-textarea"
                 placeholder="¿De qué se trata?"
@@ -326,10 +343,15 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
               />
+              <small className="generarqr-contador">
+                {largo(descripcion.trim()) < MIN_DESCRIPCION
+                  ? `Mínimo ${MIN_DESCRIPCION} caracteres · ${largo(descripcion.trim())}/${MIN_DESCRIPCION}`
+                  : `${largo(descripcion)}/2000`}
+              </small>
             </label>
 
             <div className="generarqr-campo">
-              <span>Foto <em>(opcional)</em></span>
+              <span>Foto</span>
               <input
                 ref={fotoInputRef}
                 type="file"
@@ -393,7 +415,7 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
             <ControlHora id="hora-fin" etiqueta="¿A qué hora termina?" verbo="Termina" value={horaFin} onChange={setHoraFin} onIncompleto={setHoraFinIncompleta} resumenCompleto={notaHoras} />
 
             <label className="generarqr-campo">
-              <span>Lugar <em>(opcional)</em></span>
+              <span>Lugar</span>
               <input
                 type="text"
                 className="generarqr-input"
@@ -505,7 +527,7 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
 
             {quiereSello && (
               <label className="generarqr-campo generarqr-limite">
-                <span>¿Cuántos canjes quieres permitir? <em>(opcional)</em></span>
+                <span>¿Cuántos canjes quieres permitir?</span>
                 <input
                   type="number"
                   inputMode="numeric"
@@ -513,13 +535,13 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
                   max={MAX_CANJES}
                   step="1"
                   className={`generarqr-input ${limiteInvalido ? 'generarqr-input--error' : ''}`}
-                  placeholder="Sin límite"
+                  placeholder="Ej. 50"
                   value={limite}
                   onChange={(e) => setLimite(e.target.value)}
                   aria-invalid={limiteInvalido}
                 />
                 <small className={limiteInvalido ? 'generarqr-ayuda--error' : ''}>
-                  {limiteInvalido ? mensajeLimite : `Déjalo vacío para no poner límite. Máximo ${MAX_CANJES}.`}
+                  {limiteInvalido ? mensajeLimite : `Cuántas personas pueden canjear el sello. Máximo ${MAX_CANJES}.`}
                 </small>
               </label>
             )}

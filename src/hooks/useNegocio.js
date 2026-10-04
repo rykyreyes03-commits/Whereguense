@@ -444,7 +444,8 @@ export function useNegocio(usuarioId) {
         solicita_sello: solicitaSello,
         justificacion_sello: solicitaSello ? justificacion : null,
         limite_canjes: solicitaSello ? (limiteCanjes || null) : null,
-        // Campos del rediseño (028), todos opcionales
+        // Campos del rediseño (028). El trigger de 029 exige categoría, descripción, foto, fechas, horas y lugar;
+        // solo eslogan, detalles y etiquetas son opcionales.
         categoria: categoria || null,
         categoria_otro: categoria === 'otro' ? (categoriaOtro || null) : null,
         lugar: lugar || null,
@@ -461,7 +462,9 @@ export function useNegocio(usuarioId) {
       console.error('Error creando actividad:', error);
       // No dejar la foto huérfana en Storage si la actividad no se guardó.
       if (rutaFoto) await supabase.storage.from('negocios').remove([rutaFoto]);
-      return { exito: false, mensaje: 'No se pudo crear la actividad. Intenta de nuevo.' };
+      // El trigger de 029 dice qué falta ('Faltan datos obligatorios de la actividad: foto, lugar.'): se muestra tal cual.
+      const faltanDatos = error.code === '23514' && /^Faltan datos obligatorios/.test(error.message || '');
+      return { exito: false, mensaje: faltanDatos ? error.message : 'No se pudo crear la actividad. Intenta de nuevo.' };
     }
 
     let actividad = data;
