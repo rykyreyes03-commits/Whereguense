@@ -329,7 +329,7 @@
 .generarqr-campo small.generarqr-ayuda--error { color: var(--color-coral); font-weight: 700; }
 
 /* ===== Formulario de actividad: categorías, etiquetas y vista previa (A) ===== */
-.generarqr-pildoras { display: flex; flex-wrap: wrap; gap: 8px; }
+.generarqr-pildoras { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; } /* aire antes del campo siguiente */
 .generarqr-pildora {
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-pill);
