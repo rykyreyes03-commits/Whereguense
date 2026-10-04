@@ -1,17 +1,35 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Share2, Heart, CalendarDays, MapPin, Clock, Stamp } from 'lucide-react';
 import './DetalleEvento.css';
 import AvatarOrganizador from './AvatarOrganizador';
 import PerfilNegocioPublico from './PerfilNegocioPublico';
 import { etiquetaCategoria, rangoCorto, rangoConAnio, rangoHoras } from '../utils/eventos';
+import { compartirEvento } from '../utils/compartir';
 
 // Detalle de un evento o actividad: foto grande con el nombre encima, recuadros de fecha / lugar /
 // hora, organizador, descripción y etiquetas. Lo que no tiene valor no se dibuja.
-//   onCompartir / onFavorito / guardado: los conectan las partes de compartir y de favoritos.
-function DetalleEvento({ evento, onNavigate, onCompartir, onFavorito, guardado = false }) {
+//   onFavorito / guardado: los conecta la parte de favoritos.
+function DetalleEvento({ evento, onNavigate, onFavorito, guardado = false }) {
   // URL de portada que falló al cargar: el encabezado vuelve a navy con degradado, sin foto.
   const [portadaFallida, setPortadaFallida] = useState(null);
   const [verPerfil, setVerPerfil] = useState(false);
+  const [aviso, setAviso] = useState('');
+  const temporizadorAviso = useRef(null);
+
+  useEffect(() => () => clearTimeout(temporizadorAviso.current), []);
+
+  const mostrarAviso = (texto) => {
+    setAviso(texto);
+    clearTimeout(temporizadorAviso.current);
+    temporizadorAviso.current = setTimeout(() => setAviso(''), 1800);
+  };
+
+  // navigator.share si existe; si no, copia el texto y avisa "Copiado".
+  const handleCompartir = async () => {
+    const resultado = await compartirEvento(evento);
+    if (resultado === 'copiado') mostrarAviso('Copiado');
+    else if (resultado === 'error') mostrarAviso('No se pudo copiar');
+  };
 
   if (!evento) {
     return (
@@ -63,7 +81,7 @@ function DetalleEvento({ evento, onNavigate, onCompartir, onFavorito, guardado =
             <button
               type="button"
               className="detalle-evento-circulo"
-              onClick={() => onCompartir?.(evento)}
+              onClick={handleCompartir}
               aria-label="Compartir este evento"
             >
               <Share2 size={18} strokeWidth={2.2} aria-hidden="true" />
@@ -151,6 +169,8 @@ function DetalleEvento({ evento, onNavigate, onCompartir, onFavorito, guardado =
           </section>
         )}
       </div>
+
+      {aviso && <div className="detalle-evento-aviso" role="status" aria-live="polite">{aviso}</div>}
 
       {verPerfil && organizador && (
         <PerfilNegocioPublico

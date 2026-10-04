@@ -290,3 +290,27 @@
   .detalle-evento-hero { min-height: 480px; }
   .detalle-evento-contenido { padding: 28px 60px 0; max-width: 760px; margin: 0 auto; }
 }
+
+/* Aviso breve ("Copiado") */
+.detalle-evento-aviso {
+  position: fixed;
+  left: 50%;
+  bottom: calc(28px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 1100;
+  padding: 11px 22px;
+  border-radius: var(--radius-pill);
+  background: var(--color-navy);
+  color: var(--color-white);
+  font-size: 0.9rem;
+  font-weight: 800;
+  box-shadow: var(--shadow-lg);
+  animation: detalleEventoAviso 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes detalleEventoAviso {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .detalle-evento-aviso { animation: none; }
+}
