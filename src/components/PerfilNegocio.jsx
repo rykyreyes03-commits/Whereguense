@@ -594,6 +594,7 @@ function PerfilNegocio({
           <GenerarQR
             embebido
             negocioId={negocio?.id}
+            organizador={{ nombre: negocio?.nombre, logoUrl: negocio?.logoUrl }}
             actividades={actividades}
             actividadesQR={actividadesQR}
             onRecargar={onRecargarActividades}

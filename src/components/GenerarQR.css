@@ -326,3 +326,66 @@
 
 /* El mensaje de error de un campo debe ganarle a ".generarqr-campo small" */
 .generarqr-campo small.generarqr-ayuda--error { color: var(--color-coral); font-weight: 700; }
+
+/* ===== Formulario de actividad: categorías, etiquetas y vista previa (A) ===== */
+.generarqr-pildoras { display: flex; flex-wrap: wrap; gap: 8px; }
+.generarqr-pildora {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  padding: 8px 14px;
+  background: var(--color-white);
+  color: var(--color-text-soft);
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.generarqr-pildora.activa {
+  background: var(--color-navy);
+  border-color: var(--color-navy);
+  color: var(--color-white);
+}
+.generarqr-pildora:focus-visible { outline: 2px solid var(--color-turquoise); outline-offset: 2px; }
+
+.generarqr-contador { align-self: flex-end; font-weight: 400; color: var(--color-text-muted); font-size: 0.74rem; margin: -6px 0 12px; }
+.generarqr-campo small.generarqr-contador { margin: -6px 0 12px; }
+
+.generarqr-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.generarqr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 12px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-white));
+  color: var(--color-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.generarqr-chip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.generarqr-chip button:hover { background: color-mix(in srgb, var(--color-primary) 18%, var(--color-white)); }
+.generarqr-etiqueta-entrada { display: flex; gap: 8px; align-items: flex-start; }
+.generarqr-etiqueta-entrada .generarqr-input { margin-bottom: 4px; }
+.generarqr-etiqueta-entrada .generarqr-accion { flex: 0 0 auto; padding: 12px 16px; }
+
+.generarqr-previa {
+  margin: 4px 0 22px;
+  padding: 16px 14px 14px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+}
+.generarqr-previa-titulo { margin: 0 0 12px; font-size: 0.82rem; font-weight: 800; color: var(--color-text-soft); text-align: center; }
+.generarqr-previa-nota { margin: 10px 0 0; font-size: 0.78rem; color: var(--color-text-muted); text-align: center; }

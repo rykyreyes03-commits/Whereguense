@@ -4,6 +4,14 @@ import { Trash2, Download, Printer, CalendarDays, Clock, CircleCheck, CircleX, P
 import './GenerarQR.css';
 import TopBar from './TopBar';
 import CuponesNegocio from './CuponesNegocio';
+import TarjetaEvento from './TarjetaEvento';
+import {
+  CATEGORIAS,
+  MAX_ETIQUETAS,
+  MAX_LARGO_ETIQUETA,
+  normalizarEtiqueta,
+  claveEtiqueta,
+} from '../utils/eventos';
 
 // Mismo límite de tamaño de foto que las fotos del negocio (PerfilNegocio).
 const TAMANO_MAX_MB = 5;
@@ -39,6 +47,7 @@ function GenerarQR({
   onEliminarActividad,
   onNavigate,
   negocioId,
+  organizador = null, // { nombre, logoUrl }: sale en la vista previa de la tarjeta
   embebido = false,
 }) {
   const areaRef = useRef(null);
@@ -47,6 +56,15 @@ function GenerarQR({
   const [descripcion, setDescripcion] = useState('');
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
+  const [categoria, setCategoria] = useState('');
+  const [lugar, setLugar] = useState('');
+  const [horaInicio, setHoraInicio] = useState('');
+  const [horaFin, setHoraFin] = useState('');
+  const [eslogan, setEslogan] = useState('');
+  const [detalles, setDetalles] = useState('');
+  const [etiquetas, setEtiquetas] = useState([]);
+  const [etiquetaTexto, setEtiquetaTexto] = useState('');
+  const [errorEtiqueta, setErrorEtiqueta] = useState('');
   const [quiereSello, setQuiereSello] = useState(false);
   const [justificacion, setJustificacion] = useState('');
   const [limite, setLimite] = useState('');
@@ -83,8 +101,46 @@ function GenerarQR({
   const mensajeLimite = limiteNum !== null && limiteNum > MAX_CANJES
     ? `El máximo es ${MAX_CANJES} canjes.`
     : 'Escribe un número entero de 1 en adelante.';
-  const puedeEnviar = nombre.trim() && !soloUnaFecha && !fechasDesordenadas
+  // Las horas van juntas (las dos o ninguna); no se exige orden: un evento nocturno termina "antes".
+  const soloUnaHora = Boolean(horaInicio) !== Boolean(horaFin);
+  const puedeEnviar = nombre.trim() && !soloUnaFecha && !fechasDesordenadas && !soloUnaHora
     && !faltaJustificacion && !limiteInvalido && !guardando;
+
+  // Etiquetas (028): máximo 6, de 1 a 24 caracteres, sin repetir. Devuelve el mensaje de error o null.
+  const errorParaEtiqueta = (limpia, actuales) => {
+    if (limpia.length > MAX_LARGO_ETIQUETA) return `Máximo ${MAX_LARGO_ETIQUETA} caracteres por etiqueta.`;
+    if (actuales.length >= MAX_ETIQUETAS) return `Máximo ${MAX_ETIQUETAS} etiquetas.`;
+    if (actuales.some((e) => claveEtiqueta(e) === claveEtiqueta(limpia))) return 'Ya agregaste esa etiqueta.';
+    return null;
+  };
+
+  const agregarEtiqueta = () => {
+    const limpia = normalizarEtiqueta(etiquetaTexto);
+    if (!limpia) {
+      setEtiquetaTexto('');
+      return;
+    }
+    const error = errorParaEtiqueta(limpia, etiquetas);
+    if (error) {
+      setErrorEtiqueta(error);
+      return;
+    }
+    setEtiquetas([...etiquetas, limpia]);
+    setEtiquetaTexto('');
+    setErrorEtiqueta('');
+  };
+
+  const handleTeclaEtiqueta = (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault(); // Enter no envía el formulario
+      agregarEtiqueta();
+    }
+  };
+
+  const quitarEtiqueta = (indice) => {
+    setEtiquetas(etiquetas.filter((_, i) => i !== indice));
+    setErrorEtiqueta('');
+  };
 
   const handleFoto = (e) => {
     const archivo = e.target.files?.[0];
@@ -110,11 +166,32 @@ function GenerarQR({
     setJustificacion('');
     setLimite('');
     setFoto(null);
+    setCategoria('');
+    setLugar('');
+    setHoraInicio('');
+    setHoraFin('');
+    setEslogan('');
+    setDetalles('');
+    setEtiquetas([]);
+    setEtiquetaTexto('');
+    setErrorEtiqueta('');
   };
 
   const handleCrear = async (e) => {
     e.preventDefault();
     if (!puedeEnviar) return;
+
+    // Una etiqueta escrita y sin confirmar con Enter también cuenta.
+    let etiquetasFinal = etiquetas;
+    const pendiente = normalizarEtiqueta(etiquetaTexto);
+    if (pendiente) {
+      const error = errorParaEtiqueta(pendiente, etiquetas);
+      if (error) {
+        setErrorEtiqueta(error);
+        return;
+      }
+      etiquetasFinal = [...etiquetas, pendiente];
+    }
 
     setGuardando(true);
     const resultado = await onCrearActividad({
@@ -126,6 +203,13 @@ function GenerarQR({
       justificacion: justificacion.trim(),
       limiteCanjes: quiereSello ? limiteNum : null,
       foto,
+      categoria: categoria || null,
+      lugar: lugar.trim() || null,
+      horaInicio: horaInicio || null,
+      horaFin: horaFin || null,
+      eslogan: eslogan.trim() || null,
+      detalles: detalles.trim() || null,
+      etiquetas: etiquetasFinal.length > 0 ? etiquetasFinal : null,
     });
     setGuardando(false);
 
@@ -368,6 +452,23 @@ function GenerarQR({
           />
         </label>
 
+        <div className="generarqr-campo">
+          <span>Categoría <em>(opcional)</em></span>
+          <div className="generarqr-pildoras" role="group" aria-label="Categoría de la actividad">
+            {CATEGORIAS.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                className={`generarqr-pildora ${categoria === c.id ? 'activa' : ''}`}
+                aria-pressed={categoria === c.id}
+                onClick={() => setCategoria(categoria === c.id ? '' : c.id)}
+              >
+                {c.etiqueta}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <label className="generarqr-campo">
           <span>Descripción <em>(opcional)</em></span>
           <textarea
@@ -378,6 +479,32 @@ function GenerarQR({
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
           />
+        </label>
+
+        <label className="generarqr-campo">
+          <span>Eslogan <em>(opcional)</em></span>
+          <input
+            type="text"
+            className="generarqr-input"
+            placeholder="Ej. Tradición viva"
+            maxLength={80}
+            value={eslogan}
+            onChange={(e) => setEslogan(e.target.value)}
+          />
+          <small className="generarqr-contador">{eslogan.length}/80</small>
+        </label>
+
+        <label className="generarqr-campo">
+          <span>Detalles <em>(opcional)</em></span>
+          <textarea
+            className="generarqr-input generarqr-textarea"
+            placeholder="Qué incluye, qué llevar, cómo llegar…"
+            maxLength={1000}
+            rows={4}
+            value={detalles}
+            onChange={(e) => setDetalles(e.target.value)}
+          />
+          <small className="generarqr-contador">{detalles.length}/1000</small>
         </label>
 
         <div className="generarqr-campo">
@@ -408,9 +535,23 @@ function GenerarQR({
             </button>
           )}
           <small className="generarqr-ayuda-foto">
-            {fotoPrevia ? 'Se muestra como portada cuando los turistas abren la actividad.' : `Máximo ${TAMANO_MAX_MB} MB.`}
+            Mejor en horizontal (proporción 7:5, desde 1200 × 850 px), JPG o PNG, máximo {TAMANO_MAX_MB} MB.
+            El recorte se ancla arriba: deja caras y lo importante en la parte de arriba de la foto.
           </small>
         </div>
+
+        <label className="generarqr-campo">
+          <span>Lugar <em>(opcional)</em></span>
+          <input
+            type="text"
+            className="generarqr-input"
+            placeholder="Ej. Plazoleta Rubén Darío"
+            maxLength={60}
+            value={lugar}
+            onChange={(e) => setLugar(e.target.value)}
+          />
+          <small className="generarqr-contador">{lugar.length}/60</small>
+        </label>
 
         <div className="generarqr-fechas">
           <label className="generarqr-campo">
@@ -441,6 +582,71 @@ function GenerarQR({
               ? 'Completa las dos fechas, o deja ambas vacías.'
               : 'Opcional. Con fechas, la actividad aparece en Eventos y en tu ficha pública.'}
         </p>
+
+        <div className="generarqr-fechas">
+          <label className="generarqr-campo">
+            <span>Hora de inicio</span>
+            <input
+              type="time"
+              className="generarqr-input"
+              value={horaInicio}
+              onChange={(e) => setHoraInicio(e.target.value)}
+            />
+          </label>
+          <label className="generarqr-campo">
+            <span>Hora de fin</span>
+            <input
+              type="time"
+              className="generarqr-input"
+              value={horaFin}
+              onChange={(e) => setHoraFin(e.target.value)}
+            />
+          </label>
+        </div>
+        <p className={`generarqr-ayuda ${soloUnaHora ? 'generarqr-ayuda--error' : ''}`}>
+          {soloUnaHora
+            ? 'Completa las dos horas, o deja ambas vacías.'
+            : 'Opcional. Si termina de madrugada, pon la hora de fin del día siguiente (por ejemplo 20:00 a 02:00).'}
+        </p>
+
+        <div className="generarqr-campo">
+          <span>Etiquetas <em>(opcional)</em></span>
+          {etiquetas.length > 0 && (
+            <ul className="generarqr-chips" aria-label="Etiquetas agregadas">
+              {etiquetas.map((e, i) => (
+                <li key={e} className="generarqr-chip">
+                  #{e}
+                  <button type="button" onClick={() => quitarEtiqueta(i)} aria-label={`Quitar la etiqueta ${e}`}>
+                    <X size={13} strokeWidth={2.6} aria-hidden="true" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="generarqr-etiqueta-entrada">
+            <input
+              type="text"
+              className="generarqr-input"
+              placeholder={etiquetas.length >= MAX_ETIQUETAS ? 'Llegaste al máximo de etiquetas' : 'Escribe y presiona Enter'}
+              maxLength={MAX_LARGO_ETIQUETA}
+              value={etiquetaTexto}
+              disabled={etiquetas.length >= MAX_ETIQUETAS}
+              onChange={(e) => { setEtiquetaTexto(e.target.value); setErrorEtiqueta(''); }}
+              onKeyDown={handleTeclaEtiqueta}
+            />
+            <button
+              type="button"
+              className="generarqr-accion"
+              onClick={agregarEtiqueta}
+              disabled={!etiquetaTexto.trim() || etiquetas.length >= MAX_ETIQUETAS}
+            >
+              Agregar
+            </button>
+          </div>
+          <small className={errorEtiqueta ? 'generarqr-ayuda--error' : 'generarqr-contador'}>
+            {errorEtiqueta || `${etiquetas.length}/${MAX_ETIQUETAS} etiquetas · hasta ${MAX_LARGO_ETIQUETA} caracteres cada una`}
+          </small>
+        </div>
 
         <div className="generarqr-sello">
           <span id="generarqr-sello-etiqueta">¿Quieres un sello de negocio para esta actividad?</span>
@@ -491,6 +697,25 @@ function GenerarQR({
             </small>
           </label>
         )}
+
+        <div className="generarqr-previa">
+          <p className="generarqr-previa-titulo">Así se verá en la lista de Eventos</p>
+          <TarjetaEvento
+            vistaPrevia
+            evento={{
+              nombre: nombre.trim(),
+              fechaInicio: fechaInicio || null,
+              fechaFin: fechaFin || null,
+              categoria,
+              imagenUrl: fotoPrevia,
+              lugar: lugar.trim(),
+              organizador,
+            }}
+          />
+          {!(fechaInicio && fechaFin) && (
+            <p className="generarqr-previa-nota">Sin fechas, la actividad no aparece en Eventos.</p>
+          )}
+        </div>
 
         <button className="generarqr-generar-btn" disabled={!puedeEnviar} type="submit">
           {guardando ? 'Guardando...' : (

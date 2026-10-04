@@ -19,7 +19,7 @@ function mapearNegocio(fila) {
 }
 
 // Columnas de actividad_negocio que ve el dueño (incluye foto_url y limite_canjes, 026).
-const COLUMNAS_ACTIVIDAD = 'id, nombre, descripcion, foto_url, fecha_inicio, fecha_fin, solicita_sello, limite_canjes, estado_sello, justificacion_sello, motivo_rechazo_sello, qr_sello_id, evento_id, fecha_creacion';
+const COLUMNAS_ACTIVIDAD = 'id, nombre, descripcion, foto_url, categoria, lugar, fecha_inicio, fecha_fin, hora_inicio, hora_fin, eslogan, detalles, etiquetas, solicita_sello, limite_canjes, estado_sello, justificacion_sello, motivo_rechazo_sello, qr_sello_id, evento_id, fecha_creacion';
 
 function horarioPorDefecto() {
   return Array.from({ length: 7 }, (_, diaSemana) => ({
@@ -414,7 +414,7 @@ export function useNegocio(usuarioId) {
   // Crea la actividad en actividad_negocio. Si pide sello, queda 'pendiente' (lo
   // decide el trigger) hasta que el admin la apruebe. Si tiene fechas, además se
   // publica como evento con crear_evento_desde_actividad.
-  const crearActividad = useCallback(async ({ nombre, descripcion, fechaInicio, fechaFin, solicitaSello, justificacion, limiteCanjes, foto }) => {
+  const crearActividad = useCallback(async ({ nombre, descripcion, fechaInicio, fechaFin, solicitaSello, justificacion, limiteCanjes, foto, categoria, lugar, horaInicio, horaFin, eslogan, detalles, etiquetas }) => {
     if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
 
     // Foto: mismo bucket y mismo patrón que subirFoto (<uid>/<carpeta>/<timestamp>.<ext>),
@@ -444,6 +444,14 @@ export function useNegocio(usuarioId) {
         solicita_sello: solicitaSello,
         justificacion_sello: solicitaSello ? justificacion : null,
         limite_canjes: solicitaSello ? (limiteCanjes || null) : null,
+        // Campos del rediseño (028), todos opcionales
+        categoria: categoria || null,
+        lugar: lugar || null,
+        hora_inicio: horaInicio || null,
+        hora_fin: horaFin || null,
+        eslogan: eslogan || null,
+        detalles: detalles || null,
+        etiquetas: etiquetas && etiquetas.length > 0 ? etiquetas : null,
       })
       .select(COLUMNAS_ACTIVIDAD)
       .single();
