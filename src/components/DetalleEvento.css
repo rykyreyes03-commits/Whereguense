@@ -141,7 +141,7 @@
 .detalle-evento-nota-horas {
   margin: -4px 4px 14px;
   font-size: 0.85rem;
-  color: var(--color-text-soft);
+  color: var(--color-text-muted);
 }
 
 .detalle-evento-datos {

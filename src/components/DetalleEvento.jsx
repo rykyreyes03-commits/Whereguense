@@ -3,7 +3,7 @@ import { ArrowLeft, Share2, Heart, CalendarDays, MapPin, Clock, Stamp } from 'lu
 import './DetalleEvento.css';
 import AvatarOrganizador from './AvatarOrganizador';
 import PerfilNegocioPublico from './PerfilNegocioPublico';
-import { etiquetaCategoria, rangoCorto, rangoConAnio, rangoHoras, notaDiaSiguiente } from '../utils/eventos';
+import { textoCategoria, rangoCorto, rangoConAnio, rangoHoras, notaDiaSiguiente } from '../utils/eventos';
 import { compartirEvento } from '../utils/compartir';
 import { useGuardados } from '../hooks/useGuardados';
 
@@ -67,9 +67,8 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos' }) {
   }
 
   const foto = evento.imagenUrl && portadaFallida !== evento.imagenUrl ? evento.imagenUrl : null;
-  const categoria = etiquetaCategoria(evento.categoria);
-  // La pastilla es "CATEGORÍA · LUGAR"; sin categoría no se dibuja (el lugar ya tiene su recuadro).
-  const pastilla = categoria ? [categoria, evento.lugar].filter(Boolean).join(' · ') : '';
+  // La pastilla dorada lleva solo la categoría (con el texto de "Otro"), nunca el lugar: el lugar ya tiene su recuadro.
+  const pastilla = textoCategoria(evento.categoria, evento.categoriaOtro) || '';
   const subtitulo = [rangoConAnio(evento.fechaInicio, evento.fechaFin), evento.eslogan].filter(Boolean).join(' · ');
   const horas = rangoHoras(evento.horaInicio, evento.horaFin);
   const notaHoras = notaDiaSiguiente(evento.horaInicio, evento.horaFin);
