@@ -68,6 +68,12 @@ function App() {
   const authCargando = !authInicializada || cargandoUsuario;
   const [rutaActivaId, setRutaActivaId] = useState(null);
   const [eventoActivoId, setEventoActivoId] = useState(null);
+  // Desde dónde se abrió el detalle de un evento: "Volver" regresa ahí.
+  const [origenDetalleEvento, setOrigenDetalleEvento] = useState('eventos');
+  const seleccionarEvento = (id) => {
+    setEventoActivoId(id);
+    setOrigenDetalleEvento('eventos');
+  };
   const [sitioSeleccionadoId, setSitioSeleccionadoId] = useState(null);
   const [sitioEnfocadoId, setSitioEnfocadoId] = useState(null);
   const { sellos, sellar, canjearQR } = useSellos(usuarioActual?.id);
@@ -606,7 +612,7 @@ function App() {
         onSeleccionarRuta={setRutaActivaId}
         onSeleccionarSitio={setSitioSeleccionadoId}
         onVerSitioEnMapa={irAlMapaConSitio}
-        onSeleccionarEvento={setEventoActivoId}
+        onSeleccionarEvento={seleccionarEvento}
         eventoDestacadoId={eventoVigente?.id}
       />
     );
@@ -644,7 +650,13 @@ function App() {
     return (
       <MisGuardados
         usuarioId={usuarioActual?.id}
+        eventos={eventos}
         onVerSitio={irAlMapaConSitio}
+        onVerEvento={(id) => {
+          setEventoActivoId(id);
+          setOrigenDetalleEvento('guardados');
+          cambiarPantalla('detalleEvento');
+        }}
         onVolver={() => cambiarPantalla('inicio')}
       />
     );
@@ -707,14 +719,21 @@ function App() {
         cargando={cargandoEventos}
         onRecargar={recargarEventos}
         onNavigate={cambiarPantalla}
-        onSeleccionarEvento={setEventoActivoId}
+        onSeleccionarEvento={seleccionarEvento}
       />
     );
   }
 
   if (pantalla === 'detalleEvento') {
     const evento = eventos.find(e => e.id === eventoActivoId);
-    return <DetalleEvento evento={evento} onNavigate={cambiarPantalla} />;
+    return (
+      <DetalleEvento
+        evento={evento}
+        onNavigate={cambiarPantalla}
+        usuarioId={usuarioActual?.id}
+        volverA={origenDetalleEvento}
+      />
+    );
   }
 
   if (pantalla === 'ranking') {

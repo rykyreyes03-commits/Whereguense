@@ -5,16 +5,19 @@ import AvatarOrganizador from './AvatarOrganizador';
 import PerfilNegocioPublico from './PerfilNegocioPublico';
 import { etiquetaCategoria, rangoCorto, rangoConAnio, rangoHoras } from '../utils/eventos';
 import { compartirEvento } from '../utils/compartir';
+import { useGuardados } from '../hooks/useGuardados';
 
 // Detalle de un evento o actividad: foto grande con el nombre encima, recuadros de fecha / lugar /
 // hora, organizador, descripción y etiquetas. Lo que no tiene valor no se dibuja.
-//   onFavorito / guardado: los conecta la parte de favoritos.
-function DetalleEvento({ evento, onNavigate, onFavorito, guardado = false }) {
+//   usuarioId: para guardar el evento en favoritos (tipo 'evento', id con prefijo del frontend).
+//   volverA: pantalla a la que lleva "Volver" (por defecto la agenda; Mis guardados la cambia).
+function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos' }) {
   // URL de portada que falló al cargar: el encabezado vuelve a navy con degradado, sin foto.
   const [portadaFallida, setPortadaFallida] = useState(null);
   const [verPerfil, setVerPerfil] = useState(false);
   const [aviso, setAviso] = useState('');
   const temporizadorAviso = useRef(null);
+  const { estaGuardado, toggleGuardar } = useGuardados(usuarioId);
 
   useEffect(() => () => clearTimeout(temporizadorAviso.current), []);
 
@@ -22,6 +25,25 @@ function DetalleEvento({ evento, onNavigate, onFavorito, guardado = false }) {
     setAviso(texto);
     clearTimeout(temporizadorAviso.current);
     temporizadorAviso.current = setTimeout(() => setAviso(''), 1800);
+  };
+
+  // Favorito: referencia_id = el id con prefijo (actividad-<id> o evento-<id>), nunca el número de
+  // la tabla: la actividad 32 tiene una copia en evento (id 12) que la agenda excluye a propósito.
+  // Se guarda una copia de los datos para que no desaparezca de Mis guardados cuando el evento
+  // termine o el negocio venza.
+  const guardado = Boolean(evento) && estaGuardado('evento', evento.id);
+  const handleFavorito = async () => {
+    const resultado = await toggleGuardar('evento', evento.id, {
+      nombre: evento.nombre,
+      fechaInicio: evento.fechaInicio,
+      fechaFin: evento.fechaFin,
+      lugar: evento.lugar || '',
+      imagenUrl: evento.imagenUrl || null,
+      categoria: evento.categoria || null,
+      organizador: evento.organizador?.nombre || null,
+    });
+    if (!resultado.exito) mostrarAviso(resultado.mensaje);
+    else mostrarAviso(resultado.guardado ? 'Guardado en favoritos' : 'Quitado de favoritos');
   };
 
   // navigator.share si existe; si no, copia el texto y avisa "Copiado".
@@ -36,7 +58,7 @@ function DetalleEvento({ evento, onNavigate, onFavorito, guardado = false }) {
       <div className="detalle-evento-wrapper">
         <div className="detalle-evento-vacio">
           <p>Evento no encontrado.</p>
-          <button className="detalle-evento-btn" onClick={() => onNavigate?.('eventos')} type="button">
+          <button className="detalle-evento-btn" onClick={() => onNavigate?.(volverA)} type="button">
             ← Volver a eventos
           </button>
         </div>
@@ -74,7 +96,7 @@ function DetalleEvento({ evento, onNavigate, onFavorito, guardado = false }) {
         )}
 
         <div className="detalle-evento-acciones">
-          <button type="button" className="detalle-evento-volver" onClick={() => onNavigate?.('eventos')}>
+          <button type="button" className="detalle-evento-volver" onClick={() => onNavigate?.(volverA)}>
             <ArrowLeft size={16} strokeWidth={2.4} aria-hidden="true" /> Volver
           </button>
           <div className="detalle-evento-acciones-der">
@@ -89,7 +111,7 @@ function DetalleEvento({ evento, onNavigate, onFavorito, guardado = false }) {
             <button
               type="button"
               className={`detalle-evento-circulo detalle-evento-circulo--favorito ${guardado ? 'activo' : ''}`}
-              onClick={() => onFavorito?.(evento)}
+              onClick={handleFavorito}
               aria-label={guardado ? 'Quitar de favoritos' : 'Guardar en favoritos'}
               aria-pressed={guardado}
             >
