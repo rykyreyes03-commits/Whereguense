@@ -11,8 +11,9 @@ const dos = (n) => String(n).padStart(2, '0');
 //   value: '' o la hora guardada en 24 h ('19:00'). onChange recibe '' hasta que hay hora y AM/PM.
 //   onIncompleto(true) avisa cuando ya se eligió la hora pero falta AM/PM (o al revés), para que el
 //   formulario pueda decir qué falta en vez de perder lo elegido.
+//   resumenCompleto: texto que reemplaza al resumen cuando hay hora (p. ej. "…del día siguiente").
 //   etiqueta: título del grupo ("¿A qué hora empieza?"). verbo: "Empieza" / "Termina" para el resumen.
-function ControlHora({ id, etiqueta, verbo, value, onChange, onIncompleto, invalido = false }) {
+function ControlHora({ id, etiqueta, verbo, value, onChange, onIncompleto, resumenCompleto = '', invalido = false }) {
   const inicial = de24h(value);
   const [hora, setHora] = useState(inicial ? String(inicial.hora) : '');
   const [minutos, setMinutos] = useState(inicial ? inicial.minutos : 0);
@@ -38,7 +39,7 @@ function ControlHora({ id, etiqueta, verbo, value, onChange, onIncompleto, inval
   };
 
   const resumen = value
-    ? `${verbo} a las ${horaCorta(value)}`
+    ? (resumenCompleto || `${verbo} a las ${horaCorta(value)}`)
     : hora && !periodo ? 'Falta elegir AM o PM' : 'Elige la hora y AM o PM';
   const opcionesMinutos = MINUTOS.includes(minutos) ? MINUTOS : [...MINUTOS, minutos].sort((a, b) => a - b);
 

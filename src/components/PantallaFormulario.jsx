@@ -8,6 +8,7 @@ import './PantallaFormulario.css';
 //   paso: { actual, total } muestra "Paso N de M" y la barra; sin paso, se muestra el título.
 function PantallaFormulario({ titulo, paso = null, onVolver, pie = null, children }) {
   const raizRef = useRef(null);
+  const cuerpoRef = useRef(null);
   const volverRef = useRef(onVolver);
   useEffect(() => { volverRef.current = onVolver; });
 
@@ -30,9 +31,13 @@ function PantallaFormulario({ titulo, paso = null, onVolver, pie = null, childre
     };
   }, []);
 
+  // Cada paso nuevo empieza arriba.
+  const pasoActual = paso?.actual;
+  useEffect(() => { cuerpoRef.current?.scrollTo(0, 0); }, [pasoActual]);
+
   return createPortal(
     <div className="pantalla-form" role="dialog" aria-modal="true" aria-label={titulo} ref={raizRef} tabIndex={-1}>
-      <div className="pantalla-form-cuerpo">
+      <div className="pantalla-form-cuerpo" ref={cuerpoRef}>
         <header className="pantalla-form-cabecera">
           <div className="pantalla-form-fila">
             <button type="button" className="pantalla-form-volver" onClick={onVolver} aria-label={paso && paso.actual > 1 ? 'Volver al paso anterior' : 'Volver'}>

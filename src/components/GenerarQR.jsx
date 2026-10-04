@@ -6,7 +6,6 @@ import TopBar from './TopBar';
 import CuponesNegocio from './CuponesNegocio';
 import FilaCompacta from './FilaCompacta';
 import FormularioActividad from './FormularioActividad';
-import PantallaFormulario from './PantallaFormulario';
 import { textoCategoria, rangoEscrito, rangoHoras, notaDiaSiguiente, inicialDe } from '../utils/eventos';
 
 const ESTADOS_SELLO = {
@@ -304,13 +303,12 @@ function GenerarQR({
         : <p className="generarqr-vacio">No encontramos tu negocio. Vuelve a abrir tu panel.</p>)}
 
       {creando && (
-        <PantallaFormulario titulo="Nueva actividad" onVolver={() => setCreando(false)}>
-          <FormularioActividad
-            organizador={organizador}
-            onCrear={onCrearActividad}
-            onCerrar={(resultado) => { setCreando(false); setAviso(resultado?.aviso || 'Tu actividad quedó guardada.'); }}
-          />
-        </PantallaFormulario>
+        <FormularioActividad
+          organizador={organizador}
+          onCrear={onCrearActividad}
+          onSalir={() => setCreando(false)}
+          onCerrar={(resultado) => { setCreando(false); setAviso(resultado?.aviso || 'Tu actividad quedó guardada.'); }}
+        />
       )}
     </section>
   );
