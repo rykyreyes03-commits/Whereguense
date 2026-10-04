@@ -155,7 +155,7 @@ export function useNegocio(usuarioId) {
 
   // Actividades del negocio (actividad_negocio, el dueño ve todas) y sus QR
   // (qr_sello vía mis_actividades_qr, que es lo único que devuelve el token).
-  // Se recarga al abrir la pestaña Sellos para ver los sellos que el admin aprobó.
+  // Se recarga al abrir la pestaña Actividades para ver los sellos que el admin aprobó.
   const negocioId = negocio?.id;
   const cargarActividades = useCallback(async () => {
     if (!negocioId) {

@@ -34,7 +34,7 @@ function textoFechas(actividad) {
   return `${formatearFecha(actividad.fecha_inicio)} – ${formatearFecha(actividad.fecha_fin)}`;
 }
 
-// Formulario y lista de actividades del negocio (pestaña "Sellos" de PerfilNegocio).
+// Formulario y lista de actividades del negocio (pestaña "Actividades" de PerfilNegocio).
 // Una actividad puede pedir un sello: el admin lo aprueba y recién ahí existe el QR.
 // Los QR creados antes de las actividades (crear_actividad_qr) se listan aparte.
 // embebido: se dibuja dentro de la pestaña (sin barra superior ni pantalla completa).
@@ -272,15 +272,15 @@ function GenerarQR({
     </>
   );
 
-  // Dos bloques con identidad propia: Sellos (actividades y sus sellos) y Cupones.
+  // Dos bloques con identidad propia: Actividades (con sus sellos) y Cupones.
   const contenido = (
     <>
-    <section className="generarqr-bloque generarqr-bloque--sellos" aria-labelledby="generarqr-sellos-titulo">
+    <section className="generarqr-bloque generarqr-bloque--actividades" aria-labelledby="generarqr-actividades-titulo">
       <header className="generarqr-bloque-encabezado">
         <span className="generarqr-bloque-icono" aria-hidden="true"><QrCode size={22} strokeWidth={1.8} /></span>
         <div>
-          <h2 className="generarqr-bloque-titulo" id="generarqr-sellos-titulo">Sellos</h2>
-          <p className="generarqr-bloque-sub">Tus actividades y los sellos que piden para el pasaporte</p>
+          <h2 className="generarqr-bloque-titulo" id="generarqr-actividades-titulo">Actividades</h2>
+          <p className="generarqr-bloque-sub">Publícalas en Eventos y, si quieres, pide un sello para el pasaporte</p>
         </div>
       </header>
 
@@ -736,7 +736,7 @@ function GenerarQR({
 
   return (
     <div className="generarqr-wrapper">
-      <TopBar title="Sellos y cupones" onBack={() => onNavigate('perfilNegocio')} />
+      <TopBar title="Actividades y cupones" onBack={() => onNavigate('perfilNegocio')} />
       <div className="generarqr-bloques">{contenido}</div>
     </div>
   );

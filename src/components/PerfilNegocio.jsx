@@ -309,11 +309,11 @@ function PerfilNegocio({
                 </span>
                 <ChevronRight size={18} strokeWidth={2} aria-hidden="true" className="perfilnegocio-acceso-chevron" />
               </button>
-              <button type="button" className="perfilnegocio-acceso" onClick={() => setPestana('sellos')}>
+              <button type="button" className="perfilnegocio-acceso" onClick={() => setPestana('actividades')}>
                 <span className="perfilnegocio-acceso-icono" aria-hidden="true"><QrCode size={22} strokeWidth={1.8} /></span>
                 <span className="perfilnegocio-acceso-texto">
-                  <strong>Generar un sello nuevo</strong>
-                  <span>Crea un QR para que los turistas sellen su pasaporte</span>
+                  <strong>Crear una actividad</strong>
+                  <span>Publícala en Eventos y, si quieres, pide un sello</span>
                 </span>
                 <ChevronRight size={18} strokeWidth={2} aria-hidden="true" className="perfilnegocio-acceso-chevron" />
               </button>
@@ -571,26 +571,11 @@ function PerfilNegocio({
                 </button>
               </div>
             </section>
-
-            <button
-              className="perfilnegocio-qr-btn"
-              onClick={() => setPestana('sellos')}
-              type="button"
-            >
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
-                <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <rect x="8.5" y="8.5" width="3" height="3" rx="0.6" fill="currentColor" />
-                <rect x="12.5" y="8.5" width="3" height="3" rx="0.6" fill="currentColor" />
-                <rect x="8.5" y="12.5" width="3" height="3" rx="0.6" fill="currentColor" />
-                <rect x="13" y="13" width="2" height="2" rx="0.5" fill="currentColor" />
-              </svg>
-              {negocio?.qr ? 'Ver QR de sello' : 'Generar QR de sello'}
-            </button>
           </>
         )}
 
-        {/* GenerarQR dibuja dos bloques propios (Sellos y Cupones), cada uno con su marco */}
-        {pestana === 'sellos' && (
+        {/* GenerarQR dibuja dos bloques propios (Actividades y Cupones), cada uno con su marco */}
+        {pestana === 'actividades' && (
           <GenerarQR
             embebido
             negocioId={negocio?.id}

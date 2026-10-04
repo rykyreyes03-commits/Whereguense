@@ -7,7 +7,7 @@ import './BottomNavNegocio.css';
 const ITEMS = [
   { id: 'resumen', etiqueta: 'Resumen', Icono: LayoutDashboard },
   { id: 'negocio', etiqueta: 'Mi negocio', Icono: Store },
-  { id: 'sellos', etiqueta: 'Sellos', Icono: QrCode },
+  { id: 'actividades', etiqueta: 'Actividades', Icono: QrCode },
   { id: 'resenas', etiqueta: 'Reseñas', Icono: Star },
   { id: 'diseno', etiqueta: 'Diseño', Icono: Palette },
 ];

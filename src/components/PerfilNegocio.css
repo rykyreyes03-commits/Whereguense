@@ -452,39 +452,12 @@
   box-shadow: 0 0 0 4px rgba(30, 42, 120, 0.12);
 }
 
-/* ===== Botón Generar QR (destacado) ===== */
-.perfilnegocio-qr-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 4px;
-  border: none;
-  border-radius: var(--radius-lg);
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
-  padding: 18px;
-  font-family: var(--font-body);
-  font-size: 1.05rem;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: var(--shadow-lg);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.perfilnegocio-qr-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 32px rgba(30, 42, 120, 0.32);
-  background: #25338c;
-}
-
 /* ===== Reduced motion ===== */
 @media (prefers-reduced-motion: reduce) {
   .perfilnegocio-contenido > * { animation: none; opacity: 1; transform: none; }
   .perfilnegocio-logo:hover,
   .perfilnegocio-btn-primario:hover,
-  .perfilnegocio-btn-secundario:hover,
-  .perfilnegocio-qr-btn:hover { transform: none; }
+  .perfilnegocio-btn-secundario:hover { transform: none; }
 }
 
 /* ===== Tablet / Desktop ===== */
