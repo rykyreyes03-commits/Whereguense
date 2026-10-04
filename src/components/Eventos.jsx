@@ -24,6 +24,18 @@ function coincideBusqueda(evento, consulta) {
   return plano(consulta).split(/\s+/).filter(Boolean).every((palabra) => pajar.includes(palabra));
 }
 
+// Mensaje de la lista vacía: nombra el mismo filtro que marca la píldora activa.
+function mensajeSinResultados(filtro, busqueda) {
+  const consulta = busqueda.trim();
+  const donde = filtro === 'hoy' ? ' hoy'
+    : filtro === 'semana' ? ' esta semana'
+      : filtro === 'todos' ? ''
+        : ` de ${etiquetaCategoria(filtro)}`;
+  return consulta
+    ? `No encontramos eventos${donde} para “${consulta}”.`
+    : `No hay eventos${donde}.`;
+}
+
 // Agenda: cabecera con la cantidad, buscador, filtros (Todos / Hoy / Esta semana / categorías)
 // y las tarjetas. Los eventos que ya terminaron no se muestran.
 function Eventos({ eventos, cargando, onRecargar, onNavigate, onSeleccionarEvento }) {
@@ -46,10 +58,17 @@ function Eventos({ eventos, cargando, onRecargar, onNavigate, onSeleccionarEvent
   // Categorías que realmente tienen eventos, en el orden de siempre.
   const categoriasPresentes = CATEGORIAS.filter((c) => agenda.some((e) => e.categoria === c.id));
 
+  // Si la categoría elegida ya no tiene eventos (se recargó la agenda, o venció el último), su píldora
+  // desaparece: se vuelve a "Todos" para que la píldora activa y la lista siempre coincidan.
+  const filtroActivo = filtro === 'todos' || filtro === 'hoy' || filtro === 'semana'
+    || categoriasPresentes.some((c) => c.id === filtro)
+    ? filtro
+    : 'todos';
+
   const visibles = agenda.filter((e) => {
-    if (filtro === 'hoy' && !(e.fechaInicio <= hoy && hoy <= e.fechaFin)) return false;
-    if (filtro === 'semana' && !(e.fechaInicio <= sumarDias(hoy, 6) && e.fechaFin >= hoy)) return false;
-    if (filtro !== 'todos' && filtro !== 'hoy' && filtro !== 'semana' && e.categoria !== filtro) return false;
+    if (filtroActivo === 'hoy' && !(e.fechaInicio <= hoy && hoy <= e.fechaFin)) return false;
+    if (filtroActivo === 'semana' && !(e.fechaInicio <= sumarDias(hoy, 6) && e.fechaFin >= hoy)) return false;
+    if (filtroActivo !== 'todos' && filtroActivo !== 'hoy' && filtroActivo !== 'semana' && e.categoria !== filtroActivo) return false;
     return coincideBusqueda(e, busqueda);
   });
 
@@ -64,7 +83,7 @@ function Eventos({ eventos, cargando, onRecargar, onNavigate, onSeleccionarEvent
     { id: 'semana', etiqueta: 'Esta semana' },
     ...categoriasPresentes.map((c) => ({ id: c.id, etiqueta: c.etiqueta })),
   ];
-  const hayFiltros = filtro !== 'todos' || busqueda.trim() !== '';
+  const hayFiltros = filtroActivo !== 'todos' || busqueda.trim() !== '';
 
   return (
     <div className="eventos-wrapper">
@@ -97,8 +116,8 @@ function Eventos({ eventos, cargando, onRecargar, onNavigate, onSeleccionarEvent
           <button
             key={f.id}
             type="button"
-            className={`eventos-filtro ${filtro === f.id ? 'activo' : ''}`}
-            aria-pressed={filtro === f.id}
+            className={`eventos-filtro ${filtroActivo === f.id ? 'activo' : ''}`}
+            aria-pressed={filtroActivo === f.id}
             onClick={(e) => {
               setFiltro(f.id);
               // La fila se desplaza: el filtro elegido queda a la vista.
@@ -117,7 +136,7 @@ function Eventos({ eventos, cargando, onRecargar, onNavigate, onSeleccionarEvent
           <p className="eventos-vacio">No hay eventos próximos por ahora.</p>
         ) : visibles.length === 0 ? (
           <div className="eventos-vacio">
-            <p>No encontramos eventos con esos filtros.</p>
+            <p>{mensajeSinResultados(filtroActivo, busqueda)}</p>
             {hayFiltros && (
               <button
                 type="button"
