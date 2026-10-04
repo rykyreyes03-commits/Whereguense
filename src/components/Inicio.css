@@ -554,7 +554,7 @@
   position: relative;
   min-height: 200px;
   align-items: flex-end;
-  background: #161D30;
+  background: var(--color-navy); /* detrás de fotos con transparencia */
   border-color: transparent;
 }
 .inicio-card-portada {

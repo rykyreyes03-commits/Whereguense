@@ -114,6 +114,7 @@
   aspect-ratio: 7 / 5; /* igual que las fotos de la ficha pública y de las actividades */
   object-fit: cover;
   object-position: center top; /* recorte anclado arriba: no corta cabezas */
+  background: var(--color-navy); /* detrás de fotos con transparencia */
   border-radius: var(--radius-md);
   margin-bottom: 12px;
   display: block;

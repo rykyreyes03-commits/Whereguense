@@ -290,7 +290,7 @@
   aspect-ratio: 7 / 5;
   border-radius: var(--radius-md);
   overflow: hidden;
-  background: var(--color-surface-soft);
+  background: var(--color-navy); /* detrás de fotos con transparencia */
 }
 .generarqr-foto img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
 .generarqr-foto-quitar {
@@ -319,6 +319,7 @@
   aspect-ratio: 7 / 5;
   object-fit: cover;
   object-position: center top; /* recorte anclado arriba: no corta cabezas */
+  background: var(--color-navy); /* detrás de fotos con transparencia */
   border-radius: var(--radius-md);
   margin-bottom: 10px;
   display: block;
