@@ -84,6 +84,20 @@ export function rangoLargo(inicio, fin) {
   return `${diaMesLargo(a)} - ${diaMesLargo(b)}`;
 }
 
+// Para listas compactas: "12 de noviembre", "5 al 6 de octubre" o "30 de octubre al 2 de noviembre".
+// El año solo aparece si no es el actual.
+export function rangoEscrito(inicio, fin) {
+  if (!inicio) return '';
+  const a = aFecha(inicio);
+  const b = fin ? aFecha(fin) : a;
+  const anio = b.getFullYear() !== new Date().getFullYear() ? ` de ${b.getFullYear()}` : '';
+  if (a.getTime() === b.getTime()) return `${diaMesLargo(a)}${anio}`;
+  if (a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear()) {
+    return `${a.getDate()} al ${diaMesLargo(b)}${anio}`;
+  }
+  return `${diaMesLargo(a)} al ${diaMesLargo(b)}${anio}`;
+}
+
 // "16 — 27 de octubre de 2026"
 export function rangoConAnio(inicio, fin) {
   if (!inicio) return '';
