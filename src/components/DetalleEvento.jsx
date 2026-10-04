@@ -1,24 +1,24 @@
 import { useState } from 'react';
+import { ArrowLeft, Share2, Heart, CalendarDays, MapPin, Clock, Stamp } from 'lucide-react';
 import './DetalleEvento.css';
+import AvatarOrganizador from './AvatarOrganizador';
+import PerfilNegocioPublico from './PerfilNegocioPublico';
+import { etiquetaCategoria, rangoCorto, rangoConAnio, rangoHoras } from '../utils/eventos';
 
-function formatearFecha(fechaISO) {
-  return new Date(`${fechaISO}T00:00:00`).toLocaleDateString('es-NI', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-}
-
-function DetalleEvento({ evento, onNavigate }) {
-  // URL de portada que falló al cargar: se vuelve al encabezado de siempre, sin foto.
+// Detalle de un evento o actividad: foto grande con el nombre encima, recuadros de fecha / lugar /
+// hora, organizador, descripción y etiquetas. Lo que no tiene valor no se dibuja.
+//   onCompartir / onFavorito / guardado: los conectan las partes de compartir y de favoritos.
+function DetalleEvento({ evento, onNavigate, onCompartir, onFavorito, guardado = false }) {
+  // URL de portada que falló al cargar: el encabezado vuelve a navy con degradado, sin foto.
   const [portadaFallida, setPortadaFallida] = useState(null);
+  const [verPerfil, setVerPerfil] = useState(false);
 
   if (!evento) {
     return (
       <div className="detalle-evento-wrapper">
-        <div className="detalle-evento-contenido">
+        <div className="detalle-evento-vacio">
           <p>Evento no encontrado.</p>
-          <button className="volver-btn" onClick={() => onNavigate?.('eventos')}>
+          <button className="detalle-evento-btn" onClick={() => onNavigate?.('eventos')} type="button">
             ← Volver a eventos
           </button>
         </div>
@@ -26,70 +26,144 @@ function DetalleEvento({ evento, onNavigate }) {
     );
   }
 
-  const conPortada = Boolean(evento.imagenUrl) && portadaFallida !== evento.imagenUrl;
+  const foto = evento.imagenUrl && portadaFallida !== evento.imagenUrl ? evento.imagenUrl : null;
+  const categoria = etiquetaCategoria(evento.categoria);
+  // La pastilla es "CATEGORÍA · LUGAR"; sin categoría no se dibuja (el lugar ya tiene su recuadro).
+  const pastilla = categoria ? [categoria, evento.lugar].filter(Boolean).join(' · ') : '';
+  const subtitulo = [rangoConAnio(evento.fechaInicio, evento.fechaFin), evento.eslogan].filter(Boolean).join(' · ');
+  const horas = rangoHoras(evento.horaInicio, evento.horaFin);
+  const organizador = evento.organizador?.nombre ? evento.organizador : null;
+  const etiquetas = evento.etiquetas || [];
+
+  const datos = [
+    { id: 'fecha', etiqueta: 'Fecha', valor: rangoCorto(evento.fechaInicio, evento.fechaFin), Icono: CalendarDays, tono: 'azul' },
+    { id: 'lugar', etiqueta: 'Lugar', valor: evento.lugar, Icono: MapPin, tono: 'rosa' },
+    { id: 'hora', etiqueta: 'Hora', valor: horas, Icono: Clock, tono: 'rosa' },
+  ].filter((d) => d.valor);
+
+  const hayDescripcion = Boolean(evento.descripcion || evento.detalles || etiquetas.length > 0);
 
   return (
     <div className="detalle-evento-wrapper">
-      {conPortada ? (
-        // Tarjeta de invitación: foto de fondo, degradado oscuro abajo y el nombre encima.
-        <header className="detalle-evento-header detalle-evento-header--foto">
+      <header className={`detalle-evento-hero ${foto ? '' : 'detalle-evento-hero--sin-foto'}`}>
+        {foto && (
           <img
             className="detalle-evento-portada"
-            src={evento.imagenUrl}
+            src={foto}
             alt=""
             onError={() => setPortadaFallida(evento.imagenUrl)}
           />
-          <button className="volver-btn" onClick={() => onNavigate?.('eventos')}>
-            ← Volver
+        )}
+
+        <div className="detalle-evento-acciones">
+          <button type="button" className="detalle-evento-volver" onClick={() => onNavigate?.('eventos')}>
+            <ArrowLeft size={16} strokeWidth={2.4} aria-hidden="true" /> Volver
           </button>
-          <div className="detalle-evento-portada-texto">
-            <h1>{evento.nombre}</h1>
-            <p className="detalle-evento-fechas">
-              {formatearFecha(evento.fechaInicio)} - {formatearFecha(evento.fechaFin)}
-            </p>
+          <div className="detalle-evento-acciones-der">
+            <button
+              type="button"
+              className="detalle-evento-circulo"
+              onClick={() => onCompartir?.(evento)}
+              aria-label="Compartir este evento"
+            >
+              <Share2 size={18} strokeWidth={2.2} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className={`detalle-evento-circulo detalle-evento-circulo--favorito ${guardado ? 'activo' : ''}`}
+              onClick={() => onFavorito?.(evento)}
+              aria-label={guardado ? 'Quitar de favoritos' : 'Guardar en favoritos'}
+              aria-pressed={guardado}
+            >
+              <Heart size={18} strokeWidth={2.2} fill={guardado ? 'currentColor' : 'none'} aria-hidden="true" />
+            </button>
           </div>
-        </header>
-      ) : (
-        <header className="detalle-evento-header">
-          <button className="volver-btn" onClick={() => onNavigate?.('eventos')}>
-            ← Volver
-          </button>
+        </div>
+
+        <div className="detalle-evento-hero-texto">
+          {pastilla && <span className="detalle-evento-pastilla">{pastilla}</span>}
           <h1>{evento.nombre}</h1>
-          <p className="detalle-evento-fechas">
-            {formatearFecha(evento.fechaInicio)} - {formatearFecha(evento.fechaFin)}
-          </p>
-        </header>
-      )}
+          {subtitulo && <p className="detalle-evento-subtitulo">{subtitulo}</p>}
+        </div>
+      </header>
 
       <div className="detalle-evento-contenido">
-        {evento.ubicacion && (
-          <div className="detalle-evento-dato">
-            <span className="etiqueta">{evento.negocioId ? 'ORGANIZA' : 'UBICACIÓN'}</span>
-            <p>{evento.ubicacion}</p>
+        {datos.length > 0 && (
+          <div className="detalle-evento-datos" style={{ '--columnas': datos.length }}>
+            {datos.map(({ id, etiqueta, valor, Icono, tono }) => (
+              <div key={id} className="detalle-evento-dato">
+                <span className={`detalle-evento-dato-icono detalle-evento-dato-icono--${tono}`} aria-hidden="true">
+                  <Icono size={18} strokeWidth={2} />
+                </span>
+                <span className="detalle-evento-dato-etiqueta">{etiqueta}</span>
+                <strong className="detalle-evento-dato-valor">{valor}</strong>
+              </div>
+            ))}
           </div>
         )}
 
-        {evento.descripcion && (
-          <div className="detalle-evento-dato">
-            <span className="etiqueta">DESCRIPCIÓN</span>
-            <p>{evento.descripcion}</p>
-          </div>
-        )}
-
-        {evento.tieneSello && (
-          <div className="detalle-evento-dato">
-            <span className="etiqueta">SELLO</span>
-            <p>Esta actividad entrega un sello: escanea el QR en el negocio.</p>
-          </div>
+        {organizador && (
+          <section className="detalle-evento-tarjeta">
+            <h2 className="detalle-evento-titulo-seccion">Organiza</h2>
+            <div className="detalle-evento-organizador">
+              <AvatarOrganizador nombre={organizador.nombre} logoUrl={organizador.logoUrl} tamano={46} />
+              <div className="detalle-evento-organizador-texto">
+                <strong>{organizador.nombre}</strong>
+                {organizador.verificado && (
+                  <span className="detalle-evento-verificado">
+                    <i aria-hidden="true" /> Organizador verificado
+                  </span>
+                )}
+              </div>
+              <button type="button" className="detalle-evento-perfil" onClick={() => setVerPerfil(true)}>
+                Ver perfil
+              </button>
+            </div>
+          </section>
         )}
 
         {evento.sitioRelacionado && (
-          <div className="detalle-evento-dato">
-            <span className="etiqueta">SITIO RELACIONADO</span>
-            <p>{evento.sitioRelacionado}</p>
-          </div>
+          <section className="detalle-evento-tarjeta">
+            <h2 className="detalle-evento-titulo-seccion">Sitio relacionado</h2>
+            <p className="detalle-evento-parrafo">{evento.sitioRelacionado}</p>
+          </section>
+        )}
+
+        {hayDescripcion && (
+          <section className="detalle-evento-tarjeta">
+            <h2 className="detalle-evento-titulo-seccion">Descripción</h2>
+            {evento.descripcion && <p className="detalle-evento-parrafo">{evento.descripcion}</p>}
+            {evento.detalles && <p className="detalle-evento-parrafo detalle-evento-parrafo--suave">{evento.detalles}</p>}
+            {etiquetas.length > 0 && (
+              <ul className="detalle-evento-etiquetas" aria-label="Etiquetas">
+                {etiquetas.map((e) => (
+                  <li key={e}>#{e}</li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
+
+        {evento.tieneSello && (
+          <section className="detalle-evento-tarjeta detalle-evento-sello">
+            <Stamp size={22} strokeWidth={1.8} aria-hidden="true" />
+            <p>Esta actividad entrega un sello: escanea el QR en el negocio.</p>
+          </section>
         )}
       </div>
+
+      {verPerfil && organizador && (
+        <PerfilNegocioPublico
+          negocio={{
+            id: organizador.id,
+            name: organizador.nombre,
+            categoria: organizador.categoria,
+            descripcion: organizador.descripcion,
+            telefono: organizador.telefono,
+          }}
+          onCerrar={() => setVerPerfil(false)}
+        />
+      )}
     </div>
   );
 }
