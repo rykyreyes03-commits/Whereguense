@@ -548,3 +548,44 @@
   .inicio-accesos { grid-template-columns: repeat(4, 1fr); max-width: 720px; }
   .inicio-card-media { width: 30%; }
 }
+
+/* ===== Evento destacado con foto: foto de fondo + degradado + nombre encima ===== */
+.inicio-card--foto {
+  position: relative;
+  min-height: 200px;
+  align-items: flex-end;
+  background: #161D30;
+  border-color: transparent;
+}
+.inicio-card-portada {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+.inicio-card--foto::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(12, 16, 40, 0.94) 0%, rgba(12, 16, 40, 0.78) 50%, rgba(12, 16, 40, 0) 92%);
+  pointer-events: none;
+}
+.inicio-card--foto .inicio-card-body {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 16px;
+}
+.inicio-card--foto .inicio-card-eyebrow { color: var(--color-turquoise); }
+.inicio-card--foto .inicio-card-titulo {
+  color: var(--color-white);
+  font-size: 1.15rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+.inicio-card--foto .inicio-card-ubicacion { color: rgba(255, 255, 255, 0.9); }
+.inicio-card--foto .inicio-pill {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--color-white);
+}

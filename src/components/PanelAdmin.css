@@ -111,8 +111,9 @@
 /* Foto de la actividad en la solicitud de sello (026) */
 .panelAdmin-foto {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 7 / 5; /* igual que las fotos de la ficha pública y de las actividades */
   object-fit: cover;
+  object-position: center top; /* recorte anclado arriba: no corta cabezas */
   border-radius: var(--radius-md);
   margin-bottom: 12px;
   display: block;

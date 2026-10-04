@@ -1,6 +1,62 @@
 .generarqr-wrapper { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #ffffff; }
-.generarqr-contenido { padding: 8px 24px 40px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-.generarqr-titulo { font-size: 1.5rem; margin: 8px 0 24px; }
+/* ===== Bloques: Sellos y Cupones se sienten como secciones separadas ===== */
+.generarqr-bloques { padding: 8px 18px 40px; }
+.generarqr-bloque {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-top: 5px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 20px 18px 22px;
+  margin-bottom: 44px;
+}
+.generarqr-bloque--cupones {
+  background: color-mix(in srgb, var(--color-turquoise) 9%, var(--color-white));
+  border-top-color: var(--color-turquoise);
+  margin-bottom: 16px;
+}
+.generarqr-bloque-encabezado {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+.generarqr-bloque-icono {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-white));
+  color: var(--color-primary);
+}
+.generarqr-bloque--cupones .generarqr-bloque-icono {
+  background: color-mix(in srgb, var(--color-turquoise) 30%, var(--color-white));
+  color: var(--color-navy);
+}
+.generarqr-bloque-titulo {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  line-height: 1.15;
+  color: var(--color-navy);
+  margin: 0;
+}
+.generarqr-bloque-sub {
+  margin: 3px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--color-text-muted);
+}
 .generarqr-qr-area {
   width: 100%; min-height: 260px; display: flex; align-items: center; justify-content: center;
   background: var(--color-surface-soft); border-radius: var(--radius-lg); margin-bottom: 20px; padding: 20px;
@@ -78,8 +134,6 @@
   margin-bottom: 12px;
 }
 
-/* Dentro de la pestaña "Sellos" de PerfilNegocio: la tarjeta ya da el padding */
-.generarqr-contenido--embebido { padding: 0; }
 
 /* --- Actividades (estado del sello, formulario) --- */
 .generarqr-item-fechas {
@@ -233,12 +287,12 @@
 .generarqr-foto {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 7 / 5;
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--color-surface-soft);
 }
-.generarqr-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.generarqr-foto img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
 .generarqr-foto-quitar {
   position: absolute;
   top: 8px;
@@ -258,10 +312,13 @@
 .generarqr-limite input { margin-bottom: 4px; }
 .generarqr-input--error { border-color: var(--color-coral); }
 .generarqr-limite small.generarqr-ayuda--error { font-weight: 700; }
+/* Fotos de actividad: object-fit: cover en 7:5, la proporción de las fotos de la ficha pública
+   (PerfilNegocioPublico: 140x100). Más alta que 16:9, así una foto vertical pierde menos. */
 .generarqr-item-foto {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 7 / 5;
   object-fit: cover;
+  object-position: center top; /* recorte anclado arriba: no corta cabezas */
   border-radius: var(--radius-md);
   margin-bottom: 10px;
   display: block;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Trash2, Download, Printer, CalendarDays, Clock, CircleCheck, CircleX, Plus, Send, ImagePlus, X, Ticket } from 'lucide-react';
+import { Trash2, Download, Printer, CalendarDays, Clock, CircleCheck, CircleX, Plus, Send, ImagePlus, X, Ticket, QrCode } from 'lucide-react';
 import './GenerarQR.css';
 import TopBar from './TopBar';
 import CuponesNegocio from './CuponesNegocio';
@@ -188,9 +188,17 @@ function GenerarQR({
     </>
   );
 
+  // Dos bloques con identidad propia: Sellos (actividades y sus sellos) y Cupones.
   const contenido = (
-    <div className={`generarqr-contenido ${embebido ? 'generarqr-contenido--embebido' : ''}`}>
-      <h1 className="generarqr-titulo">Actividades</h1>
+    <>
+    <section className="generarqr-bloque generarqr-bloque--sellos" aria-labelledby="generarqr-sellos-titulo">
+      <header className="generarqr-bloque-encabezado">
+        <span className="generarqr-bloque-icono" aria-hidden="true"><QrCode size={22} strokeWidth={1.8} /></span>
+        <div>
+          <h2 className="generarqr-bloque-titulo" id="generarqr-sellos-titulo">Sellos</h2>
+          <p className="generarqr-bloque-sub">Tus actividades y los sellos que piden para el pasaporte</p>
+        </div>
+      </header>
 
       {actividades.length > 0 ? (
         <div className="generarqr-lista">
@@ -492,18 +500,19 @@ function GenerarQR({
           )}
         </button>
       </form>
+    </section>
 
-      {/* Cupones (027): sección propia debajo de las actividades */}
-      {negocioId && <CuponesNegocio negocioId={negocioId} />}
-    </div>
+    {/* Cupones (027): bloque propio, separado de los sellos */}
+    {negocioId && <CuponesNegocio negocioId={negocioId} />}
+    </>
   );
 
   if (embebido) return contenido;
 
   return (
     <div className="generarqr-wrapper">
-      <TopBar title="Actividades" onBack={() => onNavigate('perfilNegocio')} />
-      {contenido}
+      <TopBar title="Sellos y cupones" onBack={() => onNavigate('perfilNegocio')} />
+      <div className="generarqr-bloques">{contenido}</div>
     </div>
   );
 }

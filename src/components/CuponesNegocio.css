@@ -1,22 +1,10 @@
 /* Cupones del negocio (027): dentro de la pestaña Sellos. Reusa las clases generarqr-* para
    mantener el lenguaje visual del formulario de actividad. */
 
-.cupones-negocio {
-  width: 100%;
-  margin-top: 36px;
-  padding-top: 28px;
-  border-top: 1px solid var(--color-border);
-  display: flex;
-  flex-direction: column;
+/* El bloque (marco, encabezado, color) viene de .generarqr-bloque--cupones en GenerarQR.css */
+.generarqr-bloque.cupones-negocio {
   align-items: stretch;
   text-align: left;
-}
-.cupones-titulo {
-  font-family: var(--font-display);
-  font-size: 1.3rem;
-  color: var(--color-navy);
-  margin: 0 0 16px;
-  text-align: center;
 }
 .cupones-subtitulo {
   font-family: var(--font-display);

@@ -33,6 +33,8 @@ function Inicio({
   eventoDestacadoId,
 }) {
   const [busqueda, setBusqueda] = useState('');
+  // URL de portada que falló al cargar: la tarjeta vuelve a su diseño de siempre, sin foto.
+  const [portadaFallida, setPortadaFallida] = useState(null);
   const { guardados } = useGuardados(usuarioId);
 
   const iconoAvatar = localStorage.getItem('avatarElegido') === 'gigantona' ? iconoGigantona : iconoCabezon;
@@ -51,6 +53,8 @@ function Inicio({
     () => eventos?.find((e) => e.id === eventoDestacadoId) || null,
     [eventos, eventoDestacadoId]
   );
+  // Evento con foto: la tarjeta lleva la foto de fondo (criterio de DetalleEvento).
+  const eventoConFoto = Boolean(eventoDestacado?.imagenUrl) && portadaFallida !== eventoDestacado.imagenUrl;
 
   const handleUltimoSello = () => {
     if (!ultimoSello) return;
@@ -267,14 +271,24 @@ function Inicio({
 
         {eventoDestacado ? (
           <article
-            className="inicio-card"
+            className={`inicio-card ${eventoConFoto ? 'inicio-card--foto' : ''}`}
             onClick={() => { onSeleccionarEvento?.(eventoDestacado.id); onNavigate?.('detalleEvento'); }}
             role="button"
             tabIndex={0}
           >
-            <div className="inicio-card-media inicio-card-media--evento" aria-hidden="true">
-              <img src={INSIGNIAS.sun} alt="" />
-            </div>
+            {eventoConFoto ? (
+              <img
+                className="inicio-card-portada"
+                src={eventoDestacado.imagenUrl}
+                alt=""
+                loading="lazy"
+                onError={() => setPortadaFallida(eventoDestacado.imagenUrl)}
+              />
+            ) : (
+              <div className="inicio-card-media inicio-card-media--evento" aria-hidden="true">
+                <img src={INSIGNIAS.sun} alt="" />
+              </div>
+            )}
             <div className="inicio-card-body">
               <div className="inicio-card-eyebrow">EVENTO</div>
               <h3 className="inicio-card-titulo">{eventoDestacado.nombre}</h3>

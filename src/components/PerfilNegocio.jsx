@@ -589,19 +589,18 @@ function PerfilNegocio({
           </>
         )}
 
+        {/* GenerarQR dibuja dos bloques propios (Sellos y Cupones), cada uno con su marco */}
         {pestana === 'sellos' && (
-          <section className="perfilnegocio-card">
-            <GenerarQR
-              embebido
-              negocioId={negocio?.id}
-              actividades={actividades}
-              actividadesQR={actividadesQR}
-              onRecargar={onRecargarActividades}
-              onCrearActividad={onCrearActividad}
-              onReenviarSello={onReenviarSello}
-              onEliminarActividad={onEliminarActividad}
-            />
-          </section>
+          <GenerarQR
+            embebido
+            negocioId={negocio?.id}
+            actividades={actividades}
+            actividadesQR={actividadesQR}
+            onRecargar={onRecargarActividades}
+            onCrearActividad={onCrearActividad}
+            onReenviarSello={onReenviarSello}
+            onEliminarActividad={onEliminarActividad}
+          />
         )}
 
         {pestana === 'resenas' && (

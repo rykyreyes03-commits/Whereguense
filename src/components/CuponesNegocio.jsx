@@ -105,8 +105,14 @@ function CuponesNegocio({ negocioId }) {
   };
 
   return (
-    <section className="cupones-negocio" aria-labelledby="cupones-titulo">
-      <h2 className="cupones-titulo" id="cupones-titulo">Cupones</h2>
+    <section className="generarqr-bloque generarqr-bloque--cupones cupones-negocio" aria-labelledby="cupones-titulo">
+      <header className="generarqr-bloque-encabezado">
+        <span className="generarqr-bloque-icono" aria-hidden="true"><Ticket size={22} strokeWidth={1.8} /></span>
+        <div>
+          <h2 className="generarqr-bloque-titulo" id="cupones-titulo">Cupones</h2>
+          <p className="generarqr-bloque-sub">Descuentos que los turistas obtienen y usan en tu negocio</p>
+        </div>
+      </header>
 
       <div className="cupones-canje">
         <h3 className="cupones-subtitulo">QR para canjear cupones</h3>
