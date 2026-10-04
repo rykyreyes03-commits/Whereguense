@@ -5,12 +5,14 @@ import './GenerarQR.css';
 import TopBar from './TopBar';
 import CuponesNegocio from './CuponesNegocio';
 import TarjetaEvento from './TarjetaEvento';
+import ControlHora from './ControlHora';
 import {
   CATEGORIAS,
   MAX_ETIQUETAS,
   MAX_LARGO_ETIQUETA,
   normalizarEtiqueta,
   claveEtiqueta,
+  notaDiaSiguiente,
 } from '../utils/eventos';
 
 // Mismo límite de tamaño de foto que las fotos del negocio (PerfilNegocio).
@@ -60,6 +62,8 @@ function GenerarQR({
   const [lugar, setLugar] = useState('');
   const [horaInicio, setHoraInicio] = useState('');
   const [horaFin, setHoraFin] = useState('');
+  const [horaInicioIncompleta, setHoraInicioIncompleta] = useState(false);
+  const [horaFinIncompleta, setHoraFinIncompleta] = useState(false);
   const [eslogan, setEslogan] = useState('');
   const [detalles, setDetalles] = useState('');
   const [etiquetas, setEtiquetas] = useState([]);
@@ -102,7 +106,8 @@ function GenerarQR({
     ? `El máximo es ${MAX_CANJES} canjes.`
     : 'Escribe un número entero de 1 en adelante.';
   // Las horas van juntas (las dos o ninguna); no se exige orden: un evento nocturno termina "antes".
-  const soloUnaHora = Boolean(horaInicio) !== Boolean(horaFin);
+  const horaIncompleta = horaInicioIncompleta || horaFinIncompleta;
+  const soloUnaHora = Boolean(horaInicio) !== Boolean(horaFin) || horaIncompleta;
   const puedeEnviar = nombre.trim() && !soloUnaFecha && !fechasDesordenadas && !soloUnaHora
     && !faltaJustificacion && !limiteInvalido && !guardando;
 
@@ -170,6 +175,8 @@ function GenerarQR({
     setLugar('');
     setHoraInicio('');
     setHoraFin('');
+    setHoraInicioIncompleta(false);
+    setHoraFinIncompleta(false);
     setEslogan('');
     setDetalles('');
     setEtiquetas([]);
@@ -583,30 +590,12 @@ function GenerarQR({
               : 'Opcional. Con fechas, la actividad aparece en Eventos y en tu ficha pública.'}
         </p>
 
-        <div className="generarqr-fechas">
-          <label className="generarqr-campo">
-            <span>Hora de inicio</span>
-            <input
-              type="time"
-              className="generarqr-input"
-              value={horaInicio}
-              onChange={(e) => setHoraInicio(e.target.value)}
-            />
-          </label>
-          <label className="generarqr-campo">
-            <span>Hora de fin</span>
-            <input
-              type="time"
-              className="generarqr-input"
-              value={horaFin}
-              onChange={(e) => setHoraFin(e.target.value)}
-            />
-          </label>
-        </div>
+        <ControlHora id="hora-inicio" etiqueta="¿A qué hora empieza?" verbo="Empieza" value={horaInicio} onChange={setHoraInicio} onIncompleto={setHoraInicioIncompleta} />
+        <ControlHora id="hora-fin" etiqueta="¿A qué hora termina?" verbo="Termina" value={horaFin} onChange={setHoraFin} onIncompleto={setHoraFinIncompleta} />
         <p className={`generarqr-ayuda ${soloUnaHora ? 'generarqr-ayuda--error' : ''}`}>
           {soloUnaHora
-            ? 'Completa las dos horas, o deja ambas vacías.'
-            : 'Opcional. Si termina de madrugada, pon la hora de fin del día siguiente (por ejemplo 20:00 a 02:00).'}
+            ? (horaIncompleta ? 'Falta elegir la hora o AM/PM.' : 'Completa las dos horas, o deja ambas vacías.')
+            : notaDiaSiguiente(horaInicio, horaFin) || 'Opcional. Si termina de madrugada, elige la hora de fin del día siguiente.'}
         </p>
 
         <div className="generarqr-campo">

@@ -138,6 +138,12 @@
   gap: 16px;
 }
 
+.detalle-evento-nota-horas {
+  margin: -4px 4px 14px;
+  font-size: 0.85rem;
+  color: var(--color-text-soft);
+}
+
 .detalle-evento-datos {
   display: grid;
   grid-template-columns: repeat(var(--columnas, 3), minmax(0, 1fr));

@@ -90,20 +90,61 @@ export function rangoConAnio(inicio, fin) {
   return `${diaMesLargo(a)} de ${a.getFullYear()} — ${diaMesLargo(b)} de ${b.getFullYear()}`;
 }
 
-// '09:00:00' -> '9AM'; '18:30' -> '6:30PM'
+// Las horas se guardan en 24 h ('19:00:00') y se muestran siempre igual: '7:00 PM', '12:30 AM'.
+// '09:00:00' -> '9:00 AM'; '18:30' -> '6:30 PM'; '00:00' -> '12:00 AM'
 export function horaCorta(hora) {
   if (!hora) return '';
   const [h, m] = String(hora).split(':').map(Number);
   if (Number.isNaN(h)) return '';
   const sufijo = h >= 12 ? 'PM' : 'AM';
   const h12 = h % 12 === 0 ? 12 : h % 12;
-  return m ? `${h12}:${String(m).padStart(2, '0')}${sufijo}` : `${h12}${sufijo}`;
+  return `${h12}:${String(m || 0).padStart(2, '0')} ${sufijo}`;
 }
 
-// '9AM-6PM'; vacío si falta alguna de las dos (en la base van las dos o ninguna).
+// '9:00 AM - 6:00 PM'; vacío si falta alguna de las dos (en la base van las dos o ninguna).
 export function rangoHoras(inicio, fin) {
   if (!inicio || !fin) return '';
-  return `${horaCorta(inicio)}-${horaCorta(fin)}`;
+  return `${horaCorta(inicio)} - ${horaCorta(fin)}`;
+}
+
+// Minutos desde medianoche de '19:30' o '19:30:00'; null si no es una hora.
+function minutosDe(hora) {
+  if (!hora) return null;
+  const [h, m] = String(hora).split(':').map(Number);
+  return Number.isNaN(h) ? null : h * 60 + (m || 0);
+}
+
+// Verdadero si la hora de fin queda antes que la de inicio (la actividad termina pasada la medianoche).
+export function terminaAlDiaSiguiente(inicio, fin) {
+  const a = minutosDe(inicio);
+  const b = minutosDe(fin);
+  return a !== null && b !== null && b < a;
+}
+
+// 'Termina a las 2:00 AM del día siguiente' (vacío si no cruza la medianoche).
+export function notaDiaSiguiente(inicio, fin) {
+  return terminaAlDiaSiguiente(inicio, fin) ? `Termina a las ${horaCorta(fin)} del día siguiente` : '';
+}
+
+// 'sábado 5 de octubre'
+export function fechaEscrita(iso) {
+  if (!iso) return '';
+  // es-NI separa con coma ('lunes, 5 de octubre'); se escribe sin ella.
+  return aFecha(iso).toLocaleDateString('es-NI', { weekday: 'long', day: 'numeric', month: 'long' }).replace(',', '');
+}
+
+// Conversión entre el control de horas (1-12, minutos, AM/PM) y el valor guardado ('HH:MM', 24 h).
+export function a24h(hora12, minutos, periodo) {
+  const h = (Number(hora12) % 12) + (periodo === 'PM' ? 12 : 0);
+  return `${String(h).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`;
+}
+
+// '19:30' -> { hora: 7, minutos: 30, periodo: 'PM' }; sin valor, null.
+export function de24h(hora) {
+  const total = minutosDe(hora);
+  if (total === null) return null;
+  const h = Math.floor(total / 60);
+  return { hora: h % 12 === 0 ? 12 : h % 12, minutos: total % 60, periodo: h >= 12 ? 'PM' : 'AM' };
 }
 
 export function inicialDe(nombre) {

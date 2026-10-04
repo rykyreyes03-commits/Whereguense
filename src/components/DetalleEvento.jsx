@@ -3,7 +3,7 @@ import { ArrowLeft, Share2, Heart, CalendarDays, MapPin, Clock, Stamp } from 'lu
 import './DetalleEvento.css';
 import AvatarOrganizador from './AvatarOrganizador';
 import PerfilNegocioPublico from './PerfilNegocioPublico';
-import { etiquetaCategoria, rangoCorto, rangoConAnio, rangoHoras } from '../utils/eventos';
+import { etiquetaCategoria, rangoCorto, rangoConAnio, rangoHoras, notaDiaSiguiente } from '../utils/eventos';
 import { compartirEvento } from '../utils/compartir';
 import { useGuardados } from '../hooks/useGuardados';
 
@@ -72,6 +72,7 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos' }) {
   const pastilla = categoria ? [categoria, evento.lugar].filter(Boolean).join(' · ') : '';
   const subtitulo = [rangoConAnio(evento.fechaInicio, evento.fechaFin), evento.eslogan].filter(Boolean).join(' · ');
   const horas = rangoHoras(evento.horaInicio, evento.horaFin);
+  const notaHoras = notaDiaSiguiente(evento.horaInicio, evento.horaFin);
   const organizador = evento.organizador?.nombre ? evento.organizador : null;
   const etiquetas = evento.etiquetas || [];
 
@@ -141,6 +142,7 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos' }) {
             ))}
           </div>
         )}
+        {notaHoras && <p className="detalle-evento-nota-horas">{notaHoras}</p>}
 
         {organizador && (
           <section className="detalle-evento-tarjeta">

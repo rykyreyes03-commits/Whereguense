@@ -1,0 +1,45 @@
+/* Control de hora: hora 1-12, minutos de 5 en 5 y AM | PM. */
+.controlhora { border: 0; margin: 0 0 14px; padding: 0; min-width: 0; font-family: var(--font-body); }
+.controlhora-etiqueta { padding: 0; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: var(--color-text); }
+.controlhora-fila { display: flex; align-items: center; gap: 8px; }
+.controlhora-select {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 48px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0 10px;
+  background: var(--color-white);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.controlhora-select--error { border-color: var(--color-coral); }
+.controlhora-select:focus-visible { outline: 2px solid var(--color-turquoise); outline-offset: 2px; }
+.controlhora-dos-puntos { font-weight: 800; color: var(--color-text-muted); }
+.controlhora-periodo {
+  display: inline-flex;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  background: var(--color-white);
+}
+.controlhora-periodo-btn {
+  min-width: 46px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-soft);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.controlhora-periodo-btn.activo { background: var(--color-navy); color: var(--color-white); }
+.controlhora-periodo-btn:focus-visible { outline: 2px solid var(--color-turquoise); outline-offset: 2px; }
+.controlhora-resumen { margin: 6px 0 0; font-size: 0.82rem; color: var(--color-text-muted); }
+.controlhora-resumen--lista { color: var(--color-navy); font-weight: 700; }
+.controlhora-periodo-btn--error { color: var(--color-coral); }

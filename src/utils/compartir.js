@@ -1,12 +1,13 @@
-import { rangoConAnio, rangoHoras } from './eventos';
+import { rangoConAnio, rangoHoras, notaDiaSiguiente } from './eventos';
 
 // Texto que se comparte de un evento: nombre, fechas (con la hora si la tiene) y lugar.
 export function textoParaCompartir(evento) {
   const fechas = rangoConAnio(evento.fechaInicio, evento.fechaFin);
   const horas = rangoHoras(evento.horaInicio, evento.horaFin);
   const cuando = [fechas, horas].filter(Boolean).join(' · ');
+  const termina = notaDiaSiguiente(evento.horaInicio, evento.horaFin);
   const donde = evento.lugar || (evento.organizador?.nombre ? `Organiza: ${evento.organizador.nombre}` : '');
-  return [evento.nombre, cuando, donde, 'Lo encuentras en Wheregüense']
+  return [evento.nombre, cuando, termina, donde, 'Lo encuentras en Wheregüense']
     .filter(Boolean)
     .join('\n');
 }
