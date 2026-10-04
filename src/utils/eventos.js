@@ -16,6 +16,15 @@ export function etiquetaCategoria(id) {
   return CATEGORIAS.find((c) => c.id === id)?.etiqueta || null;
 }
 
+// "Otro" lleva su propio texto ("¿Cuál?", 029): máximo 40 caracteres.
+export const MAX_CATEGORIA_OTRO = 40;
+
+// Lo que se ve donde la categoría: la etiqueta de la lista o, con "Otro", el texto que escribió el organizador.
+export function textoCategoria(id, otro) {
+  if (id === 'otro') return String(otro || '').trim() || etiquetaCategoria('otro');
+  return etiquetaCategoria(id);
+}
+
 // Límites de las etiquetas (028): máximo 6, de 1 a 24 caracteres, sin repetir.
 export const MAX_ETIQUETAS = 6;
 export const MAX_LARGO_ETIQUETA = 24;

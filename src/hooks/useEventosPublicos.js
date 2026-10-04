@@ -25,7 +25,7 @@ export function useEventosPublicos() {
     const [resEventos, resActividades] = await Promise.all([
       supabase
         .from('evento')
-        .select('id, nombre, fecha_inicio, fecha_fin, ubicacion, descripcion, imagen_url, categoria, hora_inicio, hora_fin, eslogan, detalles, etiquetas, sitio:sitio_relacionado_id (nombre)')
+        .select('id, nombre, fecha_inicio, fecha_fin, ubicacion, descripcion, imagen_url, categoria, categoria_otro, hora_inicio, hora_fin, eslogan, detalles, etiquetas, sitio:sitio_relacionado_id (nombre)')
         .is('negocio_organizador_id', null),
       supabase.rpc('actividades_negocio_publicas'),
     ]);
@@ -71,6 +71,7 @@ export function useEventosPublicos() {
       detalles: e.detalles || '',
       eslogan: e.eslogan || '',
       categoria: e.categoria || null,
+      categoriaOtro: e.categoria_otro || null,
       etiquetas: e.etiquetas || [],
       sitioRelacionado: e.sitio?.nombre || null,
       imagenUrl: e.imagen_url || null,
@@ -94,6 +95,7 @@ export function useEventosPublicos() {
         detalles: a.detalles || '',
         eslogan: a.eslogan || '',
         categoria: a.categoria || null,
+        categoriaOtro: a.categoria_otro || null,
         etiquetas: a.etiquetas || [],
         sitioRelacionado: null,
         imagenUrl: a.foto_url || null,

@@ -7,10 +7,11 @@ import PerfilNegocioPublico from './PerfilNegocioPublico';
 import EstadoNegocio from './EstadoNegocio';
 import GenerarQR from './GenerarQR';
 import BottomNavNegocio from './BottomNavNegocio';
+import CampoOtro from './CampoOtro';
+import { OPCIONES_CATEGORIA_NEGOCIO, OTRO_NEGOCIO, separarCategoriaNegocio, unirCategoriaNegocio } from '../utils/categoriasNegocio';
 
 const NOMBRES_DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-const CATEGORIAS = ['Cafetería', 'Restaurante', 'Arte', 'Artesanía', 'Hospedaje', 'Otro'];
 
 const MAX_FOTOS = 6;
 const TAMANO_MAX_MB = 5;
@@ -129,19 +130,24 @@ function PerfilNegocio({
   };
 
   const abrirEdicionPerfil = () => {
+    const { opcion, otro } = separarCategoriaNegocio(negocio?.categoria);
     setBorradorPerfil({
       nombre,
-      categoria,
+      categoria: opcion,
+      categoriaOtro: otro,
       descripcion: negocio?.descripcion || '',
       telefono: negocio?.telefono || '',
     });
     setEditandoPerfil(true);
   };
 
+  const faltaCategoriaOtro = borradorPerfil.categoria === OTRO_NEGOCIO && !(borradorPerfil.categoriaOtro || '').trim();
+
   const guardarPerfil = async () => {
+    if (faltaCategoriaOtro) return;
     const limpio = {
       nombre: (borradorPerfil.nombre || '').trim() || nombre,
-      categoria: borradorPerfil.categoria || categoria,
+      categoria: unirCategoriaNegocio(borradorPerfil.categoria, borradorPerfil.categoriaOtro) || negocio?.categoria || categoria,
       descripcion: (borradorPerfil.descripcion ?? negocio?.descripcion ?? '').trim(),
       telefono: (borradorPerfil.telefono ?? negocio?.telefono ?? '').trim(),
     };
@@ -346,17 +352,26 @@ function PerfilNegocio({
                 </label>
                 <span className="perfilnegocio-campo-label">Categoría</span>
                 <div className="perfilnegocio-chips">
-                  {CATEGORIAS.map((c) => (
+                  {OPCIONES_CATEGORIA_NEGOCIO.map((c) => (
                     <button
                       key={c}
                       type="button"
                       className={`perfilnegocio-chip ${borradorPerfil.categoria === c ? 'activo' : ''}`}
                       onClick={() => setBorradorPerfil({ ...borradorPerfil, categoria: c })}
+                      aria-pressed={borradorPerfil.categoria === c}
                     >
                       {c}
                     </button>
                   ))}
                 </div>
+                {borradorPerfil.categoria === OTRO_NEGOCIO && (
+                  <CampoOtro
+                    id="perfil-categoria-otro"
+                    value={borradorPerfil.categoriaOtro || ''}
+                    onChange={(texto) => setBorradorPerfil({ ...borradorPerfil, categoriaOtro: texto })}
+                    placeholder="Ej. Panadería, Librería…"
+                  />
+                )}
                 <label className="perfilnegocio-campo">
                   Descripción
                   <textarea
@@ -375,8 +390,8 @@ function PerfilNegocio({
                     placeholder="Ej. 8888-8888"
                   />
                 </label>
-                <button type="button" className="perfilnegocio-btn-primario" onClick={guardarPerfil}>
-                  Guardar cambios
+                <button type="button" className="perfilnegocio-btn-primario" onClick={guardarPerfil} disabled={faltaCategoriaOtro}>
+                  {faltaCategoriaOtro ? 'Falta: ¿cuál categoría?' : 'Guardar cambios'}
                 </button>
               </div>
             )}

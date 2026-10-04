@@ -6,6 +6,7 @@ import TopBar from './TopBar';
 import CuponesNegocio from './CuponesNegocio';
 import TarjetaEvento from './TarjetaEvento';
 import ControlHora from './ControlHora';
+import CampoOtro from './CampoOtro';
 import {
   CATEGORIAS,
   MAX_ETIQUETAS,
@@ -59,6 +60,7 @@ function GenerarQR({
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [categoria, setCategoria] = useState('');
+  const [categoriaOtro, setCategoriaOtro] = useState('');
   const [lugar, setLugar] = useState('');
   const [horaInicio, setHoraInicio] = useState('');
   const [horaFin, setHoraFin] = useState('');
@@ -108,7 +110,8 @@ function GenerarQR({
   // Las horas van juntas (las dos o ninguna); no se exige orden: un evento nocturno termina "antes".
   const horaIncompleta = horaInicioIncompleta || horaFinIncompleta;
   const soloUnaHora = Boolean(horaInicio) !== Boolean(horaFin) || horaIncompleta;
-  const puedeEnviar = nombre.trim() && !soloUnaFecha && !fechasDesordenadas && !soloUnaHora
+  const faltaCategoriaOtro = categoria === 'otro' && !categoriaOtro.trim();
+  const puedeEnviar = nombre.trim() && !faltaCategoriaOtro && !soloUnaFecha && !fechasDesordenadas && !soloUnaHora
     && !faltaJustificacion && !limiteInvalido && !guardando;
 
   // Etiquetas (028): máximo 6, de 1 a 24 caracteres, sin repetir. Devuelve el mensaje de error o null.
@@ -172,6 +175,7 @@ function GenerarQR({
     setLimite('');
     setFoto(null);
     setCategoria('');
+    setCategoriaOtro('');
     setLugar('');
     setHoraInicio('');
     setHoraFin('');
@@ -211,6 +215,7 @@ function GenerarQR({
       limiteCanjes: quiereSello ? limiteNum : null,
       foto,
       categoria: categoria || null,
+      categoriaOtro: categoria === 'otro' ? categoriaOtro.trim() : null,
       lugar: lugar.trim() || null,
       horaInicio: horaInicio || null,
       horaFin: horaFin || null,
@@ -468,13 +473,19 @@ function GenerarQR({
                 type="button"
                 className={`generarqr-pildora ${categoria === c.id ? 'activa' : ''}`}
                 aria-pressed={categoria === c.id}
-                onClick={() => setCategoria(categoria === c.id ? '' : c.id)}
+                onClick={() => {
+                  setCategoria(categoria === c.id ? '' : c.id);
+                  if (c.id !== 'otro') setCategoriaOtro('');
+                }}
               >
                 {c.etiqueta}
               </button>
             ))}
           </div>
         </div>
+        {categoria === 'otro' && (
+          <CampoOtro id="actividad-categoria-otro" value={categoriaOtro} onChange={setCategoriaOtro} claseInput="generarqr-input" placeholder="Ej. Danza, Feria de libros…" />
+        )}
 
         <label className="generarqr-campo">
           <span>Descripción <em>(opcional)</em></span>
@@ -696,6 +707,7 @@ function GenerarQR({
               fechaInicio: fechaInicio || null,
               fechaFin: fechaFin || null,
               categoria,
+              categoriaOtro: categoriaOtro.trim(),
               imagenUrl: fotoPrevia,
               lugar: lugar.trim(),
               organizador,

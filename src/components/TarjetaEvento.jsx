@@ -2,17 +2,17 @@ import { useState } from 'react';
 import { CalendarDays, MapPin } from 'lucide-react';
 import './TarjetaEvento.css';
 import AvatarOrganizador from './AvatarOrganizador';
-import { etiquetaCategoria, rangoCorto, rangoLargo } from '../utils/eventos';
+import { textoCategoria, rangoCorto, rangoLargo } from '../utils/eventos';
 
 // Tarjeta de la lista de eventos: foto arriba con la fecha a la izquierda y la categoría a la
 // derecha, título, organizador (o lugar) y el rango de fechas con "Ver →". Sin foto: fondo navy
 // con degradado. Los campos vacíos no se dibujan.
-//   evento: { nombre, fechaInicio, fechaFin, categoria, imagenUrl, lugar, organizador: { nombre, logoUrl } }
+//   evento: { nombre, fechaInicio, fechaFin, categoria, categoriaOtro, imagenUrl, lugar, organizador: { nombre, logoUrl } }
 //   vistaPrevia: la misma tarjeta sin acción, para el formulario de actividad.
 function TarjetaEvento({ evento, onAbrir, vistaPrevia = false }) {
   const [fotoFallida, setFotoFallida] = useState(null);
   const foto = evento.imagenUrl && fotoFallida !== evento.imagenUrl ? evento.imagenUrl : null;
-  const categoria = etiquetaCategoria(evento.categoria);
+  const categoria = textoCategoria(evento.categoria, evento.categoriaOtro);
   const pillFecha = rangoCorto(evento.fechaInicio, evento.fechaFin);
   const fechas = rangoLargo(evento.fechaInicio, evento.fechaFin);
   const organizador = evento.organizador?.nombre ? evento.organizador : null;

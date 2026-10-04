@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { ArrowLeft, MapPin } from 'lucide-react';
 import './RegistroNegocio.css';
 import SeleccionUbicacion from './SeleccionUbicacion';
+import CampoOtro from './CampoOtro';
+import { OPCIONES_CATEGORIA_NEGOCIO, OTRO_NEGOCIO, unirCategoriaNegocio } from '../utils/categoriasNegocio';
 
-const CATEGORIAS = ['Cafetería', 'Restaurante', 'Arte', 'Artesanía', 'Hospedaje', 'Otro'];
 const MIN_FOTOS = 3;
 
 function RegistroNegocio({ onRegistrar, onVolver }) {
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState('');
+  const [categoriaOtro, setCategoriaOtro] = useState('');
   const [responsable, setResponsable] = useState('');
   const [cedulaRuc, setCedulaRuc] = useState('');
   const [fotos, setFotos] = useState([]);
@@ -43,6 +45,10 @@ function RegistroNegocio({ onRegistrar, onVolver }) {
       setError('Selecciona una categoría.');
       return;
     }
+    if (categoria === OTRO_NEGOCIO && !categoriaOtro.trim()) {
+      setError('Escribe cuál es la categoría de tu negocio.');
+      return;
+    }
     if (!responsable.trim()) {
       setError('Escribe el nombre del responsable.');
       return;
@@ -59,7 +65,7 @@ function RegistroNegocio({ onRegistrar, onVolver }) {
     setError('');
     onRegistrar({
       nombre: nombre.trim(),
-      categoria,
+      categoria: unirCategoriaNegocio(categoria, categoriaOtro),
       responsable: responsable.trim(),
       cedulaRuc: cedulaRuc.trim(),
       cantidadFotos: fotos.length,
@@ -88,7 +94,7 @@ function RegistroNegocio({ onRegistrar, onVolver }) {
 
         <label className="registro-label">Categoría</label>
         <div className="registro-categorias">
-          {CATEGORIAS.map((c) => (
+          {OPCIONES_CATEGORIA_NEGOCIO.map((c) => (
             <button
               key={c}
               type="button"
@@ -99,6 +105,9 @@ function RegistroNegocio({ onRegistrar, onVolver }) {
             </button>
           ))}
         </div>
+        {categoria === OTRO_NEGOCIO && (
+          <CampoOtro id="registro-categoria-otro" value={categoriaOtro} onChange={setCategoriaOtro} claseInput="registro-input" placeholder="Ej. Panadería, Librería…" />
+        )}
 
         <label className="registro-label">Nombre del responsable</label>
         <input

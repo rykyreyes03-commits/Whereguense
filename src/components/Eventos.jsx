@@ -19,6 +19,7 @@ function coincideBusqueda(evento, consulta) {
     evento.lugar,
     evento.eslogan,
     etiquetaCategoria(evento.categoria),
+    evento.categoriaOtro,
     ...(evento.etiquetas || []),
   ].filter(Boolean).join(' '));
   return plano(consulta).split(/\s+/).filter(Boolean).every((palabra) => pajar.includes(palabra));
