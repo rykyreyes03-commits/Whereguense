@@ -36,6 +36,20 @@ export function aFecha(iso) {
   return new Date(`${String(iso).slice(0, 10)}T00:00:00`);
 }
 
+// 'YYYY-MM-DD' de hoy en hora local (toISOString da el día UTC, que de noche en Nicaragua ya es mañana).
+export function hoyISO(fecha = new Date()) {
+  const y = fecha.getFullYear();
+  const m = String(fecha.getMonth() + 1).padStart(2, '0');
+  const d = String(fecha.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+export function sumarDias(iso, dias) {
+  const f = aFecha(iso);
+  f.setDate(f.getDate() + dias);
+  return hoyISO(f);
+}
+
 const MES_CORTO = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 const mesLargo = (d) => d.toLocaleDateString('es-NI', { month: 'long' });
 const diaMesLargo = (d) => d.toLocaleDateString('es-NI', { day: 'numeric', month: 'long' });
