@@ -1,85 +1,145 @@
-import { useState } from 'react';
-import { Users, QrCode, Power, Plus } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { QRCodeCanvas } from 'qrcode.react';
+import { Plus, QrCode, Download } from 'lucide-react';
 import './GenerarQR.css';
 import './CuponesNegocio.css';
 import FilaCompacta from './FilaCompacta';
 import BloqueQR from './BloqueQR';
 import FormularioCupon from './FormularioCupon';
+import DetalleCupon from './DetalleCupon';
+import DialogoConfirmacion from './DialogoConfirmacion';
 import PantallaFormulario from './PantallaFormulario';
 import { useCuponesNegocio } from '../hooks/useCuponesNegocio';
-import { valorQRCupon, valorQRCanje } from '../utils/qr';
+import { valorQRCanje } from '../utils/qr';
 import { rangoEscrito, hoyISO } from '../utils/eventos';
 
-// Las fechas con hora (vencimiento, uso) se muestran por su día local: en Nicaragua (UTC-6) el día UTC puede ser el siguiente.
+// Las fechas con hora (vencimiento) se muestran por su día local: en Nicaragua (UTC-6) el día UTC puede ser el siguiente.
 const diaLocal = (valor) => hoyISO(new Date(valor));
 
 // Etiqueta de la fila: Activo, Vencido o Desactivado.
-function estadoDeCupon(cupon, vencido) {
-  if (!cupon.activo) return { texto: 'Desactivado', tono: 'inactiva' };
+// Mismo orden que estadoDeCupon (la tarjeta): primero si venció y después si está desactivado.
+function estadoDeCuponFila(cupon, vencido) {
   if (vencido) return { texto: 'Vencido', tono: 'inactiva' };
+  if (!cupon.activo) return { texto: 'Desactivado', tono: 'inactiva' };
   return { texto: 'Activo', tono: 'publicada' };
 }
 
-// Vista "Cupones": arriba el QR de canje (uno solo para todo el negocio), luego la lista compacta y el
-// botón "+ Nuevo cupón", que abre el formulario en su propia pantalla.
-function CuponesNegocio({ negocioId }) {
-  const { cupones, tokenCanje, otorgados, cargando, cargarOtorgados, crearCupon, cambiarActivo } =
-    useCuponesNegocio(negocioId);
+// El QR de canje (uno para todo el negocio) en una sola fila: "Ver" lo abre en pantalla y "Descargar" baja la imagen
+// sin abrirlo (el QR se dibuja oculto solo para eso).
+function FilaQRCanje({ token, onVer }) {
+  const ocultoRef = useRef(null);
+  const descargar = () => {
+    const canvas = ocultoRef.current?.querySelector('canvas');
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = 'cupones-qr-canje.png';
+    link.click();
+  };
+  return (
+    <div className="cupones-canje-fila">
+      <span className="cupones-canje-icono" aria-hidden="true"><QrCode size={22} strokeWidth={1.8} /></span>
+      <span className="cupones-canje-texto">
+        <strong>QR para canjear cupones</strong>
+        <span>Uno solo para todo tu negocio: ponlo junto a la caja.</span>
+      </span>
+      <span className="cupones-canje-botones">
+        <button type="button" className="cupones-canje-boton" onClick={onVer}>Ver</button>
+        <button type="button" className="cupones-canje-boton" onClick={descargar} aria-label="Descargar el QR para canjear cupones">
+          <Download size={15} strokeWidth={2.2} aria-hidden="true" /> Descargar
+        </button>
+      </span>
+      <span ref={ocultoRef} className="cupones-canje-oculto" aria-hidden="true">
+        <QRCodeCanvas value={valorQRCanje(token)} size={400} fgColor="#1E2A78" level="M" includeMargin />
+      </span>
+    </div>
+  );
+}
+
+// Vista "Cupones": arriba el QR de canje en una fila (Ver y Descargar), luego la lista compacta y el botón
+// "+ Nuevo cupón". Al tocar un cupón se abre su pantalla (la tarjeta como la ve el turista y sus acciones);
+// los formularios de crear y editar abren en su propia pantalla.
+function CuponesNegocio({ negocioId, nombreNegocio = '' }) {
+  const {
+    cupones, tokenCanje, otorgados, cargando, cargar, cargarOtorgados, crearCupon, cambiarActivo, editarCupon, borrarCupon,
+  } = useCuponesNegocio(negocioId);
 
   const [creando, setCreando] = useState(false);
   const [aviso, setAviso] = useState('');
-  const [abiertoId, setAbiertoId] = useState(null);
-  const [qrAbiertoId, setQrAbiertoId] = useState(null);
-  const [otorgadosAbiertoId, setOtorgadosAbiertoId] = useState(null);
+  const [detalleId, setDetalleId] = useState(null);
+  const [editandoId, setEditandoId] = useState(null);
+  const [avisoDetalle, setAvisoDetalle] = useState('');
+  const [verCanje, setVerCanje] = useState(false);
+  const [porEliminar, setPorEliminar] = useState(null); // id del cupón de la ventana de eliminar
+  const [eliminando, setEliminando] = useState(false);
+  const eliminandoRef = useRef(false);
+  const [errorEliminar, setErrorEliminar] = useState('');
+  const avisoRef = useRef(null);
+
+  const cuponAbierto = detalleId == null ? null : cupones.find((c) => c.id === detalleId) || null;
+  const cuponEnEdicion = editandoId == null ? null : cupones.find((c) => c.id === editandoId) || null;
+
+  // Al terminar algo el foco pasa al aviso (la pantalla desde la que se actuó ya no existe).
+  useEffect(() => {
+    if (aviso) avisoRef.current?.focus({ preventScroll: true });
+  }, [aviso]);
 
   const handleCambiarActivo = async (cupon) => {
-    const resultado = await cambiarActivo(cupon.id, !cupon.activo);
+    const quedaActivo = !cupon.activo; // se decide antes de la llamada: después `cupon` ya puede estar actualizado
+    const resultado = await cambiarActivo(cupon.id, quedaActivo);
     if (!resultado.exito) window.alert(resultado.mensaje);
+    else setAvisoDetalle(quedaActivo ? 'Cupón activado.' : 'Cupón desactivado.');
   };
 
-  const handleVerOtorgados = async (cuponId) => {
-    if (otorgadosAbiertoId === cuponId) {
-      setOtorgadosAbiertoId(null);
+  const cerrarConfirmacion = () => {
+    setPorEliminar(null);
+    setErrorEliminar('');
+  };
+
+  const handleEliminar = async () => {
+    if (porEliminar == null || eliminandoRef.current) return;
+    eliminandoRef.current = true;
+    setEliminando(true);
+    setErrorEliminar('');
+    let resultado;
+    try {
+      resultado = await borrarCupon(porEliminar);
+    } catch (error) {
+      console.error('Error eliminando el cupón:', error);
+      resultado = { exito: false, mensaje: 'No se pudo eliminar el cupón. Revisa tu conexión e intenta de nuevo.' };
+    }
+    eliminandoRef.current = false;
+    setEliminando(false);
+
+    if (!resultado.exito) {
+      setErrorEliminar(resultado.mensaje);
       return;
     }
-    setOtorgadosAbiertoId(cuponId);
-    await cargarOtorgados(); // siempre al día: los turistas los obtienen y usan todo el tiempo
+    cerrarConfirmacion();
+    setDetalleId(null);
+    setAviso('Cupón eliminado.');
   };
 
   return (
     <div className="cupones-negocio">
-      <div className="cupones-canje">
-        <h3 className="cupones-subtitulo">QR para canjear cupones</h3>
-        {tokenCanje ? (
-          <>
-            <p className="cupones-ayuda">
-              Un solo código para todo tu negocio. Ponlo junto a la caja: el turista lo escanea y elige qué cupón usar.
-            </p>
-            <BloqueQR valor={valorQRCanje(tokenCanje)} nombreArchivo="cupones-qr-canje" />
-          </>
-        ) : (
-          <p className="cupones-ayuda">
-            {cargando
-              ? 'Cargando…'
-              : 'Tu QR de canje aparece aquí cuando crees tu primer cupón.'}
-          </p>
-        )}
-      </div>
+      {tokenCanje ? (
+        <FilaQRCanje token={tokenCanje} onVer={() => setVerCanje(true)} />
+      ) : (
+        <p className="cupones-ayuda cupones-canje-vacio">
+          {cargando ? 'Cargando…' : 'Tu QR para canjear cupones aparece aquí cuando crees tu primer cupón.'}
+        </p>
+      )}
 
-      {aviso && <p className="generarqr-aviso" role="status">{aviso}</p>}
+      {aviso && <p className="generarqr-aviso" role="status" tabIndex={-1} ref={avisoRef}>{aviso}</p>}
 
       {cupones.length > 0 ? (
         <ul className="fila-compacta-lista">
           {cupones.map((cupon) => {
             const vencido = Boolean(cupon.fecha_expiracion) && new Date(cupon.fecha_expiracion) < new Date();
-            const qrAbierto = qrAbiertoId === cupon.id;
-            const otorgadosAbierto = otorgadosAbiertoId === cupon.id;
-            const deEste = (otorgados || []).filter((o) => o.cupon_id === cupon.id);
-            const clave = `cupon-${cupon.id}`;
             return (
               <FilaCompacta
-                key={clave}
-                id={clave}
+                key={cupon.id}
+                id={`cupon-${cupon.id}`}
                 miniatura={<span className="cupon-miniatura-porcentaje">{cupon.descuento_porcentaje}%</span>}
                 titulo={cupon.descripcion}
                 subtitulo={cupon.fecha_expiracion
@@ -87,58 +147,9 @@ function CuponesNegocio({ negocioId }) {
                   : (cupon.limite_total
                     ? `${cupon.obtenidos} de ${cupon.limite_total} obtenidos`
                     : `${cupon.obtenidos} obtenido${cupon.obtenidos === 1 ? '' : 's'}`)}
-                estado={estadoDeCupon(cupon, vencido)}
-                abierta={abiertoId === cupon.id}
-                onAlternar={() => setAbiertoId(abiertoId === cupon.id ? null : cupon.id)}
-              >
-                <p className="cupones-ayuda cupon-resumen">
-                  {cupon.limite_total
-                    ? `${cupon.obtenidos} de ${cupon.limite_total} obtenidos`
-                    : `${cupon.obtenidos} obtenido${cupon.obtenidos === 1 ? '' : 's'}`}
-                  {' · '}{cupon.usados} usado{cupon.usados === 1 ? '' : 's'}
-                </p>
-
-                <div className="generarqr-item-acciones cupon-acciones">
-                  <button type="button" className="generarqr-accion" onClick={() => setQrAbiertoId(qrAbierto ? null : cupon.id)}>
-                    <QrCode size={16} strokeWidth={2} aria-hidden="true" /> {qrAbierto ? 'Ocultar QR' : 'Ver QR'}
-                  </button>
-                  <button type="button" className="generarqr-accion" onClick={() => handleVerOtorgados(cupon.id)}>
-                    <Users size={16} strokeWidth={2} aria-hidden="true" /> {otorgadosAbierto ? 'Ocultar' : '¿Quién lo tiene?'}
-                  </button>
-                </div>
-                <button type="button" className="cupon-toggle" onClick={() => handleCambiarActivo(cupon)}>
-                  <Power size={15} strokeWidth={2} aria-hidden="true" /> {cupon.activo ? 'Desactivar cupón' : 'Activar cupón'}
-                </button>
-                {cupon.activo && (
-                  <p className="cupon-nota">Desactivarlo evita que se obtengan más. Quien ya lo tiene lo puede usar hasta que venza.</p>
-                )}
-
-                {qrAbierto && (
-                  <>
-                    <p className="cupones-ayuda cupon-qr-ayuda">Este QR es para <strong>obtener</strong> el cupón.</p>
-                    <BloqueQR valor={valorQRCupon(cupon.token)} nombreArchivo={`cupon-qr-${cupon.id}`} />
-                  </>
-                )}
-
-                {otorgadosAbierto && (
-                  otorgados === null ? (
-                    <p className="cupones-ayuda">Cargando…</p>
-                  ) : deEste.length === 0 ? (
-                    <p className="cupones-ayuda">Todavía nadie tiene este cupón.</p>
-                  ) : (
-                    <ul className="cupon-otorgados">
-                      {deEste.map((o) => (
-                        <li key={o.id}>
-                          <span className="cupon-otorgado-nombre">{o.turista}</span>
-                          <span className={`cupon-otorgado-estado ${o.estado === 'usado' ? 'cupon-otorgado-estado--usado' : ''}`}>
-                            {o.estado === 'usado' ? `Usado el ${rangoEscrito(diaLocal(o.fecha_uso))}` : 'Sin usar'}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )
-                )}
-              </FilaCompacta>
+                estado={estadoDeCuponFila(cupon, vencido)}
+                onAbrir={() => { setAviso(''); setAvisoDetalle(''); setDetalleId(cupon.id); cargar(); }}
+              />
             );
           })}
         </ul>
@@ -150,13 +161,58 @@ function CuponesNegocio({ negocioId }) {
         <Plus size={18} strokeWidth={2.4} aria-hidden="true" /> Nuevo cupón
       </button>
 
+      {cuponAbierto && (
+        <DetalleCupon
+          cupon={cuponAbierto}
+          negocio={nombreNegocio}
+          otorgados={otorgados === null ? null : otorgados.filter((o) => o.cupon_id === cuponAbierto.id)}
+          aviso={avisoDetalle}
+          onVolver={() => setDetalleId(null)}
+          onEditar={() => { setAvisoDetalle(''); setEditandoId(cuponAbierto.id); cargar(); }}
+          onCambiarActivo={handleCambiarActivo}
+          onVerOtorgados={cargarOtorgados}
+          onEliminar={() => { setErrorEliminar(''); setPorEliminar(cuponAbierto.id); cargar(); }}
+        />
+      )}
+
+      {cuponEnEdicion && (
+        <FormularioCupon
+          cupon={cuponEnEdicion}
+          onGuardar={editarCupon}
+          onSalir={() => setEditandoId(null)}
+          onCerrar={() => { setEditandoId(null); setAvisoDetalle('Cambios guardados.'); }}
+        />
+      )}
+
       {creando && (
-        <PantallaFormulario titulo="Nuevo cupón" onVolver={() => setCreando(false)}>
-          <FormularioCupon
-            onCrear={crearCupon}
-            onCerrar={() => { setCreando(false); setAviso('Tu cupón quedó creado.'); }}
-          />
+        <FormularioCupon
+          onCrear={crearCupon}
+          onSalir={() => setCreando(false)}
+          onCerrar={() => { setCreando(false); setAviso('Tu cupón quedó creado.'); }}
+        />
+      )}
+
+      {verCanje && tokenCanje && (
+        <PantallaFormulario titulo="QR para canjear cupones" onVolver={() => setVerCanje(false)}>
+          <p className="cupones-ayuda">
+            Un solo código para todo tu negocio. Ponlo junto a la caja: el turista lo escanea y elige qué cupón usar.
+          </p>
+          <BloqueQR valor={valorQRCanje(tokenCanje)} nombreArchivo="cupones-qr-canje" />
         </PantallaFormulario>
+      )}
+
+      {porEliminar != null && (
+        <DialogoConfirmacion
+          titulo="¿Eliminar este cupón?"
+          texto="Se borrará el cupón y su QR. No se puede deshacer."
+          etiquetaConfirmar="Eliminar"
+          etiquetaCargando="Eliminando…"
+          tono="peligro"
+          cargando={eliminando}
+          error={errorEliminar}
+          onConfirmar={handleEliminar}
+          onCancelar={cerrarConfirmacion}
+        />
       )}
     </div>
   );

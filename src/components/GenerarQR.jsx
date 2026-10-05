@@ -204,7 +204,7 @@ function GenerarQR({
 
       {vista === 'actividades' && vistaActividades}
       {vista === 'cupones' && (negocioId
-        ? <CuponesNegocio negocioId={negocioId} />
+        ? <CuponesNegocio negocioId={negocioId} nombreNegocio={organizador?.nombre || ''} />
         : <p className="generarqr-vacio">No encontramos tu negocio. Vuelve a abrir tu panel.</p>)}
 
       {actividadAbierta && (
