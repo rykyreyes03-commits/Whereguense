@@ -44,6 +44,7 @@
 .pantalla-form-progreso span { flex: 1; height: 4px; border-radius: 2px; background: var(--color-border); transition: background 0.2s ease; }
 .pantalla-form-progreso span.lleno { background: var(--color-primary); }
 .pantalla-form-contenido { padding: 18px 18px 28px; }
+.pantalla-form-contenido--libre { padding: 0; }
 .pantalla-form-pie {
   flex-shrink: 0;
   border-top: 1px solid var(--color-border);

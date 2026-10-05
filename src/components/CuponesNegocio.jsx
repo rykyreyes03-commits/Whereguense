@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react';
-import { QRCodeCanvas } from 'qrcode.react';
-import { Download, Printer, Users, QrCode, Power, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { Users, QrCode, Power, Plus } from 'lucide-react';
 import './GenerarQR.css';
 import './CuponesNegocio.css';
 import FilaCompacta from './FilaCompacta';
+import BloqueQR from './BloqueQR';
 import FormularioCupon from './FormularioCupon';
 import PantallaFormulario from './PantallaFormulario';
 import { useCuponesNegocio } from '../hooks/useCuponesNegocio';
@@ -12,35 +12,6 @@ import { rangoEscrito, hoyISO } from '../utils/eventos';
 
 // Las fechas con hora (vencimiento, uso) se muestran por su día local: en Nicaragua (UTC-6) el día UTC puede ser el siguiente.
 const diaLocal = (valor) => hoyISO(new Date(valor));
-
-function descargarCanvas(contenedor, nombreArchivo) {
-  const canvas = contenedor?.querySelector('canvas');
-  if (!canvas) return;
-  const link = document.createElement('a');
-  link.href = canvas.toDataURL('image/png');
-  link.download = `${nombreArchivo}.png`;
-  link.click();
-}
-
-// QR con los botones de descargar / imprimir (mismo patrón que los QR de sello).
-function BloqueQR({ valor, nombreArchivo }) {
-  const areaRef = useRef(null);
-  return (
-    <>
-      <div className="generarqr-qr-area" ref={areaRef}>
-        <QRCodeCanvas value={valor} size={200} fgColor="#1E2A78" level="M" includeMargin />
-      </div>
-      <div className="generarqr-acciones">
-        <button className="generarqr-accion" onClick={() => descargarCanvas(areaRef.current, nombreArchivo)} type="button">
-          <Download size={16} strokeWidth={2} aria-hidden="true" /> Descargar
-        </button>
-        <button className="generarqr-accion" onClick={() => window.print()} type="button">
-          <Printer size={16} strokeWidth={2} aria-hidden="true" /> Imprimir
-        </button>
-      </div>
-    </>
-  );
-}
 
 // Etiqueta de la fila: Activo, Vencido o Desactivado.
 function estadoDeCupon(cupon, vencido) {

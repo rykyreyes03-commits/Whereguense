@@ -14,6 +14,11 @@
   transition: max-width 0.2s ease;
 }
 
+/* Dentro de la pantalla del dueño (DetalleActividad): sin altura mínima ni relleno inferior, el pie lo pone esa pantalla */
+.detalle-evento-wrapper--duenio { min-height: 0; padding-bottom: 8px; max-width: none; }
+.detalle-evento-wrapper--duenio .detalle-evento-hero { min-height: 260px; justify-content: flex-end; border-radius: 0; }
+.detalle-evento-wrapper--duenio .detalle-evento-contenido { padding: 16px 18px 0; max-width: none; }
+
 /* ===== Hero ===== */
 .detalle-evento-hero {
   position: relative;

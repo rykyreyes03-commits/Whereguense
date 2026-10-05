@@ -59,6 +59,7 @@
 .fila-compacta-estado--inactiva { background: var(--color-surface); color: var(--color-text-muted); }
 .fila-compacta-flecha { flex-shrink: 0; color: var(--color-text-muted); transition: transform 0.2s ease; }
 .fila-compacta--abierta .fila-compacta-flecha { transform: rotate(180deg); }
+.fila-compacta-flecha--fija, .fila-compacta--abierta .fila-compacta-flecha--fija { transform: none; }
 .fila-compacta-detalle { padding: 2px 0 16px 54px; display: flex; flex-direction: column; gap: 8px; }
 @media (max-width: 380px) { .fila-compacta-detalle { padding-left: 0; } }
 @media (prefers-reduced-motion: reduce) { .fila-compacta-flecha { transition: none; } }

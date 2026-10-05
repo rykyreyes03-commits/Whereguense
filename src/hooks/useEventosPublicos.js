@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { eventoDesdeActividad } from '../utils/eventos';
 
 // Eventos que ve el turista, con los nombres de campo que usan Eventos, DetalleEvento e Inicio:
 //   { id, nombre, fechaInicio, fechaFin, horaInicio, horaFin,
@@ -80,30 +81,7 @@ export function useEventosPublicos() {
       tieneSello: false,
     }));
 
-    const deNegocios = actividades.map((a) => {
-      const organizador = organizadores.get(a.negocio_id) || null;
-      return {
-        id: `actividad-${a.id}`,
-        nombre: a.nombre,
-        fechaInicio: a.fecha_inicio,
-        fechaFin: a.fecha_fin,
-        horaInicio: a.hora_inicio || null,
-        horaFin: a.hora_fin || null,
-        lugar: a.lugar || '',
-        ubicacion: a.lugar || organizador?.nombre || '',
-        descripcion: a.descripcion || '',
-        detalles: a.detalles || '',
-        eslogan: a.eslogan || '',
-        categoria: a.categoria || null,
-        categoriaOtro: a.categoria_otro || null,
-        etiquetas: a.etiquetas || [],
-        sitioRelacionado: null,
-        imagenUrl: a.foto_url || null,
-        negocioId: a.negocio_id,
-        organizador,
-        tieneSello: a.estado_sello === 'aprobado',
-      };
-    });
+    const deNegocios = actividades.map((a) => eventoDesdeActividad(a, organizadores.get(a.negocio_id) || null));
 
     setEventos(
       [...manuales, ...deNegocios].sort((x, y) => x.fechaInicio.localeCompare(y.fechaInicio))

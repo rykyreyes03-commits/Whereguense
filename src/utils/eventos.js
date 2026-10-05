@@ -170,6 +170,40 @@ export function de24h(hora) {
   return { hora: h % 12 === 0 ? 12 : h % 12, minutos: total % 60, periodo: h >= 12 ? 'PM' : 'AM' };
 }
 
+// Lo que ve el turista de una actividad de un negocio (fila de actividad_negocio o de actividades_negocio_publicas()).
+// La agenda (useEventosPublicos) y la pantalla de detalle del dueño usan esta misma función: así lo que el dueño
+// ve en "Así lo ven los turistas" es lo que de verdad se publica.
+export function eventoDesdeActividad(a, organizador = null) {
+  return {
+    id: `actividad-${a.id}`,
+    nombre: a.nombre,
+    fechaInicio: a.fecha_inicio,
+    fechaFin: a.fecha_fin,
+    horaInicio: a.hora_inicio || null,
+    horaFin: a.hora_fin || null,
+    lugar: a.lugar || '',
+    ubicacion: a.lugar || organizador?.nombre || '',
+    descripcion: a.descripcion || '',
+    detalles: a.detalles || '',
+    eslogan: a.eslogan || '',
+    categoria: a.categoria || null,
+    categoriaOtro: a.categoria_otro || null,
+    etiquetas: a.etiquetas || [],
+    sitioRelacionado: null,
+    imagenUrl: a.foto_url || null,
+    negocioId: a.negocio_id,
+    organizador,
+    tieneSello: a.estado_sello === 'aprobado',
+  };
+}
+
+// Ruta dentro del bucket "negocios" de una foto guardada por su URL pública
+// (…/storage/v1/object/public/negocios/<uid>/actividades/<n>.jpg -> <uid>/actividades/<n>.jpg).
+export function rutaFotoDeUrl(url) {
+  const m = /\/object\/public\/negocios\/(.+)$/.exec(String(url || ''));
+  return m ? m[1] : null;
+}
+
 export function inicialDe(nombre) {
   return String(nombre || '').trim().charAt(0).toUpperCase() || '?';
 }

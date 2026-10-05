@@ -11,7 +11,9 @@ import { useGuardados } from '../hooks/useGuardados';
 // hora, organizador, descripción y etiquetas. Lo que no tiene valor no se dibuja.
 //   usuarioId: para guardar el evento en favoritos (tipo 'evento', id con prefijo del frontend).
 //   volverA: pantalla a la que lleva "Volver" (por defecto la agenda; Mis guardados la cambia).
-function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos' }) {
+//   modoDuenio: la misma pantalla sin los botones del turista (volver, compartir, favorito, ver perfil); la usa el
+//   dueño del negocio para ver su actividad tal como se publica.
+function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos', modoDuenio = false }) {
   // URL de portada que falló al cargar: el encabezado vuelve a navy con degradado, sin foto.
   const [portadaFallida, setPortadaFallida] = useState(null);
   const [verPerfil, setVerPerfil] = useState(false);
@@ -84,7 +86,7 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos' }) {
   const hayDescripcion = Boolean(evento.descripcion || evento.detalles || etiquetas.length > 0);
 
   return (
-    <div className="detalle-evento-wrapper">
+    <div className={`detalle-evento-wrapper ${modoDuenio ? 'detalle-evento-wrapper--duenio' : ''}`}>
       <header className={`detalle-evento-hero ${foto ? '' : 'detalle-evento-hero--sin-foto'}`}>
         {foto && (
           <img
@@ -95,6 +97,7 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos' }) {
           />
         )}
 
+        {!modoDuenio && (
         <div className="detalle-evento-acciones">
           <button type="button" className="detalle-evento-volver" onClick={() => onNavigate?.(volverA)}>
             <ArrowLeft size={16} strokeWidth={2.4} aria-hidden="true" /> Volver
@@ -119,6 +122,7 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos' }) {
             </button>
           </div>
         </div>
+        )}
 
         <div className="detalle-evento-hero-texto">
           {pastilla && <span className="detalle-evento-pastilla">{pastilla}</span>}
@@ -156,9 +160,11 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos' }) {
                   </span>
                 )}
               </div>
-              <button type="button" className="detalle-evento-perfil" onClick={() => setVerPerfil(true)}>
-                Ver perfil
-              </button>
+              {!modoDuenio && (
+                <button type="button" className="detalle-evento-perfil" onClick={() => setVerPerfil(true)}>
+                  Ver perfil
+                </button>
+              )}
             </div>
           </section>
         )}

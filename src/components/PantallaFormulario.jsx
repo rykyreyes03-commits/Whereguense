@@ -2,31 +2,31 @@ import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowLeft } from 'lucide-react';
 import './PantallaFormulario.css';
+import { apilar, esTope } from '../utils/pilaPantallas';
 
 // Pantalla propia para un formulario (actividad, cupón): flecha atrás arriba, título o "Paso N de M" con
 // barra de progreso, contenido que se desplaza y, si hay, un pie fijo con el botón principal.
 //   paso: { actual, total } muestra "Paso N de M" y la barra; sin paso, se muestra el título.
-function PantallaFormulario({ titulo, paso = null, onVolver, pie = null, children }) {
+//   sinRelleno: el contenido llega hasta los bordes (la pantalla de detalle trae su propia foto y márgenes).
+function PantallaFormulario({ titulo, paso = null, onVolver, pie = null, sinRelleno = false, children }) {
   const raizRef = useRef(null);
   const cuerpoRef = useRef(null);
   const volverRef = useRef(onVolver);
   useEffect(() => { volverRef.current = onVolver; });
 
-  // Mientras está abierta: el panel de atrás ni se desplaza ni recibe foco (inert), el foco entra a la pantalla
-  // y, al cerrarla, vuelve al botón que la abrió. Escape equivale a la flecha atrás.
+  // Mientras está abierta: lo que queda debajo (la página u otra pantalla) ni se desplaza ni recibe foco (inert),
+  // el foco entra a la pantalla y, al cerrarla, vuelve al botón que la abrió. Escape equivale a la flecha atrás,
+  // pero solo en la pantalla de arriba.
   useEffect(() => {
+    const yo = raizRef.current;
     const previo = document.activeElement;
-    const fondo = document.getElementById('root');
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    if (fondo) fondo.inert = true;
-    raizRef.current?.focus();
-    const alTeclear = (e) => { if (e.key === 'Escape') volverRef.current?.(); };
+    const desapilar = apilar(yo);
+    yo?.focus();
+    const alTeclear = (e) => { if (e.key === 'Escape' && esTope(yo)) volverRef.current?.(); };
     document.addEventListener('keydown', alTeclear);
     return () => {
       document.removeEventListener('keydown', alTeclear);
-      document.body.style.overflow = overflow;
-      if (fondo) fondo.inert = false;
+      desapilar();
       if (previo instanceof HTMLElement && document.contains(previo)) previo.focus();
     };
   }, []);
@@ -53,7 +53,7 @@ function PantallaFormulario({ titulo, paso = null, onVolver, pie = null, childre
             </div>
           )}
         </header>
-        <div className="pantalla-form-contenido">{children}</div>
+        <div className={`pantalla-form-contenido ${sinRelleno ? 'pantalla-form-contenido--libre' : ''}`}>{children}</div>
       </div>
       {pie && <div className="pantalla-form-pie"><div className="pantalla-form-pie-interno">{pie}</div></div>}
     </div>,
