@@ -6,6 +6,7 @@ import PantallaFormulario from './PantallaFormulario';
 import TarjetaEvento from './TarjetaEvento';
 import ControlHora from './ControlHora';
 import CampoOtro from './CampoOtro';
+import DialogoConfirmacion from './DialogoConfirmacion';
 import {
   CATEGORIAS,
   MAX_ETIQUETAS,
@@ -95,6 +96,7 @@ function FormularioActividad({ organizador = null, actividad = null, onCrear, on
   const [limite, setLimite] = useState(ini.limite);
   const [foto, setFoto] = useState(null);
   const [guardando, setGuardando] = useState(false);
+  const [confirmandoSalida, setConfirmandoSalida] = useState(false);
 
   // Vista previa de la foto elegida (se libera al cambiarla o al salir).
   const fotoPrevia = useMemo(() => (foto ? URL.createObjectURL(foto) : null), [foto]);
@@ -241,7 +243,10 @@ function FormularioActividad({ organizador = null, actividad = null, onCrear, on
       irAPaso(paso - 1);
       return;
     }
-    if (hayDatos && !window.confirm('¿Salir sin guardar? Se perderá lo que escribiste.')) return;
+    if (hayDatos) {
+      setConfirmandoSalida(true); // ventana propia de la app, no window.confirm
+      return;
+    }
     onSalir?.();
   };
 
@@ -330,6 +335,7 @@ function FormularioActividad({ organizador = null, actividad = null, onCrear, on
   );
 
   return (
+    <>
     <PantallaFormulario titulo={editando ? 'Editar actividad' : 'Nueva actividad'} paso={{ actual: paso, total: TOTAL_PASOS }} onVolver={volver} pie={pie}>
       <form
         className="generarqr-form"
@@ -641,6 +647,19 @@ function FormularioActividad({ organizador = null, actividad = null, onCrear, on
         )}
       </form>
     </PantallaFormulario>
+
+    {confirmandoSalida && (
+      <DialogoConfirmacion
+        titulo="¿Salir sin guardar?"
+        texto={editando ? 'Se perderán los cambios que hiciste en esta actividad.' : 'Se perderá lo que escribiste en esta actividad.'}
+        etiquetaConfirmar="Salir sin guardar"
+        etiquetaCancelar="Seguir editando"
+        tono="peligro"
+        onConfirmar={() => { setConfirmandoSalida(false); onSalir?.(); }}
+        onCancelar={() => setConfirmandoSalida(false)}
+      />
+    )}
+    </>
   );
 }
 
