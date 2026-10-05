@@ -39,7 +39,7 @@ export function useNegocio(usuarioId) {
   const [productos, setProductos] = useState([]);
   const [actividadesQR, setActividadesQR] = useState([]);
   const [actividades, setActividades] = useState([]);
-  const [sellosEntregados, setSellosEntregados] = useState({}); // { [actividadId]: sellos que ya entregó }
+  const [sellosEntregados, setSellosEntregados] = useState(null); // { [actividadId]: sellos que ya entregó }; null hasta cargarlos
 
   useEffect(() => {
     if (!usuarioId) {
@@ -641,6 +641,7 @@ export function useNegocio(usuarioId) {
 
     setActividades((prev) => prev.filter((a) => a.id !== id));
     setSellosEntregados((prev) => {
+      if (!prev) return prev;
       const { [id]: _quitada, ...resto } = prev;
       return resto;
     });

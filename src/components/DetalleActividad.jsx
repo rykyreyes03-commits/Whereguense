@@ -22,7 +22,7 @@ function DetalleActividad({
   actividad,
   organizador = null,
   qr = null,
-  entregados = 0,
+  entregados = 0, // null: aún no se sabe
   aviso = '',
   onVolver,
   onEditar,
@@ -38,7 +38,8 @@ function DetalleActividad({
   const estadoSello = ESTADOS_SELLO[actividad.estado_sello];
   const sinFechas = !actividad.fecha_inicio || !actividad.fecha_fin;
   const aprobado = actividad.estado_sello === 'aprobado';
-  const puedeEliminar = entregados === 0;
+  const comprobando = entregados == null && Boolean(actividad.qr_sello_id);
+  const puedeEliminar = !comprobando && !entregados;
 
   const handleReenviar = async (e) => {
     e.preventDefault();
@@ -98,16 +99,20 @@ function DetalleActividad({
           </p>
         )}
 
+        {entregados > 0 && (
+          <p className="detact-aviso detact-aviso--sellos" id={idAviso}>
+            <Lock size={18} strokeWidth={2} aria-hidden="true" />
+            <span>Ya entregó {entregados} {entregados === 1 ? 'sello' : 'sellos'}. Puedes editarla, pero no eliminarla.</span>
+          </p>
+        )}
+
+        {comprobando && (
+          <p className="detact-aviso detact-aviso--info" id={idAviso} role="status">Comprobando si ya entregó sellos…</p>
+        )}
+
         <DetalleEvento evento={evento} modoDuenio />
 
         <div className="detact-extras">
-          {entregados > 0 && (
-            <p className="detact-aviso detact-aviso--sellos" id={idAviso}>
-              <Lock size={18} strokeWidth={2} aria-hidden="true" />
-              <span>Ya entregó {entregados} {entregados === 1 ? 'sello' : 'sellos'}. Puedes editarla, pero no eliminarla.</span>
-            </p>
-          )}
-
           {estadoSello && (
             <section className="detact-sello" aria-label="Sello de la actividad">
               <span className={`generarqr-estado generarqr-estado--${estadoSello.clase}`}>

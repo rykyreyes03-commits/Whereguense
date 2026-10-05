@@ -49,9 +49,11 @@ function PerfilNegocio({
   onEliminarProducto,
   actividades,
   actividadesQR,
+  sellosEntregados,
   onRecargarActividades,
   onCrearActividad,
   onEditarActividad,
+  onBorrarActividad,
   onReenviarSello,
   onEliminarActividad,
 }) {
@@ -598,9 +600,11 @@ function PerfilNegocio({
             organizador={{ nombre: negocio?.nombre, logoUrl: negocio?.logoUrl }}
             actividades={actividades}
             actividadesQR={actividadesQR}
+            sellosEntregados={sellosEntregados}
             onRecargar={onRecargarActividades}
             onCrearActividad={onCrearActividad}
             onEditarActividad={onEditarActividad}
+            onBorrarActividad={onBorrarActividad}
             onReenviarSello={onReenviarSello}
             onEliminarActividad={onEliminarActividad}
           />

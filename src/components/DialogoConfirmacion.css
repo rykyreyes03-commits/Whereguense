@@ -1,0 +1,56 @@
+/* Ventana de confirmación propia de la app (encima de las pantallas apiladas, z-index 1010) */
+.dialogo-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 1020;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(26, 26, 46, 0.55);
+  font-family: var(--font-body);
+}
+.dialogo {
+  width: 100%;
+  max-width: 400px;
+  padding: 22px 22px 20px;
+  border-radius: var(--radius-lg);
+  background: var(--color-white);
+  box-shadow: var(--shadow-lg);
+}
+.dialogo-titulo {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  line-height: 1.2;
+  color: var(--color-navy);
+}
+.dialogo-texto { margin: 0; font-size: 1rem; line-height: 1.45; color: var(--color-text-muted); }
+.dialogo-error {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-coral) 12%, #fff);
+  color: #A81F22;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.dialogo-botones { display: flex; gap: 10px; margin-top: 20px; }
+.dialogo-boton {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.dialogo-boton:focus-visible { outline: 3px solid var(--color-turquoise); outline-offset: 2px; }
+.dialogo-boton[aria-disabled='true'] { opacity: 0.6; cursor: progress; }
+.dialogo-boton--normal { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-white); }
+.dialogo-boton--peligro { border-color: transparent; background: color-mix(in srgb, var(--color-coral) 20%, #fff); color: #8F1A1D; }

@@ -102,8 +102,10 @@ function App() {
     actividades,
     actividadesQR,
     cargarActividades,
+    sellosEntregados,
     crearActividad,
     editarActividad,
+    borrarActividad,
     reenviarSolicitudSello,
     eliminarActividadQR,
   } = useNegocio(usuarioActual?.id);
@@ -832,7 +834,9 @@ function App() {
         actividadesQR={actividadesQR}
         onRecargarActividades={cargarActividades}
         onCrearActividad={crearActividad}
+        sellosEntregados={sellosEntregados}
         onEditarActividad={editarActividad}
+        onBorrarActividad={borrarActividad}
         onReenviarSello={reenviarSolicitudSello}
         onEliminarActividad={eliminarActividadQR}
       />

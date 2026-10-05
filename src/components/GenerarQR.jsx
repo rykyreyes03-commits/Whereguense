@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Trash2, Plus, ChevronDown, Ticket } from 'lucide-react';
 import './GenerarQR.css';
 import TopBar from './TopBar';
@@ -6,6 +6,7 @@ import CuponesNegocio from './CuponesNegocio';
 import FilaCompacta from './FilaCompacta';
 import FormularioActividad from './FormularioActividad';
 import DetalleActividad from './DetalleActividad';
+import DialogoConfirmacion from './DialogoConfirmacion';
 import BloqueQR from './BloqueQR';
 import { rangoEscrito, inicialDe } from '../utils/eventos';
 
@@ -24,10 +25,11 @@ function estadoDeActividad(actividad) {
 function GenerarQR({
   actividades = [],
   actividadesQR = [],
-  sellosEntregados = {}, // { [actividadId]: cuántos sellos entregó }
+  sellosEntregados = null, // { [actividadId]: cuántos sellos entregó }; null mientras se cargan
   onRecargar,
   onCrearActividad,
   onEditarActividad,
+  onBorrarActividad, // elimina la actividad completa (sello, evento y favoritos)
   onReenviarSello,
   onEliminarActividad, // borra un QR suelto de "Sellos anteriores"
   onNavigate,
@@ -41,8 +43,19 @@ function GenerarQR({
   const [aviso, setAviso] = useState('');
   const [editandoId, setEditandoId] = useState(null); // actividad abierta en el formulario de edición
   const [avisoDetalle, setAvisoDetalle] = useState('');
+  // La ventana de eliminar recuerda a qué actividad se refiere: no depende de que la pantalla de detalle siga abierta.
+  const [porEliminar, setPorEliminar] = useState(null); // { id, conSello }
+  const [eliminando, setEliminando] = useState(false);
+  const eliminandoRef = useRef(false);
+  const [errorEliminar, setErrorEliminar] = useState('');
+  const avisoRef = useRef(null);
   const [expandidoId, setExpandidoId] = useState(null); // solo para "Sellos anteriores"
   const [sellosAbiertos, setSellosAbiertos] = useState(false);
+
+  // Al terminar algo (crear, eliminar) el foco pasa al aviso, que además lo anuncia: la pantalla desde la que se actuó ya no existe.
+  useEffect(() => {
+    if (aviso) avisoRef.current?.focus({ preventScroll: true });
+  }, [aviso]);
 
   // Al abrir la pestaña: traer de nuevo, por si el admin aprobó o rechazó algo.
   useEffect(() => {
@@ -55,6 +68,35 @@ function GenerarQR({
   const actividadAbierta = detalleId == null ? null : actividades.find((a) => a.id === detalleId) || null;
   const actividadEnEdicion = editandoId == null ? null : actividades.find((a) => a.id === editandoId) || null;
 
+  const cerrarConfirmacion = () => {
+    setPorEliminar(null);
+    setErrorEliminar('');
+  };
+
+  const handleEliminarActividad = async () => {
+    if (!porEliminar || eliminandoRef.current) return;
+    eliminandoRef.current = true; // un segundo toque antes de que React pinte no vuelve a llamar
+    setEliminando(true);
+    setErrorEliminar('');
+    let resultado;
+    try {
+      resultado = await onBorrarActividad(porEliminar.id);
+    } catch (error) {
+      console.error('Error eliminando la actividad:', error);
+      resultado = { exito: false, mensaje: 'No se pudo eliminar la actividad. Revisa tu conexión e intenta de nuevo.' };
+    }
+    eliminandoRef.current = false;
+    setEliminando(false);
+
+    if (!resultado.exito) {
+      setErrorEliminar(resultado.mensaje); // la ventana sigue abierta y dice por qué no se pudo
+      return;
+    }
+    cerrarConfirmacion();
+    setDetalleId(null);
+    setAviso('Actividad eliminada.');
+  };
+
   const handleEliminarQR = async (id) => {
     const resultado = await onEliminarActividad(id);
     if (!resultado.exito) {
@@ -66,7 +108,7 @@ function GenerarQR({
 
   const vistaActividades = (
     <>
-      {aviso && <p className="generarqr-aviso" role="status">{aviso}</p>}
+      {aviso && <p className="generarqr-aviso" role="status" tabIndex={-1} ref={avisoRef}>{aviso}</p>}
 
       {actividades.length > 0 ? (
         <ul className="fila-compacta-lista">
@@ -170,11 +212,26 @@ function GenerarQR({
           actividad={actividadAbierta}
           organizador={organizador}
           qr={actividadAbierta.qr_sello_id ? qrPorId.get(actividadAbierta.qr_sello_id) || null : null}
-          entregados={sellosEntregados[actividadAbierta.id] || 0}
+          entregados={sellosEntregados == null ? null : (sellosEntregados[actividadAbierta.id] || 0)}
           aviso={avisoDetalle}
           onVolver={() => setDetalleId(null)}
           onEditar={onEditarActividad ? () => { setAvisoDetalle(''); setEditandoId(actividadAbierta.id); } : undefined}
+          onEliminar={onBorrarActividad ? () => { setErrorEliminar(''); setPorEliminar({ id: actividadAbierta.id, conSello: actividadAbierta.estado_sello === 'aprobado' }); } : undefined}
           onReenviarSello={onReenviarSello}
+        />
+      )}
+
+      {porEliminar && (
+        <DialogoConfirmacion
+          titulo="¿Eliminar esta actividad?"
+          texto={`Se quitará de Eventos y de la ficha del negocio. También se borrarán los favoritos de quienes la guardaron.${porEliminar.conSello ? ' Su sello y su QR también se eliminan.' : ''} No se puede deshacer.`}
+          etiquetaConfirmar="Eliminar"
+          etiquetaCargando="Eliminando…"
+          tono="peligro"
+          cargando={eliminando}
+          error={errorEliminar}
+          onConfirmar={handleEliminarActividad}
+          onCancelar={cerrarConfirmacion}
         />
       )}
 
