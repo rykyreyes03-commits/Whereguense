@@ -51,6 +51,7 @@ function PerfilNegocio({
   actividadesQR,
   onRecargarActividades,
   onCrearActividad,
+  onEditarActividad,
   onReenviarSello,
   onEliminarActividad,
 }) {
@@ -599,6 +600,7 @@ function PerfilNegocio({
             actividadesQR={actividadesQR}
             onRecargar={onRecargarActividades}
             onCrearActividad={onCrearActividad}
+            onEditarActividad={onEditarActividad}
             onReenviarSello={onReenviarSello}
             onEliminarActividad={onEliminarActividad}
           />

@@ -200,7 +200,7 @@ export function eventoDesdeActividad(a, organizador = null) {
 // Ruta dentro del bucket "negocios" de una foto guardada por su URL pública
 // (…/storage/v1/object/public/negocios/<uid>/actividades/<n>.jpg -> <uid>/actividades/<n>.jpg).
 export function rutaFotoDeUrl(url) {
-  const m = /\/object\/public\/negocios\/(.+)$/.exec(String(url || ''));
+  const m = /\/object\/public\/negocios\/([^?#]+)/.exec(String(url || ''));
   return m ? m[1] : null;
 }
 

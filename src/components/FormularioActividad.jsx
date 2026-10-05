@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, ImagePlus, X } from 'lucide-react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Plus, ImagePlus, X, Check, Lock } from 'lucide-react';
 import './GenerarQR.css';
 import './FormularioActividad.css';
 import PantallaFormulario from './PantallaFormulario';
@@ -35,34 +35,64 @@ function unirConY(lista) {
   return `${lista.slice(0, -1).join(', ')} y ${lista[lista.length - 1]}`;
 }
 
-// Formulario de una actividad nueva, en 3 pasos y en su propia pantalla (PantallaFormulario).
+// Valores del formulario a partir de una actividad guardada (modo editar) o vacíos (modo crear).
+// Las horas llegan como 'HH:MM:SS' y el control de hora trabaja con 'HH:MM'.
+function valoresIniciales(a) {
+  return {
+    nombre: a?.nombre || '',
+    descripcion: a?.descripcion || '',
+    categoria: a?.categoria || '',
+    categoriaOtro: a?.categoria_otro || '',
+    lugar: a?.lugar || '',
+    horaInicio: a?.hora_inicio ? String(a.hora_inicio).slice(0, 5) : '',
+    horaFin: a?.hora_fin ? String(a.hora_fin).slice(0, 5) : '',
+    fechaInicio: a?.fecha_inicio ? String(a.fecha_inicio).slice(0, 10) : '',
+    fechaFin: a?.fecha_fin ? String(a.fecha_fin).slice(0, 10) : '',
+    eslogan: a?.eslogan || '',
+    detalles: a?.detalles || '',
+    etiquetas: a?.etiquetas || [],
+    quiereSello: Boolean(a?.solicita_sello),
+    justificacion: a?.justificacion_sello || '',
+    limite: a?.limite_canjes != null ? String(a.limite_canjes) : '',
+  };
+}
+
+// Formulario de una actividad, en 3 pasos y en su propia pantalla (PantallaFormulario). Sirve para crear una
+// nueva y, con `actividad`, para editar una existente: llega con los datos llenos y la foto actual, y con el sello
+// ya aprobado bloquea lo que la base no deja cambiar (fechas, sello y límite de canjes), explicando por qué.
 // "Siguiente" queda apagado y un texto encima dice qué falta ("Falta: nombre y foto").
-//   onCrear(datos) -> { exito, mensaje, aviso }; onCerrar(resultado) se llama al guardar bien;
+//   onCrear(datos) / onGuardar(id, datos) -> { exito, mensaje, aviso }; onCerrar(resultado) se llama al guardar bien;
 //   onSalir() se llama al volver atrás desde el primer paso.
-function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir }) {
+function FormularioActividad({ organizador = null, actividad = null, onCrear, onGuardar, onCerrar, onSalir }) {
+  const editando = Boolean(actividad);
+  const bloqueado = editando && actividad.estado_sello === 'aprobado'; // sello aprobado: fechas, sello y límite fijos
+  const fotoActual = editando ? actividad.foto_url : null;
+  const [ini] = useState(() => valoresIniciales(actividad));
+  const idNotaFechas = useId();
+  const idNotaSello = useId();
   const fotoInputRef = useRef(null);
   const tituloPasoRef = useRef(null);
   const primerRender = useRef(true);
   const [paso, setPaso] = useState(1);
-  const [nombre, setNombre] = useState('');
-  const [descripcion, setDescripcion] = useState('');
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
-  const [categoria, setCategoria] = useState('');
-  const [categoriaOtro, setCategoriaOtro] = useState('');
-  const [lugar, setLugar] = useState('');
-  const [horaInicio, setHoraInicio] = useState('');
-  const [horaFin, setHoraFin] = useState('');
+  const [nombre, setNombre] = useState(ini.nombre);
+  const [descripcion, setDescripcion] = useState(ini.descripcion);
+  const [fechaInicio, setFechaInicio] = useState(ini.fechaInicio);
+  const [fechaFin, setFechaFin] = useState(ini.fechaFin);
+  const [categoria, setCategoria] = useState(ini.categoria);
+  const [categoriaOtro, setCategoriaOtro] = useState(ini.categoriaOtro);
+  const [lugar, setLugar] = useState(ini.lugar);
+  const [horaInicio, setHoraInicio] = useState(ini.horaInicio);
+  const [horaFin, setHoraFin] = useState(ini.horaFin);
   const [horaInicioIncompleta, setHoraInicioIncompleta] = useState(false);
   const [horaFinIncompleta, setHoraFinIncompleta] = useState(false);
-  const [eslogan, setEslogan] = useState('');
-  const [detalles, setDetalles] = useState('');
-  const [etiquetas, setEtiquetas] = useState([]);
+  const [eslogan, setEslogan] = useState(ini.eslogan);
+  const [detalles, setDetalles] = useState(ini.detalles);
+  const [etiquetas, setEtiquetas] = useState(ini.etiquetas);
   const [etiquetaTexto, setEtiquetaTexto] = useState('');
   const [errorEtiqueta, setErrorEtiqueta] = useState('');
-  const [quiereSello, setQuiereSello] = useState(false);
-  const [justificacion, setJustificacion] = useState('');
-  const [limite, setLimite] = useState('');
+  const [quiereSello, setQuiereSello] = useState(ini.quiereSello);
+  const [justificacion, setJustificacion] = useState(ini.justificacion);
+  const [limite, setLimite] = useState(ini.limite);
   const [foto, setFoto] = useState(null);
   const [guardando, setGuardando] = useState(false);
 
@@ -78,7 +108,9 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
     tituloPasoRef.current?.focus();
   }, [paso]);
 
-  const hoy = hoyISO(); // día local: toISOString da el día UTC, que de noche en Nicaragua ya es mañana
+  // Al editar, una actividad que ya empezó conserva su fecha original aunque sea pasada; no se pueden elegir otras pasadas.
+  // (día local: toISOString da el día UTC, que de noche en Nicaragua ya es mañana)
+  const minimoFecha = editando && ini.fechaInicio && ini.fechaInicio < hoyISO() ? ini.fechaInicio : hoyISO();
   // Límite de canjes: obligatorio si pide sello (el trigger de 029 lo exige); sin sello no cuenta.
   const limiteNum = limite.trim() === '' ? null : Number(limite);
   const limiteInvalido = quiereSello && limiteNum !== null
@@ -99,11 +131,11 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
       !categoria && 'categoría',
       categoria === 'otro' && !categoriaOtro.trim() && 'cuál es la categoría',
       !descripcion.trim() ? 'descripción' : largo(descripcion.trim()) < MIN_DESCRIPCION && `descripción (mínimo ${MIN_DESCRIPCION} caracteres)`,
-      !foto && 'foto',
+      !foto && !fotoActual && 'foto',
     ].filter(Boolean),
     2: [
-      !fechaInicio && 'fecha de inicio',
-      !fechaFin && 'fecha de fin',
+      !fechaInicio && !bloqueado && 'fecha de inicio',
+      !fechaFin && !bloqueado && 'fecha de fin',
       horaIncompleta && 'AM o PM',
       !horaIncompleta && !horaInicio && 'hora de inicio',
       !horaIncompleta && !horaFin && 'hora de fin',
@@ -111,7 +143,7 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
     ].filter(Boolean),
     3: [
       quiereSello && !justificacion.trim() && 'justificación del sello',
-      quiereSello && limiteNum === null && 'límite de canjes',
+      quiereSello && !bloqueado && limiteNum === null && 'límite de canjes',
     ].filter(Boolean),
   };
   const problemasPorPaso = {
@@ -184,9 +216,15 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
     if (valor && (!fechaFin || fechaFin < valor)) setFechaFin(valor);
   };
 
-  const hayDatos = Boolean(nombre || descripcion || categoria || categoriaOtro || foto || fechaInicio || fechaFin
-    || horaInicio || horaFin || horaIncompleta || lugar || eslogan || detalles || etiquetas.length || etiquetaTexto
-    || quiereSello || justificacion || limite);
+  const actuales = {
+    nombre, descripcion, categoria, categoriaOtro, lugar, horaInicio, horaFin, fechaInicio, fechaFin, eslogan, detalles,
+    etiquetas, quiereSello, justificacion, limite,
+  };
+  const hayDatos = editando
+    ? Boolean(foto || etiquetaTexto || horaIncompleta || JSON.stringify(actuales) !== JSON.stringify(ini))
+    : Boolean(nombre || descripcion || categoria || categoriaOtro || foto || fechaInicio || fechaFin
+      || horaInicio || horaFin || horaIncompleta || lugar || eslogan || detalles || etiquetas.length || etiquetaTexto
+      || quiereSello || justificacion || limite);
 
   // Las horas a medias viven dentro de ControlHora, que se desmonta al salir del paso 2: se olvida también el aviso.
   const irAPaso = (nuevo) => {
@@ -225,7 +263,7 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
     setGuardando(true);
     let resultado;
     try {
-      resultado = await onCrear({
+      resultado = await (editando ? (datos) => onGuardar(actividad.id, datos) : onCrear)({
       nombre: nombre.trim(),
       descripcion: descripcion.trim(),
       fechaInicio: fechaInicio || null,
@@ -244,8 +282,10 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
       etiquetas: etiquetasFinal.length > 0 ? etiquetasFinal : null,
       });
     } catch (error) {
-      console.error('Error creando la actividad:', error);
-      resultado = { exito: false, mensaje: 'No se pudo crear la actividad. Revisa tu conexión e intenta de nuevo.' };
+      console.error(editando ? 'Error guardando los cambios:' : 'Error creando la actividad:', error);
+      resultado = { exito: false, mensaje: editando
+        ? 'No se pudieron guardar los cambios. Revisa tu conexión e intenta de nuevo.'
+        : 'No se pudo crear la actividad. Revisa tu conexión e intenta de nuevo.' };
     } finally {
       setGuardando(false);
     }
@@ -280,7 +320,9 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
           ? 'Siguiente'
           : guardando ? 'Guardando...' : (
             <>
-              <Plus size={18} strokeWidth={2.2} aria-hidden="true" /> Crear actividad
+              {editando
+                ? <><Check size={18} strokeWidth={2.4} aria-hidden="true" /> Guardar cambios</>
+                : <><Plus size={18} strokeWidth={2.2} aria-hidden="true" /> Crear actividad</>}
             </>
           )}
       </button>
@@ -288,7 +330,7 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
   );
 
   return (
-    <PantallaFormulario titulo="Nueva actividad" paso={{ actual: paso, total: TOTAL_PASOS }} onVolver={volver} pie={pie}>
+    <PantallaFormulario titulo={editando ? 'Editar actividad' : 'Nueva actividad'} paso={{ actual: paso, total: TOTAL_PASOS }} onVolver={volver} pie={pie}>
       <form
         className="generarqr-form"
         onSubmit={(e) => { e.preventDefault(); avanzar(); }}
@@ -360,18 +402,27 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
                 className="generarqr-file-oculto"
                 tabIndex={-1}
               />
-              {fotoPrevia ? (
-                <div className="generarqr-foto">
-                  <img src={fotoPrevia} alt="Vista previa de la foto de la actividad" />
-                  <button
-                    type="button"
-                    className="generarqr-foto-quitar"
-                    onClick={() => setFoto(null)}
-                    aria-label="Quitar la foto"
-                  >
-                    <X size={16} strokeWidth={2.4} aria-hidden="true" />
-                  </button>
-                </div>
+              {fotoPrevia || fotoActual ? (
+                <>
+                  <div className="generarqr-foto">
+                    <img src={fotoPrevia || fotoActual} alt={fotoPrevia ? 'Vista previa de la foto nueva' : 'Foto actual de la actividad'} />
+                    {fotoPrevia && (
+                      <button
+                        type="button"
+                        className="generarqr-foto-quitar"
+                        onClick={() => setFoto(null)}
+                        aria-label={editando ? 'Descartar la foto nueva y conservar la actual' : 'Quitar la foto'}
+                      >
+                        <X size={16} strokeWidth={2.4} aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+                  {!fotoPrevia && (
+                    <button type="button" className="generarqr-foto-agregar formact-cambiar-foto" onClick={() => fotoInputRef.current?.click()}>
+                      <ImagePlus size={20} strokeWidth={1.8} aria-hidden="true" /> Cambiar la foto
+                    </button>
+                  )}
+                </>
               ) : (
                 <button type="button" className="generarqr-foto-agregar" onClick={() => fotoInputRef.current?.click()}>
                   <ImagePlus size={20} strokeWidth={1.8} aria-hidden="true" /> Agregar una foto
@@ -392,8 +443,10 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
               <input
                 type="date"
                 className="generarqr-input"
-                min={hoy}
+                min={minimoFecha}
                 value={fechaInicio}
+                disabled={bloqueado}
+                aria-describedby={bloqueado ? idNotaFechas : undefined}
                 onChange={(e) => cambiarFechaInicio(e.target.value)}
               />
               {fechaInicio && <small className="formact-escrita">Empieza el {fechaEscrita(fechaInicio)}</small>}
@@ -403,13 +456,21 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
               <input
                 type="date"
                 className={`generarqr-input ${fechasDesordenadas ? 'generarqr-input--error' : ''}`}
-                min={fechaInicio || hoy}
+                min={fechaInicio || minimoFecha}
                 value={fechaFin}
+                disabled={bloqueado}
+                aria-describedby={bloqueado ? idNotaFechas : undefined}
                 onChange={(e) => setFechaFin(e.target.value)}
                 aria-invalid={fechasDesordenadas}
               />
               {fechaFin && !fechasDesordenadas && <small className="formact-escrita">Termina el {fechaEscrita(fechaFin)}</small>}
             </label>
+            {bloqueado && (
+              <p className="formact-bloqueo" id={idNotaFechas}>
+                <Lock size={16} strokeWidth={2} aria-hidden="true" />
+                <span>Las fechas no se pueden cambiar porque el sello de esta actividad ya fue aprobado.</span>
+              </p>
+            )}
 
             <ControlHora id="hora-inicio" etiqueta="¿A qué hora empieza?" verbo="Empieza" value={horaInicio} onChange={setHoraInicio} onIncompleto={setHoraInicioIncompleta} />
             <ControlHora id="hora-fin" etiqueta="¿A qué hora termina?" verbo="Termina" value={horaFin} onChange={setHoraFin} onIncompleto={setHoraFinIncompleta} resumenCompleto={notaHoras} />
@@ -503,12 +564,21 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
                 role="switch"
                 aria-checked={quiereSello}
                 aria-labelledby="generarqr-sello-etiqueta"
+                aria-disabled={bloqueado}
+                aria-describedby={bloqueado ? idNotaSello : undefined}
                 className={`generarqr-switch ${quiereSello ? 'generarqr-switch--activo' : ''}`}
-                onClick={() => setQuiereSello((v) => !v)}
+                onClick={() => { if (!bloqueado) setQuiereSello((v) => !v); }}
               >
                 <span className="generarqr-switch-perilla" />
               </button>
             </div>
+
+            {bloqueado && (
+              <p className="formact-bloqueo" id={idNotaSello}>
+                <Lock size={16} strokeWidth={2} aria-hidden="true" />
+                <span>El sello ya fue aprobado: no se puede quitar ni cambiar el límite de canjes.</span>
+              </p>
+            )}
 
             {quiereSello && (
               <label className="generarqr-campo generarqr-justificacion">
@@ -537,6 +607,8 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
                   className={`generarqr-input ${limiteInvalido ? 'generarqr-input--error' : ''}`}
                   placeholder="Ej. 50"
                   value={limite}
+                  disabled={bloqueado}
+                  aria-describedby={bloqueado ? idNotaSello : undefined}
                   onChange={(e) => setLimite(e.target.value)}
                   aria-invalid={limiteInvalido}
                 />
@@ -556,7 +628,7 @@ function FormularioActividad({ organizador = null, onCrear, onCerrar, onSalir })
                   fechaFin: fechaFin || null,
                   categoria,
                   categoriaOtro: categoriaOtro.trim(),
-                  imagenUrl: fotoPrevia,
+                  imagenUrl: fotoPrevia || fotoActual,
                   lugar: lugar.trim(),
                   organizador,
                 }}

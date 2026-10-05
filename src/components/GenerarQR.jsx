@@ -27,6 +27,7 @@ function GenerarQR({
   sellosEntregados = {}, // { [actividadId]: cuántos sellos entregó }
   onRecargar,
   onCrearActividad,
+  onEditarActividad,
   onReenviarSello,
   onEliminarActividad, // borra un QR suelto de "Sellos anteriores"
   onNavigate,
@@ -38,6 +39,8 @@ function GenerarQR({
   const [creando, setCreando] = useState(false);
   const [detalleId, setDetalleId] = useState(null); // actividad abierta en su pantalla
   const [aviso, setAviso] = useState('');
+  const [editandoId, setEditandoId] = useState(null); // actividad abierta en el formulario de edición
+  const [avisoDetalle, setAvisoDetalle] = useState('');
   const [expandidoId, setExpandidoId] = useState(null); // solo para "Sellos anteriores"
   const [sellosAbiertos, setSellosAbiertos] = useState(false);
 
@@ -50,6 +53,7 @@ function GenerarQR({
   const idsConActividad = new Set(actividades.map((a) => a.qr_sello_id).filter(Boolean));
   const sellosAnteriores = actividadesQR.filter((qr) => !idsConActividad.has(qr.id));
   const actividadAbierta = detalleId == null ? null : actividades.find((a) => a.id === detalleId) || null;
+  const actividadEnEdicion = editandoId == null ? null : actividades.find((a) => a.id === editandoId) || null;
 
   const handleEliminarQR = async (id) => {
     const resultado = await onEliminarActividad(id);
@@ -78,7 +82,7 @@ function GenerarQR({
                 titulo={actividad.nombre}
                 subtitulo={actividad.fecha_inicio ? rangoEscrito(actividad.fecha_inicio, actividad.fecha_fin) : 'Sin fechas'}
                 estado={estadoDeActividad(actividad)}
-                onAbrir={() => { setAviso(''); setDetalleId(actividad.id); }}
+                onAbrir={() => { setAviso(''); setAvisoDetalle(''); setDetalleId(actividad.id); }}
               />
             );
           })}
@@ -167,8 +171,20 @@ function GenerarQR({
           organizador={organizador}
           qr={actividadAbierta.qr_sello_id ? qrPorId.get(actividadAbierta.qr_sello_id) || null : null}
           entregados={sellosEntregados[actividadAbierta.id] || 0}
+          aviso={avisoDetalle}
           onVolver={() => setDetalleId(null)}
+          onEditar={onEditarActividad ? () => { setAvisoDetalle(''); setEditandoId(actividadAbierta.id); } : undefined}
           onReenviarSello={onReenviarSello}
+        />
+      )}
+
+      {actividadEnEdicion && (
+        <FormularioActividad
+          actividad={actividadEnEdicion}
+          organizador={organizador}
+          onGuardar={onEditarActividad}
+          onSalir={() => setEditandoId(null)}
+          onCerrar={(resultado) => { setEditandoId(null); setAvisoDetalle(resultado?.aviso || 'Cambios guardados.'); }}
         />
       )}
 

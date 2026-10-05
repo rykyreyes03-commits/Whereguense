@@ -23,6 +23,7 @@ function DetalleActividad({
   organizador = null,
   qr = null,
   entregados = 0,
+  aviso = '',
   onVolver,
   onEditar,
   onEliminar,
@@ -88,6 +89,8 @@ function DetalleActividad({
         <p className="detact-franja">
           <Eye size={18} strokeWidth={2} aria-hidden="true" /> Así lo ven los turistas
         </p>
+
+        {aviso && <p className="detact-aviso detact-aviso--ok" role="status">{aviso}</p>}
 
         {sinFechas && (
           <p className="detact-aviso detact-aviso--info" role="status">

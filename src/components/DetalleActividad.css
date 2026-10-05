@@ -24,6 +24,7 @@
   line-height: 1.35;
 }
 .detact-aviso svg { flex-shrink: 0; margin-top: 1px; }
+.detact-aviso--ok { background: color-mix(in srgb, var(--color-turquoise) 18%, #fff); color: #0B4F4A; }
 .detact-aviso--info { background: var(--color-surface); color: var(--color-text-muted); }
 .detact-aviso--sellos { background: color-mix(in srgb, var(--color-sun) 38%, #fff); color: #4A3600; }
 
