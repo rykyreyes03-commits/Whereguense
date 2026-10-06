@@ -301,35 +301,39 @@ export function useNegocio(usuarioId) {
     return { exito: true };
   }, [negocio]);
 
-  // Sube la portada a <usuario_id>/portada_<negocio_id>.<ext> y devuelve su URL pública; NO la guarda en el negocio
-  // (eso lo hace guardarDiseno cuando el dueño pulsa Guardar). El servidor acepta solo jpg, png y webp de hasta 10 MB.
-  const subirPortada = useCallback(async (usuarioId, file) => {
+  // Sube una imagen del diseño (portada o logo) a <usuario_id>/<prefijo>_<negocio_id>.<ext> y devuelve su URL pública; NO la
+  // guarda en el negocio (eso lo hace guardarDiseno cuando el dueño pulsa Guardar). El servidor acepta solo jpg, png y webp
+  // de hasta 10 MB.
+  const subirImagenDiseno = useCallback(async (usuarioId, file, prefijo, nombre) => {
     if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
 
     const extensiones = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
     const extension = extensiones[file.type];
-    if (!extension) return { exito: false, mensaje: 'La portada debe ser una imagen JPG, PNG o WebP.' };
-    if (file.size > 10 * 1024 * 1024) return { exito: false, mensaje: 'La portada no puede pesar más de 10 MB.' };
+    if (!extension) return { exito: false, mensaje: `${nombre} debe ser una imagen JPG, PNG o WebP.` };
+    if (file.size > 10 * 1024 * 1024) return { exito: false, mensaje: `${nombre} no puede pesar más de 10 MB.` };
 
-    const ruta = `${usuarioId}/portada_${negocio.id}.${extension}`;
+    const ruta = `${usuarioId}/${prefijo}_${negocio.id}.${extension}`;
     const { error: errorSubida } = await supabase.storage
       .from('negocios')
       .upload(ruta, file, { upsert: true, contentType: file.type });
 
     if (errorSubida) {
-      console.error('Error subiendo la portada:', errorSubida);
-      return { exito: false, mensaje: 'No se pudo subir la portada. Intenta de nuevo.' };
+      console.error(`Error subiendo ${prefijo}:`, errorSubida);
+      return { exito: false, mensaje: `No se pudo subir ${nombre.toLowerCase()}. Intenta de nuevo.` };
     }
 
-    // Una sola portada por negocio: se borran las de otra extensión (mejor esfuerzo).
+    // Un solo archivo por negocio y prefijo: se borran los de otra extensión (mejor esfuerzo).
     const otras = Object.values(extensiones)
       .filter((e) => e !== extension)
-      .map((e) => `${usuarioId}/portada_${negocio.id}.${e}`);
+      .map((e) => `${usuarioId}/${prefijo}_${negocio.id}.${e}`);
     supabase.storage.from('negocios').remove(otras).catch(() => {});
 
     const { data } = supabase.storage.from('negocios').getPublicUrl(ruta);
     return { exito: true, url: `${data.publicUrl}?t=${Date.now()}` };
   }, [negocio]);
+
+  const subirPortada = useCallback((usuarioId, file) => subirImagenDiseno(usuarioId, file, 'portada', 'La portada'), [subirImagenDiseno]);
+  const subirLogoDiseno = useCallback((usuarioId, file) => subirImagenDiseno(usuarioId, file, 'logo', 'El logo'), [subirImagenDiseno]);
 
   const subirLogo = useCallback(async (usuarioId, file) => {
     if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
@@ -733,6 +737,7 @@ export function useNegocio(usuarioId) {
     actualizarPerfil,
     guardarDiseno,
     subirPortada,
+    subirLogoDiseno,
     subirLogo,
     subirFoto,
     eliminarFoto,

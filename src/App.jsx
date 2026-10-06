@@ -100,6 +100,7 @@ function App() {
     actualizarPerfil,
     guardarDiseno,
     subirPortada,
+    subirLogoDiseno,
     subirLogo,
     subirFoto,
     eliminarFoto,
@@ -837,6 +838,7 @@ function App() {
         onActualizarPerfil={actualizarPerfil}
         onGuardarDiseno={guardarDiseno}
         onSubirPortada={(file) => subirPortada(usuarioActual?.id, file)}
+        onSubirLogoDiseno={(file) => subirLogoDiseno(usuarioActual?.id, file)}
         onSubirLogo={(file) => subirLogo(usuarioActual?.id, file)}
         onSubirFoto={(file) => subirFoto(usuarioActual?.id, file)}
         onEliminarFoto={eliminarFoto}

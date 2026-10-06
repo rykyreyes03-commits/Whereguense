@@ -1,6 +1,6 @@
 // Página de prueba: monta la ficha pública o el editor de diseño contra el Supabase simulado.
 //   ?vista=ficha   la ficha a pantalla completa, como la ve el turista
-//   ?vista=editor  la pestaña Diseño del emprendedor (guardar y subir portada quedan registrados en window.__llamadas)
+//   ?vista=editor  la pestaña Diseño del emprendedor (guardar y subir logo/portada quedan registrados en window.__llamadas)
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import '/src/index.css';
@@ -26,10 +26,13 @@ function Editor() {
             setNegocio((n) => ({ ...n, configDiseno: config }));
             return { exito: true };
           }}
+          onSubirLogo={async (file) => {
+            window.__llamadas.push(['logo', file.name, file.type]);
+            return { exito: true, url: 'https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/u/logo_1.svg?t=1' };
+          }}
           onSubirPortada={async (file) => {
             window.__llamadas.push(['portada', file.name, file.type]);
-            const svg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='300'><rect width='600' height='300' fill='%23d98c3a'/><circle cx='300' cy='150' r='80' fill='%23fff3d6'/></svg>";
-            return { exito: true, url: svg };
+            return { exito: true, url: 'https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/u/portada_1.svg?t=1' };
           }}
         />
       </div>

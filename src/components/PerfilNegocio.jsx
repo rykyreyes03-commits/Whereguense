@@ -47,6 +47,7 @@ function PerfilNegocio({
   onActualizarPerfil,
   onGuardarDiseno,
   onSubirPortada,
+  onSubirLogoDiseno,
   onSubirLogo,
   onSubirFoto,
   onEliminarFoto,
@@ -624,7 +625,7 @@ function PerfilNegocio({
         {pestana === 'resenas' && <PanelResenasNegocio negocioId={negocio?.id} />}
 
         {pestana === 'diseno' && (
-          <EditorDiseno negocio={negocio} onGuardar={onGuardarDiseno} onSubirPortada={onSubirPortada} />
+          <EditorDiseno negocio={negocio} onGuardar={onGuardarDiseno} onSubirPortada={onSubirPortada} onSubirLogo={onSubirLogoDiseno} />
         )}
       </div>
 

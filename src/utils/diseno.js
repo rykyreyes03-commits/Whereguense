@@ -35,6 +35,7 @@ export const DISENO_POR_DEFECTO = {
   paleta: 'azul_marino',
   letra: 'clasica',
   portadaUrl: null,
+  logoUrl: null,
   whatsapp: '',
   secciones: SECCIONES.map((s) => s.id), // visibles, en orden
   layoutProductos: 'cuadricula',
@@ -54,6 +55,7 @@ export function disenoDesdeConfig(config) {
     paleta: PALETAS.some((p) => p.id === c.paleta) ? c.paleta : base.paleta,
     letra: LETRAS.some((l) => l.id === c.letra) ? c.letra : base.letra,
     portadaUrl: typeof c.portada_url === 'string' && c.portada_url.startsWith('https://') ? c.portada_url : null,
+    logoUrl: typeof c.logo_url === 'string' && c.logo_url.startsWith('https://') ? c.logo_url : null,
     whatsapp: typeof c.whatsapp === 'string' && /^[0-9]{8,15}$/.test(c.whatsapp) ? c.whatsapp : '',
     secciones,
     layoutProductos: LAYOUTS.some((l) => l.id === c.layout_productos) ? c.layout_productos : base.layoutProductos,
@@ -66,6 +68,7 @@ export function configDesdeDiseno(d) {
     paleta: d.paleta,
     letra: d.letra,
     portada_url: d.portadaUrl || null,
+    logo_url: d.logoUrl || null,
     whatsapp: d.whatsapp || null,
     secciones_visibles: d.secciones,
     layout_productos: d.layoutProductos,

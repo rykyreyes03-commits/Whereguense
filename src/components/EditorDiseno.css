@@ -1,34 +1,14 @@
 /* =========================================================
    EditorDiseno — pestaña "Diseño" del panel del emprendedor.
-   Móvil: la columna del editor y debajo la vista previa.
-   Escritorio (>= 900 px): editor a la izquierda, vista previa fija a la derecha.
+   Una sola columna a todo el ancho del panel.
    Tokens de src/index.css.
    ========================================================= */
 
 .editor-diseno {
-  display: grid;
-  gap: 20px;
-  grid-template-columns: minmax(0, 1fr);
-}
-
-@media (min-width: 900px) {
-  .editor-diseno {
-    grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
-    align-items: start;
-  }
-  .editor-diseno-vista {
-    position: sticky;
-    top: 16px;
-  }
-  .editor-diseno-vista-marco {
-    max-height: calc(100vh - 80px);
-  }
-}
-
-.editor-diseno-columna {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  width: 100%;
   padding: 16px;
   background: var(--color-white);
   border: 1px solid var(--color-border);
@@ -39,36 +19,66 @@
 .editor-diseno-cabecera {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   padding: 14px 16px;
   border-radius: var(--radius-md);
-  background: var(--color-primary);
+  background: #1B2A6B;
   color: #fff;
 }
 .editor-diseno-cabecera h2 {
   margin: 0;
   font-family: var(--font-display);
   font-size: 1.1rem;
+  font-weight: 800;
   color: #fff;
   overflow-wrap: anywhere;
 }
 .editor-diseno-cabecera p {
   margin: 2px 0 0;
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: #fff;
 }
-.editor-diseno-inicial {
+.editor-diseno-logo {
+  position: relative;
   flex: 0 0 auto;
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.2);
+  padding: 0;
+  border: none;
+  border-radius: 14px;
+  background: #E8EAF0;
+  color: #1B2A6B;
   font-family: var(--font-display);
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   font-weight: 800;
+  cursor: pointer;
+}
+.editor-diseno-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 14px;
+}
+.editor-diseno-logo:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.editor-diseno-logo-camara {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff;
+  color: #1B2A6B;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .editor-diseno-bloque h3 {
@@ -192,8 +202,8 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  min-height: 52px;
-  padding: 4px 10px 4px 8px;
+  min-height: 56px;
+  padding: 4px 12px 4px 4px;
   background: var(--color-white);
   border-top: 1px solid var(--color-border);
 }
@@ -201,15 +211,40 @@
   border-top: none;
 }
 .editor-diseno-seccion.arrastrando {
-  opacity: 0.5;
+  background: color-mix(in srgb, var(--color-primary) 8%, #fff);
 }
 .editor-diseno-seccion.oculta .editor-diseno-seccion-nombre {
   color: var(--color-text-muted);
 }
 .editor-diseno-asa {
   flex: 0 0 auto;
-  color: var(--color-text-soft);
+  width: 36px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #6B6B80;
   cursor: grab;
+  touch-action: none;
+}
+.editor-diseno-seccion.arrastrando .editor-diseno-asa {
+  cursor: grabbing;
+}
+.editor-diseno-mover-hueco {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+}
+.editor-diseno-portada-miniatura {
+  display: block;
+  width: 100%;
+  max-height: 160px;
+  margin-top: 10px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
 }
 .editor-diseno-seccion-nombre {
   flex: 1 1 auto;
@@ -232,10 +267,6 @@
   background: none;
   color: var(--color-navy);
   cursor: pointer;
-}
-.editor-diseno-mover:disabled {
-  color: var(--color-border-strong);
-  cursor: default;
 }
 .editor-diseno-interruptor {
   flex: 0 0 auto;
@@ -351,22 +382,6 @@
 .editor-diseno-guardar:disabled {
   opacity: 0.45;
   cursor: default;
-}
-
-/* Vista previa */
-.editor-diseno-vista-titulo {
-  margin: 0 0 8px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--color-text-muted);
-}
-.editor-diseno-vista-marco {
-  max-height: 560px;
-  overflow-y: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  background: var(--color-white);
 }
 
 @media (prefers-reduced-motion: reduce) {

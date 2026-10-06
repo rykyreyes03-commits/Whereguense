@@ -34,6 +34,11 @@ const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePa
 
 async function abrir(ancho, vista, db, alto = 900) {
   const ctx = await browser.newContext({ viewport: { width: ancho, height: alto }, deviceScaleFactor: 2 });
+  // Las imágenes que "sube" el arnés son URLs https del bucket: se responden con un dibujo para que se vean
+  await ctx.route('https://spybqychnydgvidwjrlh.supabase.co/**', (ruta) => ruta.fulfill({
+    contentType: 'image/svg+xml',
+    body: "<svg xmlns='http://www.w3.org/2000/svg' width='600' height='300'><rect width='600' height='300' fill='#d98c3a'/><circle cx='300' cy='150' r='80' fill='#fff3d6'/></svg>",
+  }));
   const page = await ctx.newPage();
   const errores = [];
   page.on('pageerror', (e) => errores.push(e.message));
@@ -69,7 +74,7 @@ for (const ancho of [360, 412]) {
 
   // 2. Ficha con diseño guardado: terracota, elegante, WhatsApp, 3 secciones en otro orden, lista
   {
-    const cfg = { paleta: 'terracota', letra: 'elegante', whatsapp: '87074097', secciones_visibles: ['resenas', 'productos', 'horarios'], layout_productos: 'lista', portada_url: null };
+    const cfg = { paleta: 'terracota', letra: 'elegante', whatsapp: '87074097', secciones_visibles: ['resenas', 'productos', 'horarios'], layout_productos: 'lista', portada_url: null, logo_url: 'https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/u/logo_1.png' };
     const { ctx, page, errores } = await abrir(ancho, 'ficha', datos(cfg));
     await page.waitForSelector('.perfilpublico-whatsapp');
     await page.waitForSelector('.resenas-seccion');
@@ -80,6 +85,7 @@ for (const ancho of [360, 412]) {
     ok(await page.locator('.perfilpublico-productos.perfilpublico-lista').count() === 1, `${t} productos en lista`);
     const fondo = await page.locator('.perfilpublico-whatsapp').evaluate((e) => getComputedStyle(e).backgroundColor);
     ok(fondo === 'rgb(192, 98, 42)', `${t} el botón de WhatsApp usa el color de la paleta (${fondo})`);
+    ok(await page.locator('.perfilpublico-logo img').getAttribute('src') === 'https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/u/logo_1.png', `${t} guardado: la ficha usa el logo_url del diseño`);
     ok(await sinDesborde(page), `${t} sin desborde horizontal`);
     ok(errores.length === 0, `${t} sin errores de página`);
     await page.waitForTimeout(600);
@@ -108,62 +114,98 @@ for (const ancho of [360, 412]) {
     await ctx.close();
   }
 
-  // 5. Editor
+  // 5. Editor (a todo el ancho, sin vista previa)
   {
     const { ctx, page, errores } = await abrir(ancho, 'editor', datos({}));
     await page.waitForSelector('.editor-diseno');
-    await page.waitForSelector('.resenas-seccion');
-    const vistaVar = (n) => page.evaluate((x) => getComputedStyle(document.querySelector('.editor-diseno-vista .perfilpublico-ficha')).getPropertyValue(x).trim(), n);
+    const nombres = () => page.$$eval('.editor-diseno-seccion-nombre', (els) => els.map((e) => e.textContent.trim()));
+    ok(await page.locator('.editor-diseno-vista, .perfilpublico-ficha').count() === 0, `${t} editor: no hay panel de vista previa`);
+    const caja = await page.locator('.editor-diseno').boundingBox();
+    ok(caja.width >= ancho - 40, `${t} editor: ocupa todo el ancho (${Math.round(caja.width)} de ${ancho})`);
     ok(await page.locator('.editor-diseno-paleta').count() === 8, `${t} editor: 8 paletas`);
     ok(await page.locator('.editor-diseno-paleta[aria-checked="true"]').getAttribute('aria-label') === 'Azul marino', `${t} editor: azul marino seleccionada`);
     ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled() && await page.getByRole('button', { name: 'Deshacer' }).isDisabled(), `${t} editor: sin cambios, Guardar y Deshacer desactivados`);
-    ok(await page.locator('.editor-diseno-seccion').count() === 5, `${t} editor: 5 secciones en la lista`);
     ok(await sinDesborde(page), `${t} editor sin desborde horizontal`);
 
-    await page.getByRole('radio', { name: 'Terracota' }).click();
-    ok(await vistaVar('--ficha-color') === '#C0622A', `${t} editor: elegir Terracota cambia la vista previa al instante`);
-    await page.getByRole('radio', { name: 'Moderna' }).click();
-    ok((await vistaVar('--ficha-titulo')).includes('Poppins'), `${t} editor: elegir Moderna cambia la letra de la vista previa`);
-    await page.getByRole('radio', { name: 'Lista' }).click();
-    ok(await page.locator('.editor-diseno-vista .perfilpublico-productos.perfilpublico-lista').count() === 1, `${t} editor: Lista cambia productos en la vista previa`);
+    // Cabecera: fondo azul marino, nombre blanco, subtítulo, inicial en cuadro gris claro
+    const cab = await page.locator('.editor-diseno-cabecera').evaluate((e) => getComputedStyle(e).backgroundColor);
+    ok(cab === 'rgb(27, 42, 107)', `${t} cabecera: fondo #1B2A6B (${cab})`);
+    ok(await page.locator('.editor-diseno-cabecera h2').evaluate((e) => getComputedStyle(e).color) === 'rgb(255, 255, 255)', `${t} cabecera: nombre en blanco`);
+    ok(await page.locator('.editor-diseno-cabecera h2').evaluate((e) => Number(getComputedStyle(e).fontWeight) >= 700), `${t} cabecera: nombre en negrita`);
+    ok(await page.locator('.editor-diseno-cabecera p').innerText() === 'Vista previa en vivo', `${t} cabecera: subtítulo "Vista previa en vivo"`);
+    ok(await page.locator('.editor-diseno-logo span').first().innerText() === 'C', `${t} cabecera: sin logo muestra la inicial`);
+    ok(await page.locator('.editor-diseno-logo').evaluate((e) => getComputedStyle(e).backgroundColor) === 'rgb(232, 234, 240)', `${t} cabecera: cuadro gris claro`);
 
+    // Secciones: orden, flechas de las puntas, asas
+    ok((await nombres()).join('|') === 'Horarios|Productos|Fotos|Actividades|Reseñas', `${t} secciones: las cinco, en el orden guardado`);
+    ok(await page.getByRole('button', { name: 'Subir Horarios' }).count() === 0, `${t} secciones: la primera no tiene ↑`);
+    ok(await page.getByRole('button', { name: 'Bajar Reseñas' }).count() === 0, `${t} secciones: la última no tiene ↓`);
+    ok(await page.getByRole('button', { name: 'Bajar Horarios' }).count() === 1 && await page.getByRole('button', { name: 'Subir Reseñas' }).count() === 1, `${t} secciones: las demás flechas sí`);
+    ok(await page.getByRole('button', { name: /^Arrastrar / }).count() === 5, `${t} secciones: cinco asas de arrastre`);
+    ok(await page.locator('.editor-diseno-seccion').nth(1).evaluate((e) => getComputedStyle(e).borderTopWidth) === '1px', `${t} secciones: separador entre filas`);
+
+    await page.getByRole('button', { name: 'Bajar Horarios' }).click();
+    ok((await nombres()).join('|') === 'Productos|Horarios|Fotos|Actividades|Reseñas', `${t} secciones: ↓ baja Horarios`);
+    await page.getByRole('button', { name: 'Subir Horarios' }).click();
+    ok((await nombres()).join('|') === 'Horarios|Productos|Fotos|Actividades|Reseñas', `${t} secciones: ↑ la devuelve`);
+    ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} secciones: volver al orden original = sin cambios`);
+
+    // Arrastrar: Reseñas (fila 5) hasta la fila 1
+    const asa = await page.getByRole('button', { name: 'Arrastrar Reseñas' }).boundingBox();
+    const primera = await page.locator('.editor-diseno-seccion').first().boundingBox();
+    await page.mouse.move(asa.x + asa.width / 2, asa.y + asa.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(asa.x + asa.width / 2, primera.y + 10, { steps: 12 });
+    await page.mouse.up();
+    ok((await nombres()).join('|') === 'Reseñas|Horarios|Productos|Fotos|Actividades', `${t} secciones: arrastrar Reseñas a la primera fila -> ${(await nombres()).join('|')}`);
+
+    // Toggle
     await page.getByRole('switch', { name: 'Mostrar Fotos' }).click();
-    ok(!(await titulos(page, '.editor-diseno-vista')).includes('Fotos'), `${t} editor: ocultar Fotos la quita de la vista previa`);
-    for (let i = 0; i < 4; i += 1) await page.getByRole('button', { name: 'Subir Reseñas' }).click();
-    const orden = (await titulos(page, '.editor-diseno-vista')).join('|');
-    ok(orden === 'Reseñas|Horarios|Productos|Actividades', `${t} editor: Reseñas al principio -> ${orden}`);
-    ok(await page.getByRole('button', { name: 'Subir Reseñas' }).isDisabled(), `${t} editor: la primera no puede subir`);
+    ok(await page.getByRole('switch', { name: 'Mostrar Fotos' }).getAttribute('aria-checked') === 'false', `${t} secciones: el toggle oculta Fotos`);
 
+    // Logo
+    await page.setInputFiles('input[data-campo=logo]', { name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from('x') });
+    await page.waitForSelector('.editor-diseno-logo img');
+    ok(await page.getByRole('button', { name: 'Cambiar logo del negocio' }).count() === 1, `${t} logo: tras subirlo, el cuadro muestra la imagen y ofrece cambiarla`);
+    ok((await page.evaluate(() => window.__llamadas.filter((l) => l[0] === 'logo').length)) === 1, `${t} logo: se llamó a la subida una vez`);
+    ok(await page.getByRole('button', { name: 'Guardar' }).isEnabled(), `${t} logo: el cambio activa Guardar`);
+
+    // WhatsApp
     const campo = page.getByRole('textbox', { name: 'Botón de WhatsApp' });
     await campo.fill('+505 8707-40');
-    ok(await campo.inputValue() === '505870740', `${t} editor: el campo deja solo dígitos (${await campo.inputValue()})`);
+    ok(await campo.inputValue() === '505870740', `${t} whatsapp: el campo deja solo dígitos (${await campo.inputValue()})`);
     await campo.fill('1234');
-    ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} editor: 4 dígitos -> Guardar desactivado`);
-    ok(await page.getByText('Escribe entre 8 y 15 dígitos, solo números.').isVisible(), `${t} editor: aviso de 8 a 15 dígitos`);
+    ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} whatsapp: 4 dígitos -> Guardar desactivado`);
+    ok(await page.getByText('Escribe entre 8 y 15 dígitos, solo números.').isVisible(), `${t} whatsapp: aviso de 8 a 15 dígitos`);
     await campo.fill('87074097');
-    ok(await page.getByRole('button', { name: 'Guardar' }).isEnabled(), `${t} editor: 8 dígitos -> Guardar activo`);
-    ok(await page.locator('.editor-diseno-vista .perfilpublico-whatsapp').getAttribute('href') === 'https://wa.me/50587074097', `${t} editor: aparece el botón de WhatsApp en la vista previa`);
+    ok(await page.getByRole('button', { name: 'Guardar' }).isEnabled(), `${t} whatsapp: 8 dígitos -> Guardar activo`);
 
-    await page.setInputFiles('input[type=file]', { name: 'portada.png', mimeType: 'image/png', buffer: Buffer.from('x') });
-    await page.waitForSelector('.editor-diseno-vista .perfilpublico-portada-foto');
-    ok(true, `${t} editor: la portada subida aparece en la vista previa`);
-    ok(await page.getByRole('button', { name: 'Cambiar foto de portada' }).count() === 1, `${t} editor: el botón pasa a "Cambiar foto de portada"`);
+    // Portada
+    await page.setInputFiles('input[data-campo=portada]', { name: 'portada.png', mimeType: 'image/png', buffer: Buffer.from('x') });
+    await page.waitForSelector('.editor-diseno-portada-miniatura');
+    await page.getByRole('radio', { name: 'Terracota' }).click();
+    await page.getByRole('radio', { name: 'Lista' }).click();
     await page.screenshot({ path: path.join(capturas, `diseno_editor_${ancho}.png`), fullPage: true });
 
+    // Deshacer
     await page.getByRole('button', { name: 'Deshacer' }).click();
-    ok(await vistaVar('--ficha-color') === '#1B2A6B' && await page.locator('.editor-diseno-vista .perfilpublico-whatsapp').count() === 0, `${t} editor: Deshacer vuelve al último guardado`);
-    ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} editor: tras Deshacer, Guardar desactivado`);
+    ok((await nombres()).join('|') === 'Horarios|Productos|Fotos|Actividades|Reseñas' && await page.locator('.editor-diseno-logo img').count() === 0 && await campo.inputValue() === '', `${t} deshacer: vuelve al último guardado (orden, logo y WhatsApp)`);
+    ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} deshacer: Guardar desactivado`);
 
+    // Guardar: siete claves, nada de texto libre
     await page.getByRole('radio', { name: 'Verde' }).click();
     await page.getByRole('switch', { name: 'Mostrar Horarios' }).click();
+    await page.setInputFiles('input[data-campo=logo]', { name: 'logo.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('x') });
+    await page.waitForSelector('.editor-diseno-logo img');
     await campo.fill('50587074097');
     await page.getByRole('button', { name: 'Guardar' }).click();
-    await page.getByText('Diseño guardado. Así lo ven los turistas.').waitFor();
+    await page.getByText('Diseño guardado.').waitFor();
     const llamadas = await page.evaluate(() => window.__llamadas);
     const guardada = llamadas.filter((l) => l[0] === 'guardar').pop()[1];
-    ok(JSON.stringify(guardada) === JSON.stringify({ paleta: 'verde', letra: 'clasica', portada_url: null, whatsapp: '50587074097', secciones_visibles: ['productos', 'fotos', 'actividades', 'resenas'], layout_productos: 'cuadricula' }),
-      `${t} editor: Guardar envía las seis claves y nada más -> ${JSON.stringify(guardada)}`);
-    ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} editor: tras guardar, Guardar desactivado`);
+    ok(guardada.logo_url.startsWith('https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/') && guardada.portada_url === null && Object.keys(guardada).sort().join(',') === 'layout_productos,letra,logo_url,paleta,portada_url,secciones_visibles,whatsapp',
+      `${t} guardar: envía las siete claves (logo_url incluida) y nada más -> ${Object.keys(guardada).sort().join(',')}`);
+    ok(guardada.paleta === 'verde' && guardada.whatsapp === '50587074097' && guardada.secciones_visibles.join(',') === 'productos,fotos,actividades,resenas', `${t} guardar: valores correctos`);
+    ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} guardar: tras guardar, Guardar desactivado`);
     ok(errores.length === 0, `${t} editor sin errores de página${errores.length ? ': ' + errores[0] : ''}`);
     await ctx.close();
   }
@@ -182,16 +224,18 @@ for (const ancho of [360, 412]) {
   }
 }
 
-// Escritorio: dos columnas
+// Escritorio: una sola columna a todo el ancho
 {
   const { ctx, page } = await abrir(1280, 'editor', datos({}), 900);
-  await page.waitForSelector('.editor-diseno-vista .perfilpublico-ficha');
-  const cajas = await page.evaluate(() => {
-    const a = document.querySelector('.editor-diseno-columna').getBoundingClientRect();
-    const b = document.querySelector('.editor-diseno-vista').getBoundingClientRect();
-    return { izquierda: a.left, derecha: b.left, topA: a.top, topB: b.top };
+  await page.waitForSelector('.editor-diseno');
+  const medidas = await page.evaluate(() => {
+    const editor = document.querySelector('.editor-diseno').getBoundingClientRect();
+    const columna = document.querySelector('.perfilnegocio-contenido');
+    const estilo = getComputedStyle(columna);
+    const util = columna.getBoundingClientRect().width - parseFloat(estilo.paddingLeft) - parseFloat(estilo.paddingRight);
+    return { editor: editor.width, util, hijos: document.querySelectorAll('.perfilnegocio-contenido > *').length };
   });
-  ok(cajas.derecha > cajas.izquierda + 300 && Math.abs(cajas.topA - cajas.topB) < 40, `[1280px] editor a la izquierda y vista previa a la derecha (${Math.round(cajas.izquierda)} / ${Math.round(cajas.derecha)})`);
+  ok(Math.abs(medidas.editor - medidas.util) < 1 && medidas.hijos === 1, `[1280px] el editor ocupa todo el ancho de la columna del panel (${Math.round(medidas.editor)} de ${Math.round(medidas.util)} px) y no hay segunda columna`);
   await page.screenshot({ path: path.join(capturas, 'diseno_editor_1280.png') });
   await ctx.close();
 }

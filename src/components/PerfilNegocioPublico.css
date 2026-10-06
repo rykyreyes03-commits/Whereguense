@@ -265,19 +265,3 @@
 .perfilpublico-ficha .perfilpublico-actividad-sello {
   background: color-mix(in srgb, var(--ficha-color, var(--color-primary)) 14%, #fff);
 }
-
-/* Dentro del editor (vista previa en vivo): en la página, no a pantalla completa */
-.perfilpublico-ficha--incrustada {
-  position: relative;
-  inset: auto;
-  z-index: auto;
-  overflow: visible;
-  animation: none;
-  background: var(--color-white);
-}
-.perfilpublico-ficha--incrustada .perfilpublico-portada {
-  height: 130px;
-}
-.perfilpublico-ficha--incrustada .perfilpublico-marca {
-  top: 12px;
-}

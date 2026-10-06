@@ -19,10 +19,9 @@ function rangoFechas(a) {
     : `${formatearFecha(a.fecha_inicio)} – ${formatearFecha(a.fecha_fin)}`;
 }
 
-// Ficha pública del negocio. Lee negocio.config_diseno (paleta, letra, portada, orden y visibilidad de secciones, WhatsApp
-// y layout de productos/fotos). El editor del dueño pasa su borrador en `diseno` (y `logoUrl`) para la vista previa en vivo;
-// con `incrustado` se dibuja dentro de la página en vez de a pantalla completa.
-function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false, diseno: disenoBorrador = null, logoUrl = undefined, incrustado = false }) {
+// Ficha pública del negocio. Lee negocio.config_diseno (paleta, letra, logo, portada, orden y visibilidad de secciones,
+// WhatsApp y layout de productos/fotos). Sin logo en el diseño usa el logo de siempre (negocio.logo_url) y, sin ninguno, la inicial.
+function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false }) {
   const [horarios, setHorarios] = useState([]);
   const [fotos, setFotos] = useState([]);
   const [productos, setProductos] = useState([]);
@@ -144,16 +143,13 @@ function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false, diseno: 
     return () => { activo = false; };
   }, [negocio?.id]);
 
-  const diseno = useMemo(
-    () => disenoBorrador || disenoDesdeConfig(fila?.config_diseno),
-    [disenoBorrador, fila],
-  );
+  const diseno = useMemo(() => disenoDesdeConfig(fila?.config_diseno), [fila]);
   const estado = useMemo(() => estadoAbierto(horarios, ahora), [horarios, ahora]);
   const resumen = useMemo(() => resumenHorarios(horarios), [horarios]);
 
   if (!negocio) return null;
 
-  const logo = logoUrl !== undefined ? logoUrl : fila?.logo_url;
+  const logo = diseno.logoUrl || fila?.logo_url;
   const inicial = (negocio.name || '?').trim().charAt(0).toUpperCase();
   const portada = diseno.portadaUrl && portadaRota !== diseno.portadaUrl ? diseno.portadaUrl : null;
   const whatsapp = enlaceWhatsapp(diseno.whatsapp);
@@ -222,7 +218,7 @@ function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false, diseno: 
 
   return (
     <div
-      className={`historia-sitio perfilpublico-ficha${incrustado ? ' perfilpublico-ficha--incrustada' : ''}`}
+      className="historia-sitio perfilpublico-ficha"
       style={variablesFicha(diseno)}
     >
       <div className="perfilpublico-portada">
@@ -230,11 +226,9 @@ function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false, diseno: 
           <img src={portada} alt="" className="perfilpublico-portada-foto" onError={() => setPortadaRota(portada)} />
         )}
         <span className="perfilpublico-marca">Wheregüense</span>
-        {!incrustado && (
-          <button type="button" className="historia-sitio-cerrar" onClick={onCerrar} aria-label="Cerrar">
-            <X size={18} strokeWidth={2.4} aria-hidden="true" />
-          </button>
-        )}
+        <button type="button" className="historia-sitio-cerrar" onClick={onCerrar} aria-label="Cerrar">
+          <X size={18} strokeWidth={2.4} aria-hidden="true" />
+        </button>
       </div>
 
       <div className="historia-sitio-contenido perfilpublico-contenido">

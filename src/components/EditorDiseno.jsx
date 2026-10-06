@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Check, ChevronDown, ChevronUp, GripVertical, ImagePlus, Trash2 } from 'lucide-react';
-import PerfilNegocioPublico from './PerfilNegocioPublico';
+import { Camera, Check, ChevronDown, ChevronUp, GripVertical, ImagePlus, Trash2 } from 'lucide-react';
 import {
   LAYOUTS,
   LETRAS,
@@ -25,18 +24,21 @@ function digitosValidos(w) {
   return w === '' || /^[0-9]{8,15}$/.test(w);
 }
 
-// Pestaña "Diseño" del panel del emprendedor: editor a un lado y vista previa en vivo de la ficha que ve el turista.
-// El borrador solo vive aquí hasta pulsar Guardar; "Deshacer" vuelve al último diseño guardado.
-function EditorDiseno({ negocio, onGuardar, onSubirPortada }) {
+// Pestaña "Diseño" del panel del emprendedor. El borrador solo vive aquí hasta pulsar Guardar; "Deshacer" vuelve al último
+// diseño guardado. La ficha que ve el turista se abre con "Ver como te ven los turistas" del panel.
+function EditorDiseno({ negocio, onGuardar, onSubirPortada, onSubirLogo }) {
   const guardado = useMemo(() => disenoDesdeConfig(negocio?.configDiseno), [negocio?.configDiseno]);
   const [borrador, setBorrador] = useState(guardado);
   const [filas, setFilas] = useState(() => filasDesdeDiseno(guardado));
-  const [subiendo, setSubiendo] = useState(false);
+  const [subiendo, setSubiendo] = useState(null); // 'portada' | 'logo' | null
   const [guardando, setGuardando] = useState(false);
   const [aviso, setAviso] = useState(null); // { tipo: 'ok' | 'error', texto }
   const [arrastrando, setArrastrando] = useState(null);
   const [soltarSobre, setSoltarSobre] = useState(false);
-  const archivoRef = useRef(null);
+  const portadaRef = useRef(null);
+  const logoRef = useRef(null);
+  const listaRef = useRef(null);
+  const arrastreRef = useRef(null);
 
   const diseno = useMemo(
     () => ({ ...borrador, secciones: filas.filter((f) => f.visible).map((f) => f.id) }),
@@ -45,6 +47,8 @@ function EditorDiseno({ negocio, onGuardar, onSubirPortada }) {
   const hayCambios = !disenosIguales(diseno, guardado);
   const whatsappOk = digitosValidos(borrador.whatsapp);
   const nombre = negocio?.nombre || 'Tu negocio';
+  const logo = borrador.logoUrl || negocio?.logoUrl || null; // sin logo en el diseño se ve el de siempre; sin ninguno, la inicial
+  const [logoRoto, setLogoRoto] = useState(null);
 
   const cambiar = (parcial) => {
     setBorrador((b) => ({ ...b, ...parcial }));
@@ -67,6 +71,32 @@ function EditorDiseno({ negocio, onGuardar, onSubirPortada }) {
     setAviso(null);
   };
 
+  // Arrastre con puntero (ratón y dedo): se agarra el asa, y la fila toma el lugar de la que se cruza.
+  const iniciarArrastre = (e, indice) => {
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    arrastreRef.current = indice;
+    setArrastrando(indice);
+  };
+  const arrastrar = (e) => {
+    const actual = arrastreRef.current;
+    if (actual === null || !listaRef.current) return;
+    const items = [...listaRef.current.children];
+    const destino = items.findIndex((el) => {
+      const r = el.getBoundingClientRect();
+      return e.clientY >= r.top && e.clientY < r.bottom;
+    });
+    if (destino !== -1 && destino !== actual) {
+      mover(actual, destino);
+      arrastreRef.current = destino;
+      setArrastrando(destino);
+    }
+  };
+  const terminarArrastre = () => {
+    arrastreRef.current = null;
+    setArrastrando(null);
+  };
+
   const deshacer = () => {
     setBorrador(guardado);
     setFilas(filasDesdeDiseno(guardado));
@@ -80,230 +110,244 @@ function EditorDiseno({ negocio, onGuardar, onSubirPortada }) {
     const resultado = await onGuardar(configDesdeDiseno(diseno));
     setGuardando(false);
     setAviso(resultado?.exito
-      ? { tipo: 'ok', texto: 'Diseño guardado. Así lo ven los turistas.' }
+      ? { tipo: 'ok', texto: 'Diseño guardado.' }
       : { tipo: 'error', texto: resultado?.mensaje || 'No se pudo guardar el diseño.' });
   };
 
-  const subirArchivo = async (archivo) => {
+  const subirArchivo = async (archivo, cual) => {
     if (!archivo) return;
-    setSubiendo(true);
+    setSubiendo(cual);
     setAviso(null);
-    const resultado = await onSubirPortada(archivo);
-    setSubiendo(false);
+    const resultado = await (cual === 'logo' ? onSubirLogo : onSubirPortada)(archivo);
+    setSubiendo(null);
     if (resultado?.exito) {
-      cambiar({ portadaUrl: resultado.url });
+      cambiar(cual === 'logo' ? { logoUrl: resultado.url } : { portadaUrl: resultado.url });
     } else {
-      setAviso({ tipo: 'error', texto: resultado?.mensaje || 'No se pudo subir la portada.' });
+      setAviso({ tipo: 'error', texto: resultado?.mensaje || 'No se pudo subir la imagen.' });
     }
   };
 
   const telefonoDigitos = (negocio?.telefono || '').replace(/\D/g, '');
   const puedeUsarTelefono = borrador.whatsapp === '' && /^[0-9]{8,15}$/.test(telefonoDigitos);
+  const tipos = 'image/jpeg,image/png,image/webp';
 
   return (
     <div className="editor-diseno">
-      <div className="editor-diseno-columna">
-        <header className="editor-diseno-cabecera">
-          <span className="editor-diseno-inicial" aria-hidden="true">{nombre.trim().charAt(0).toUpperCase() || 'N'}</span>
-          <div>
-            <h2>{nombre}</h2>
-            <p>Vista previa en vivo</p>
-          </div>
-        </header>
+      <header className="editor-diseno-cabecera">
+        <input
+          ref={logoRef}
+          type="file"
+          accept={tipos}
+          hidden
+          data-campo="logo"
+          onChange={(e) => {
+            subirArchivo(e.target.files?.[0], 'logo');
+            e.target.value = '';
+          }}
+        />
+        <button
+          type="button"
+          className="editor-diseno-logo"
+          onClick={() => logoRef.current?.click()}
+          disabled={subiendo === 'logo'}
+          aria-label={logo ? 'Cambiar logo del negocio' : 'Subir logo del negocio'}
+        >
+          {logo && logoRoto !== logo
+            ? <img src={logo} alt="" onError={() => setLogoRoto(logo)} />
+            : <span aria-hidden="true">{nombre.trim().charAt(0).toUpperCase() || 'N'}</span>}
+          <span className="editor-diseno-logo-camara" aria-hidden="true"><Camera size={12} strokeWidth={2.4} /></span>
+        </button>
+        <div>
+          <h2>{nombre}</h2>
+          <p>{subiendo === 'logo' ? 'Subiendo logo...' : 'Vista previa en vivo'}</p>
+        </div>
+      </header>
 
-        <section className="editor-diseno-bloque" aria-labelledby="ed-colores">
-          <h3 id="ed-colores">Colores</h3>
-          <div className="editor-diseno-paletas" role="radiogroup" aria-labelledby="ed-colores">
-            {PALETAS.map((p) => {
-              const activa = borrador.paleta === p.id;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={activa}
-                  aria-label={p.nombre}
-                  title={p.nombre}
-                  className={`editor-diseno-paleta${activa ? ' activa' : ''}`}
-                  style={{ background: p.color, color: textoSobre(p.color) }}
-                  onClick={() => cambiar({ paleta: p.id })}
-                >
-                  {activa && <Check size={18} strokeWidth={3} aria-hidden="true" />}
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="editor-diseno-bloque" aria-labelledby="ed-letra">
-          <h3 id="ed-letra">Letra</h3>
-          <div className="editor-diseno-opciones" role="radiogroup" aria-labelledby="ed-letra">
-            {LETRAS.map((l) => (
+      <section className="editor-diseno-bloque" aria-labelledby="ed-colores">
+        <h3 id="ed-colores">Colores</h3>
+        <div className="editor-diseno-paletas" role="radiogroup" aria-labelledby="ed-colores">
+          {PALETAS.map((p) => {
+            const activa = borrador.paleta === p.id;
+            return (
               <button
-                key={l.id}
+                key={p.id}
                 type="button"
                 role="radio"
-                aria-checked={borrador.letra === l.id}
-                className={`editor-diseno-opcion${borrador.letra === l.id ? ' activa' : ''}`}
-                style={{ fontFamily: l.titulo }}
-                onClick={() => cambiar({ letra: l.id })}
+                aria-checked={activa}
+                aria-label={p.nombre}
+                title={p.nombre}
+                className={`editor-diseno-paleta${activa ? ' activa' : ''}`}
+                style={{ background: p.color, color: textoSobre(p.color) }}
+                onClick={() => cambiar({ paleta: p.id })}
               >
-                {l.nombre}
+                {activa && <Check size={18} strokeWidth={3} aria-hidden="true" />}
               </button>
-            ))}
-          </div>
-        </section>
+            );
+          })}
+        </div>
+      </section>
 
-        <section className="editor-diseno-bloque" aria-labelledby="ed-portada">
-          <h3 id="ed-portada">Portada</h3>
-          <input
-            ref={archivoRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            hidden
-            onChange={(e) => {
-              subirArchivo(e.target.files?.[0]);
-              e.target.value = '';
-            }}
-          />
-          <button
-            type="button"
-            className={`editor-diseno-soltar${soltarSobre ? ' sobre' : ''}`}
-            disabled={subiendo}
-            onClick={() => archivoRef.current?.click()}
-            onDragOver={(e) => { e.preventDefault(); setSoltarSobre(true); }}
-            onDragLeave={() => setSoltarSobre(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setSoltarSobre(false);
-              subirArchivo(e.dataTransfer.files?.[0]);
-            }}
-          >
-            <ImagePlus size={20} strokeWidth={1.8} aria-hidden="true" />
-            {subiendo ? 'Subiendo...' : borrador.portadaUrl ? 'Cambiar foto de portada' : 'Subir foto de portada'}
-          </button>
-          <p className="editor-diseno-ayuda">JPG, PNG o WebP, hasta 10 MB.</p>
-          {borrador.portadaUrl && (
+      <section className="editor-diseno-bloque" aria-labelledby="ed-letra">
+        <h3 id="ed-letra">Letra</h3>
+        <div className="editor-diseno-opciones" role="radiogroup" aria-labelledby="ed-letra">
+          {LETRAS.map((l) => (
+            <button
+              key={l.id}
+              type="button"
+              role="radio"
+              aria-checked={borrador.letra === l.id}
+              className={`editor-diseno-opcion${borrador.letra === l.id ? ' activa' : ''}`}
+              style={{ fontFamily: l.titulo }}
+              onClick={() => cambiar({ letra: l.id })}
+            >
+              {l.nombre}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="editor-diseno-bloque" aria-labelledby="ed-portada">
+        <h3 id="ed-portada">Portada</h3>
+        <input
+          ref={portadaRef}
+          type="file"
+          accept={tipos}
+          hidden
+          data-campo="portada"
+          onChange={(e) => {
+            subirArchivo(e.target.files?.[0], 'portada');
+            e.target.value = '';
+          }}
+        />
+        <button
+          type="button"
+          className={`editor-diseno-soltar${soltarSobre ? ' sobre' : ''}`}
+          disabled={subiendo === 'portada'}
+          onClick={() => portadaRef.current?.click()}
+          onDragOver={(e) => { e.preventDefault(); setSoltarSobre(true); }}
+          onDragLeave={() => setSoltarSobre(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setSoltarSobre(false);
+            subirArchivo(e.dataTransfer.files?.[0], 'portada');
+          }}
+        >
+          <ImagePlus size={20} strokeWidth={1.8} aria-hidden="true" />
+          {subiendo === 'portada' ? 'Subiendo...' : borrador.portadaUrl ? 'Cambiar foto de portada' : 'Subir foto de portada'}
+        </button>
+        <p className="editor-diseno-ayuda">JPG, PNG o WebP, hasta 10 MB.</p>
+        {borrador.portadaUrl && (
+          <>
+            <img className="editor-diseno-portada-miniatura" src={borrador.portadaUrl} alt="Portada actual" />
             <button type="button" className="editor-diseno-enlace" onClick={() => cambiar({ portadaUrl: null })}>
               <Trash2 size={15} strokeWidth={2} aria-hidden="true" /> Quitar portada
             </button>
-          )}
-        </section>
+          </>
+        )}
+      </section>
 
-        <section className="editor-diseno-bloque" aria-labelledby="ed-secciones">
-          <h3 id="ed-secciones">Secciones: orden y visibilidad</h3>
-          <ul className="editor-diseno-secciones">
-            {filas.map((fila, i) => (
-              <li
-                key={fila.id}
-                className={`editor-diseno-seccion${arrastrando === i ? ' arrastrando' : ''}${fila.visible ? '' : ' oculta'}`}
-                draggable
-                onDragStart={() => setArrastrando(i)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={() => { mover(arrastrando, i); setArrastrando(null); }}
-                onDragEnd={() => setArrastrando(null)}
+      <section className="editor-diseno-bloque" aria-labelledby="ed-secciones">
+        <h3 id="ed-secciones">Secciones: orden y visibilidad</h3>
+        <ul className="editor-diseno-secciones" ref={listaRef}>
+          {filas.map((fila, i) => (
+            <li
+              key={fila.id}
+              className={`editor-diseno-seccion${arrastrando === i ? ' arrastrando' : ''}${fila.visible ? '' : ' oculta'}`}
+            >
+              <button
+                type="button"
+                className="editor-diseno-asa"
+                aria-label={`Arrastrar ${NOMBRE_SECCION[fila.id]}`}
+                onPointerDown={(e) => iniciarArrastre(e, i)}
+                onPointerMove={arrastrar}
+                onPointerUp={terminarArrastre}
+                onPointerCancel={terminarArrastre}
               >
-                <GripVertical size={18} strokeWidth={1.8} aria-hidden="true" className="editor-diseno-asa" />
-                <span className="editor-diseno-seccion-nombre">{NOMBRE_SECCION[fila.id]}</span>
-                <button type="button" className="editor-diseno-mover" onClick={() => mover(i, i - 1)} disabled={i === 0} aria-label={`Subir ${NOMBRE_SECCION[fila.id]}`}>
+                <GripVertical size={18} strokeWidth={1.8} aria-hidden="true" />
+              </button>
+              <span className="editor-diseno-seccion-nombre">{NOMBRE_SECCION[fila.id]}</span>
+              {i > 0 ? (
+                <button type="button" className="editor-diseno-mover" onClick={() => mover(i, i - 1)} aria-label={`Subir ${NOMBRE_SECCION[fila.id]}`}>
                   <ChevronUp size={18} strokeWidth={2.2} aria-hidden="true" />
                 </button>
-                <button type="button" className="editor-diseno-mover" onClick={() => mover(i, i + 1)} disabled={i === filas.length - 1} aria-label={`Bajar ${NOMBRE_SECCION[fila.id]}`}>
+              ) : <span className="editor-diseno-mover-hueco" aria-hidden="true" />}
+              {i < filas.length - 1 ? (
+                <button type="button" className="editor-diseno-mover" onClick={() => mover(i, i + 1)} aria-label={`Bajar ${NOMBRE_SECCION[fila.id]}`}>
                   <ChevronDown size={18} strokeWidth={2.2} aria-hidden="true" />
                 </button>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={fila.visible}
-                  aria-label={`Mostrar ${NOMBRE_SECCION[fila.id]}`}
-                  className={`editor-diseno-interruptor${fila.visible ? ' activo' : ''}`}
-                  onClick={() => alternar(fila.id)}
-                >
-                  <span />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="editor-diseno-bloque" aria-labelledby="ed-whatsapp">
-          <h3 id="ed-whatsapp">Botón de WhatsApp</h3>
-          <input
-            id="ed-whatsapp-campo"
-            className={`editor-diseno-campo${whatsappOk ? '' : ' invalido'}`}
-            type="text"
-            inputMode="numeric"
-            autoComplete="off"
-            placeholder="Ej. 50587074097"
-            aria-labelledby="ed-whatsapp"
-            aria-invalid={!whatsappOk}
-            aria-describedby="ed-whatsapp-ayuda"
-            value={borrador.whatsapp}
-            maxLength={15}
-            onChange={(e) => cambiar({ whatsapp: e.target.value.replace(/\D/g, '').slice(0, 15) })}
-          />
-          <p id="ed-whatsapp-ayuda" className={`editor-diseno-ayuda${whatsappOk ? '' : ' error'}`}>
-            {whatsappOk
-              ? 'Solo números, con código de país. Con 8 dígitos se usa el de Nicaragua (505). Vacío = sin botón.'
-              : 'Escribe entre 8 y 15 dígitos, solo números.'}
-          </p>
-          {puedeUsarTelefono && (
-            <button type="button" className="editor-diseno-enlace" onClick={() => cambiar({ whatsapp: telefonoDigitos.slice(0, 15) })}>
-              Usar el teléfono de mi negocio
-            </button>
-          )}
-        </section>
-
-        <section className="editor-diseno-bloque" aria-labelledby="ed-layout">
-          <h3 id="ed-layout">Productos y fotos como</h3>
-          <div className="editor-diseno-segmentos" role="radiogroup" aria-labelledby="ed-layout">
-            {LAYOUTS.map((l) => (
+              ) : <span className="editor-diseno-mover-hueco" aria-hidden="true" />}
               <button
-                key={l.id}
                 type="button"
-                role="radio"
-                aria-checked={borrador.layoutProductos === l.id}
-                className={borrador.layoutProductos === l.id ? 'activo' : ''}
-                onClick={() => cambiar({ layoutProductos: l.id })}
+                role="switch"
+                aria-checked={fila.visible}
+                aria-label={`Mostrar ${NOMBRE_SECCION[fila.id]}`}
+                className={`editor-diseno-interruptor${fila.visible ? ' activo' : ''}`}
+                onClick={() => alternar(fila.id)}
               >
-                {l.nombre}
+                <span />
               </button>
-            ))}
-          </div>
-        </section>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-        {aviso && (
-          <p className={`editor-diseno-aviso ${aviso.tipo}`} role={aviso.tipo === 'error' ? 'alert' : 'status'}>{aviso.texto}</p>
+      <section className="editor-diseno-bloque" aria-labelledby="ed-whatsapp">
+        <h3 id="ed-whatsapp">Botón de WhatsApp</h3>
+        <input
+          className={`editor-diseno-campo${whatsappOk ? '' : ' invalido'}`}
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          placeholder="Ej. 50587074097"
+          aria-labelledby="ed-whatsapp"
+          aria-invalid={!whatsappOk}
+          aria-describedby="ed-whatsapp-ayuda"
+          value={borrador.whatsapp}
+          maxLength={15}
+          onChange={(e) => cambiar({ whatsapp: e.target.value.replace(/\D/g, '').slice(0, 15) })}
+        />
+        <p id="ed-whatsapp-ayuda" className={`editor-diseno-ayuda${whatsappOk ? '' : ' error'}`}>
+          {whatsappOk
+            ? 'Solo números, con código de país. Con 8 dígitos se usa el de Nicaragua (505). Vacío = sin botón.'
+            : 'Escribe entre 8 y 15 dígitos, solo números.'}
+        </p>
+        {puedeUsarTelefono && (
+          <button type="button" className="editor-diseno-enlace" onClick={() => cambiar({ whatsapp: telefonoDigitos.slice(0, 15) })}>
+            Usar el teléfono de mi negocio
+          </button>
         )}
+      </section>
 
-        <div className="editor-diseno-acciones">
-          <button type="button" className="editor-diseno-deshacer" onClick={deshacer} disabled={!hayCambios || guardando}>
-            Deshacer
-          </button>
-          <button type="button" className="editor-diseno-guardar" onClick={guardar} disabled={!hayCambios || !whatsappOk || guardando}>
-            {guardando ? 'Guardando...' : 'Guardar'}
-          </button>
+      <section className="editor-diseno-bloque" aria-labelledby="ed-layout">
+        <h3 id="ed-layout">Productos y fotos como</h3>
+        <div className="editor-diseno-segmentos" role="radiogroup" aria-labelledby="ed-layout">
+          {LAYOUTS.map((l) => (
+            <button
+              key={l.id}
+              type="button"
+              role="radio"
+              aria-checked={borrador.layoutProductos === l.id}
+              className={borrador.layoutProductos === l.id ? 'activo' : ''}
+              onClick={() => cambiar({ layoutProductos: l.id })}
+            >
+              {l.nombre}
+            </button>
+          ))}
         </div>
+      </section>
+
+      {aviso && (
+        <p className={`editor-diseno-aviso ${aviso.tipo}`} role={aviso.tipo === 'error' ? 'alert' : 'status'}>{aviso.texto}</p>
+      )}
+
+      <div className="editor-diseno-acciones">
+        <button type="button" className="editor-diseno-deshacer" onClick={deshacer} disabled={!hayCambios || guardando}>
+          Deshacer
+        </button>
+        <button type="button" className="editor-diseno-guardar" onClick={guardar} disabled={!hayCambios || !whatsappOk || guardando}>
+          {guardando ? 'Guardando...' : 'Guardar'}
+        </button>
       </div>
-
-      <aside className="editor-diseno-vista" aria-label="Vista previa de la ficha">
-        <p className="editor-diseno-vista-titulo">Ficha que ve el turista</p>
-        <div className="editor-diseno-vista-marco">
-          <PerfilNegocioPublico
-            incrustado
-            vistaPrevia
-            negocio={{
-              id: negocio?.id,
-              name: negocio?.nombre,
-              categoria: negocio?.categoria,
-              descripcion: negocio?.descripcion,
-              telefono: negocio?.telefono,
-            }}
-            diseno={diseno}
-            logoUrl={negocio?.logoUrl}
-          />
-        </div>
-      </aside>
     </div>
   );
 }
