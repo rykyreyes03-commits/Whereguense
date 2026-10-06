@@ -104,6 +104,18 @@
   z-index: 1;
   padding: 0 22px 26px;
 }
+.detalle-evento-terminado {
+  display: inline-block;
+  margin: 0 8px 12px 0;
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  color: #8F1A1D;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 .detalle-evento-pastilla {
   display: inline-block;
   max-width: 100%;

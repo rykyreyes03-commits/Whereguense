@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { eventoDesdeActividad } from '../utils/eventos';
+import { eventoDesdeActividad, eventoTermino } from '../utils/eventos';
+import { useAhora } from './useAhora';
 
 // Eventos que ve el turista, con los nombres de campo que usan Eventos, DetalleEvento e Inicio:
 //   { id, nombre, fechaInicio, fechaFin, horaInicio, horaFin,
@@ -19,7 +20,16 @@ import { eventoDesdeActividad } from '../utils/eventos';
 // Los ids llevan prefijo porque las dos tablas tienen ids propios. Para guardar un favorito,
 // usar siempre este id (actividad-<id> o evento-<id>), nunca el número de la tabla.
 export function useEventosPublicos() {
-  const [eventos, setEventos] = useState([]);
+  const [todos, setTodos] = useState([]); // todo lo que llegó de la base
+  const ahora = useAhora();
+  // Lo que se muestra: solo lo que no terminó (fecha_fin + hora_fin, hora de Managua). La base ya no manda las actividades
+  // terminadas, pero el reloj sigue: una que termina con la pantalla abierta sale de las listas al minuto, sin recargar.
+  // La lista solo cambia de identidad cuando algo termina (o llega algo nuevo): cada minuto el filtro corre, pero si el
+  // resultado es el mismo las pantallas no recalculan.
+  const vigentes = todos.filter((e) => !eventoTermino(e, ahora));
+  const clave = vigentes.map((e) => e.id).join('|');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const eventos = useMemo(() => vigentes, [todos, clave]);
   const [cargando, setCargando] = useState(true);
 
   const recargar = useCallback(async () => {
@@ -83,7 +93,7 @@ export function useEventosPublicos() {
 
     const deNegocios = actividades.map((a) => eventoDesdeActividad(a, organizadores.get(a.negocio_id) || null));
 
-    setEventos(
+    setTodos(
       [...manuales, ...deNegocios].sort((x, y) => x.fechaInicio.localeCompare(y.fechaInicio))
     );
     setCargando(false);
@@ -93,5 +103,5 @@ export function useEventosPublicos() {
     recargar();
   }, [recargar]);
 
-  return { eventos, cargando, recargar };
+  return { eventos, todos, cargando, recargar };
 }

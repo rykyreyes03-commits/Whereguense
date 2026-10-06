@@ -3,7 +3,8 @@ import { ArrowLeft, Share2, Heart, CalendarDays, MapPin, Clock, Stamp } from 'lu
 import './DetalleEvento.css';
 import AvatarOrganizador from './AvatarOrganizador';
 import PerfilNegocioPublico from './PerfilNegocioPublico';
-import { textoCategoria, rangoCorto, rangoConAnio, rangoHoras, notaDiaSiguiente } from '../utils/eventos';
+import { textoCategoria, rangoCorto, rangoConAnio, rangoHoras, notaDiaSiguiente, eventoTermino } from '../utils/eventos';
+import { useAhora } from '../hooks/useAhora';
 import { compartirEvento } from '../utils/compartir';
 import { useGuardados } from '../hooks/useGuardados';
 
@@ -18,6 +19,7 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos', mod
   const [portadaFallida, setPortadaFallida] = useState(null);
   const [verPerfil, setVerPerfil] = useState(false);
   const [aviso, setAviso] = useState('');
+  const ahora = useAhora(); // si el evento termina con el detalle abierto, aparece "Ya terminó" sin recargar
   const temporizadorAviso = useRef(null);
   const { estaGuardado, toggleGuardar } = useGuardados(usuarioId);
 
@@ -42,6 +44,8 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos', mod
       lugar: evento.lugar || '',
       imagenUrl: evento.imagenUrl || null,
       categoria: evento.categoria || null,
+      horaInicio: evento.horaInicio || null, // con las horas guardadas se sabe cuándo termina (si no, al final del día)
+      horaFin: evento.horaFin || null,
       organizador: evento.organizador?.nombre || null,
     });
     if (!resultado.exito) mostrarAviso(resultado.mensaje);
@@ -68,6 +72,7 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos', mod
     );
   }
 
+  const terminado = eventoTermino(evento, ahora);
   const foto = evento.imagenUrl && portadaFallida !== evento.imagenUrl ? evento.imagenUrl : null;
   // La pastilla dorada lleva solo la categoría (con el texto de "Otro"), nunca el lugar: el lugar ya tiene su recuadro.
   const pastilla = textoCategoria(evento.categoria, evento.categoriaOtro) || '';
@@ -125,6 +130,7 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos', mod
         )}
 
         <div className="detalle-evento-hero-texto">
+          {terminado && <span className="detalle-evento-terminado">Ya terminó</span>}
           {pastilla && <span className="detalle-evento-pastilla">{pastilla}</span>}
           <h1>{evento.nombre}</h1>
           {subtitulo && <p className="detalle-evento-subtitulo">{subtitulo}</p>}
@@ -160,7 +166,7 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos', mod
                   </span>
                 )}
               </div>
-              {!modoDuenio && (
+              {!modoDuenio && organizador.id != null && (
                 <button type="button" className="detalle-evento-perfil" onClick={() => setVerPerfil(true)}>
                   Ver perfil
                 </button>
@@ -191,7 +197,7 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos', mod
           </section>
         )}
 
-        {evento.tieneSello && (
+        {evento.tieneSello && !terminado && (
           <section className="detalle-evento-tarjeta detalle-evento-sello">
             <Stamp size={22} strokeWidth={1.8} aria-hidden="true" />
             <p>Esta actividad entrega un sello: escanea el QR en el negocio.</p>

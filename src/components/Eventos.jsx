@@ -4,7 +4,8 @@ import './Eventos.css';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
 import TarjetaEvento from './TarjetaEvento';
-import { CATEGORIAS, etiquetaCategoria, hoyISO, sumarDias } from '../utils/eventos';
+import { CATEGORIAS, etiquetaCategoria, hoyManagua, eventoTermino, diaDeFin, sumarDias } from '../utils/eventos';
+import { useAhora } from '../hooks/useAhora';
 
 // Para buscar sin que importen mayúsculas ni tildes.
 function plano(texto) {
@@ -48,12 +49,14 @@ function Eventos({ eventos, cargando, onRecargar, onNavigate, onSeleccionarEvent
     onRecargar?.();
   }, [onRecargar]);
 
-  const hoy = hoyISO();
+  // Cada minuto se vuelve a evaluar qué terminó: lo terminado no aparece en la lista, ni en la búsqueda, ni en los filtros.
+  const ahora = useAhora();
+  const hoy = hoyManagua(ahora);
   const agenda = useMemo(
     () => eventos
-      .filter((e) => hoy <= e.fechaFin)
+      .filter((e) => !eventoTermino(e, ahora))
       .sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio)),
-    [eventos, hoy]
+    [eventos, ahora]
   );
 
   // Categorías que realmente tienen eventos, en el orden de siempre.
@@ -67,8 +70,8 @@ function Eventos({ eventos, cargando, onRecargar, onNavigate, onSeleccionarEvent
     : 'todos';
 
   const visibles = agenda.filter((e) => {
-    if (filtroActivo === 'hoy' && !(e.fechaInicio <= hoy && hoy <= e.fechaFin)) return false;
-    if (filtroActivo === 'semana' && !(e.fechaInicio <= sumarDias(hoy, 6) && e.fechaFin >= hoy)) return false;
+    if (filtroActivo === 'hoy' && !(e.fechaInicio <= hoy && hoy <= diaDeFin(e))) return false;
+    if (filtroActivo === 'semana' && !(e.fechaInicio <= sumarDias(hoy, 6) && diaDeFin(e) >= hoy)) return false;
     if (filtroActivo !== 'todos' && filtroActivo !== 'hoy' && filtroActivo !== 'semana' && e.categoria !== filtroActivo) return false;
     return coincideBusqueda(e, busqueda);
   });

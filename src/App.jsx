@@ -46,6 +46,7 @@ import { useEventosPublicos } from './hooks/useEventosPublicos';
 import { useAvatarPersonalizado } from './hooks/useAvatarPersonalizado';
 import { supabase } from './lib/supabaseClient';
 import { aPersonajeDB, aPersonajeLocal } from './utils/avatarPersonaje';
+import { hoyManagua, diaDeFin, eventoDesdeGuardado } from './utils/eventos';
 import L from 'leaflet';
 
 function pantallaInicial() {
@@ -70,7 +71,11 @@ function App() {
   const [eventoActivoId, setEventoActivoId] = useState(null);
   // Desde dónde se abrió el detalle de un evento: "Volver" regresa ahí.
   const [origenDetalleEvento, setOrigenDetalleEvento] = useState('eventos');
+  // Un favorito que ya terminó y la base ya no devuelve se abre con lo que se guardó (eventoDesdeGuardado).
+  const [eventoGuardado, setEventoGuardado] = useState(null);
   const seleccionarEvento = (id) => {
+    // Se guarda una copia del evento al abrirlo: si termina con el detalle abierto y la base ya no lo devuelve, se sigue viendo ("Ya terminó").
+    setEventoGuardado(todosLosEventos.find((e) => e.id === id) || null);
     setEventoActivoId(id);
     setOrigenDetalleEvento('eventos');
   };
@@ -109,7 +114,7 @@ function App() {
     reenviarSolicitudSello,
     eliminarActividadQR,
   } = useNegocio(usuarioActual?.id);
-  const { eventos, cargando: cargandoEventos, recargar: recargarEventos } = useEventosPublicos();
+  const { eventos, todos: todosLosEventos, cargando: cargandoEventos, recargar: recargarEventos } = useEventosPublicos();
   const {
     desbloqueados,
     seleccion,
@@ -600,9 +605,9 @@ function App() {
   }
 
   if (pantalla === 'inicio') {
-    const hoy = new Date().toISOString().slice(0, 10);
+    const hoy = hoyManagua(); // la fecha de Managua (con toISOString era la UTC: de noche ya era "mañana")
     const eventoVigente = eventos
-      .filter(e => e.fechaInicio <= hoy && hoy <= e.fechaFin)
+      .filter(e => e.fechaInicio <= hoy && hoy <= diaDeFin(e))
       .sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio))[0];
     return (
       <Inicio
@@ -655,7 +660,8 @@ function App() {
         usuarioId={usuarioActual?.id}
         eventos={eventos}
         onVerSitio={irAlMapaConSitio}
-        onVerEvento={(id) => {
+        onVerEvento={(id, datosGuardados) => {
+          setEventoGuardado(datosGuardados ? eventoDesdeGuardado(id, datosGuardados) : (todosLosEventos.find((e) => e.id === id) || null));
           setEventoActivoId(id);
           setOrigenDetalleEvento('guardados');
           cambiarPantalla('detalleEvento');
@@ -728,7 +734,11 @@ function App() {
   }
 
   if (pantalla === 'detalleEvento') {
-    const evento = eventos.find(e => e.id === eventoActivoId);
+    const vivo = todosLosEventos.find(e => e.id === eventoActivoId);
+    // Lo guardado manda si es un favorito terminado; si no, el evento al día y, si ya no llega de la base, la copia de cuando se abrió.
+    const evento = eventoGuardado && eventoGuardado.id === eventoActivoId && (eventoGuardado.desdeGuardado || !vivo)
+      ? eventoGuardado
+      : vivo;
     return (
       <DetalleEvento
         evento={evento}

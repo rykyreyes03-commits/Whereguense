@@ -81,3 +81,23 @@
   .miscupones-wrapper { max-width: 700px; }
   .miscupones-contenido { padding: 32px 40px 0; }
 }
+
+/* "Vencidos y usados": plegado debajo de la lista principal */
+.miscupones-otros { margin-top: 20px; border-top: 1px solid var(--color-border); padding-top: 4px; }
+.miscupones-otros-toggle {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.miscupones-otros-toggle .girada { transform: rotate(180deg); }
+.miscupones-otros-toggle:focus-visible { outline: 2px solid var(--color-turquoise); outline-offset: 2px; border-radius: var(--radius-sm); }
+.miscupones-otros .miscupones-lista { margin-top: 8px; }

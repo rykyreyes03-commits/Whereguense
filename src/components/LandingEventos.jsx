@@ -2,25 +2,16 @@ import { useState } from 'react';
 import './LandingEventos.css';
 import LandingNavbar from './LandingNavbar';
 import { useEventosPublicos } from '../hooks/useEventosPublicos';
+import { diaDeFin, hoyManagua, sumarDias } from '../utils/eventos';
 
-function inicioDeHoy() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-function finDeSemana() {
-  const d = inicioDeHoy();
-  d.setDate(d.getDate() + 6);
-  d.setHours(23, 59, 59, 999);
-  return d;
-}
-function inicioDeMes() {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1);
-}
-function finDeMes() {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
+// Rango de días 'YYYY-MM-DD' de la vista, a partir de la fecha de Managua (la misma que usa Eventos), no la del teléfono.
+function rangoDeVista(vista) {
+  const hoy = hoyManagua();
+  if (vista === 'semana') return [hoy, sumarDias(hoy, 6)];
+  const [y, m] = hoy.split('-').map(Number);
+  const ultimo = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const mes = `${y}-${String(m).padStart(2, '0')}`;
+  return [`${mes}-01`, `${mes}-${String(ultimo).padStart(2, '0')}`];
 }
 // Fechas 'YYYY-MM-DD' como día local: new Date('2026-10-05') es medianoche UTC,
 // que en Nicaragua (UTC-6) cae el día anterior.
@@ -28,9 +19,8 @@ function fechaLocal(fechaISO) {
   return new Date(`${fechaISO}T00:00:00`);
 }
 function seSuperponen(evento, inicioRango, finRango) {
-  const ei = fechaLocal(evento.fechaInicio);
-  const ef = fechaLocal(evento.fechaFin);
-  return ei <= finRango && ef >= inicioRango;
+  // una nocturna que termina de madrugada llega hasta el día siguiente: se usa su último día real
+  return evento.fechaInicio <= finRango && (diaDeFin(evento) || evento.fechaFin) >= inicioRango;
 }
 function formatearRango(fechaInicio, fechaFin) {
   const opciones = { day: 'numeric', month: 'long' };
@@ -45,8 +35,7 @@ function LandingEventos({ onNavigate, onComenzar }) {
   const { eventos, cargando } = useEventosPublicos();
   const [vista, setVista] = useState('semana'); // 'semana' | 'mes'
 
-  const inicioRango = vista === 'semana' ? inicioDeHoy() : inicioDeMes();
-  const finRango = vista === 'semana' ? finDeSemana() : finDeMes();
+  const [inicioRango, finRango] = rangoDeVista(vista);
   const eventosFiltrados = eventos.filter((e) => seSuperponen(e, inicioRango, finRango));
 
   return (

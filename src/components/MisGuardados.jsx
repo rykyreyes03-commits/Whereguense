@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import TopBar from './TopBar';
 import { useGuardados } from '../hooks/useGuardados';
-import { hoyISO, rangoLargo } from '../utils/eventos';
+import { rangoLargo, eventoTermino } from '../utils/eventos';
+import { useAhora } from '../hooks/useAhora';
 import './MisGuardados.css';
 
 const PESTANAS = [
@@ -35,6 +36,7 @@ const MENSAJE_VACIO = {
 // que se guardaron, marcado como "Ya no está en la agenda".
 function MisGuardados({ usuarioId, eventos = [], onVerSitio, onVerEvento, onVolver }) {
   const { guardados, cargando } = useGuardados(usuarioId);
+  const ahora = useAhora();
   const [pestanaActiva, setPestanaActiva] = useState('todos');
   const [avisoId, setAvisoId] = useState(null); // evento sin detalle del que se mostró el aviso
 
@@ -47,13 +49,14 @@ function MisGuardados({ usuarioId, eventos = [], onVerSitio, onVerEvento, onVolv
       onVerSitio?.(Number(item.referencia_id));
     }
     if (item.tipo === 'evento') {
-      if (eventos.some((e) => e.id === item.referencia_id)) onVerEvento?.(item.referencia_id);
+      const vivo = eventos.find((e) => e.id === item.referencia_id);
+      if (vivo && !eventoTermino(vivo, ahora)) onVerEvento?.(item.referencia_id);
+      else if (eventoTermino(vivo || item.datos || {}, ahora) && item.datos) onVerEvento?.(item.referencia_id, item.datos); // terminó: detalle con lo guardado
       else setAvisoId(avisoId === item.referencia_id ? null : item.referencia_id);
     }
     // Los demas tipos (ruta, negocio, ubicacion) se conectan en pasos siguientes.
   };
 
-  const hoy = hoyISO();
 
   return (
     <div className="guardados-wrapper">
@@ -84,8 +87,8 @@ function MisGuardados({ usuarioId, eventos = [], onVerSitio, onVerEvento, onVolv
                 // Datos al día si el evento sigue en la agenda; si no, los que se guardaron.
                 const vivo = eventos.find((e) => e.id === item.referencia_id);
                 const info = vivo || item.datos || {};
-                const terminado = Boolean(info.fechaFin) && info.fechaFin < hoy;
-                const fuera = !vivo;
+                const terminado = eventoTermino(info, ahora);
+                const fuera = !vivo || terminado;
                 return (
                   <li key={`${item.tipo}-${item.referencia_id}`}>
                     <button
