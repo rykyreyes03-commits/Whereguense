@@ -204,6 +204,100 @@ export function rutaFotoDeUrl(url) {
   return m ? m[1] : null;
 }
 
+// ---------------------------------------------------------------------------------------------------------------
+// Cuándo termina una actividad. REGLA ÚNICA (la misma que fin_de_actividad() en la base, migración 031):
+// termina en fecha_fin + hora_fin, hora de Managua (UTC-6 todo el año; Nicaragua no usa horario de verano). Si
+// hora_fin es menor que hora_inicio termina al día siguiente (actividad nocturna). Sin hora, termina al final del día
+// (a las 00:00 del día siguiente). Está terminada cuando "ahora" >= ese instante. No depende de la zona del teléfono.
+// ---------------------------------------------------------------------------------------------------------------
+const DESFASE_MANAGUA_H = 6;
+const DIA_MS = 24 * 60 * 60 * 1000;
+
+// 'HH:MM[:SS[.fff]]' -> segundos desde medianoche; null si no es una hora válida (formato estricto, como una columna time).
+function segundosDe(hora) {
+  if (!hora) return null;
+  const m = /^(\d{1,2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?$/.exec(String(hora).trim());
+  if (!m) return null;
+  const [h, mi, s] = [Number(m[1]), Number(m[2]), Number(m[3] || 0)];
+  return h <= 24 && mi < 60 && s < 60 ? h * 3600 + mi * 60 + s : null;
+}
+
+// Instante (ms desde 1970) en que termina la actividad o el evento, o null si no tiene fecha de fin.
+// Acepta los nombres del front (fechaFin, horaInicio, horaFin) y los de la base (fecha_fin, hora_inicio, hora_fin).
+export function finDeEvento(e) {
+  const fechaFin = e?.fechaFin ?? e?.fecha_fin;
+  if (!fechaFin) return null;
+  const f = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(fechaFin));
+  if (!f) return null;
+  const [y, m, d] = [Number(f[1]), Number(f[2]), Number(f[3])];
+  if (y < 1000 || m < 1 || m > 12 || d < 1 || d > 31) return null;
+  const inicio = segundosDe(e.horaInicio ?? e.hora_inicio);
+  const fin = segundosDe(e.horaFin ?? e.hora_fin);
+  if (fin === null) return Date.UTC(y, m - 1, d + 1, DESFASE_MANAGUA_H, 0, 0); // sin hora: al final del día
+  const cruzaMedianoche = inicio !== null && fin < inicio;
+  return Date.UTC(y, m - 1, d, DESFASE_MANAGUA_H, 0, fin) + (cruzaMedianoche ? DIA_MS : 0);
+}
+
+// ¿Ya terminó? Sin fecha de fin no se puede saber: se considera que no.
+export function eventoTermino(e, ahora = Date.now()) {
+  const fin = finDeEvento(e);
+  return fin !== null && ahora >= fin;
+}
+
+// 'YYYY-MM-DD' de hoy en Managua (UTC-6), sin importar la zona del teléfono ni si ya es "mañana" en UTC.
+export function hoyManagua(ahora = Date.now()) {
+  return new Date(ahora - DESFASE_MANAGUA_H * 3600 * 1000).toISOString().slice(0, 10);
+}
+
+// 'YYYY-MM-DD' del último día en que el evento está "en curso" en Managua: una actividad nocturna de 7 PM a 2 AM con
+// fecha_fin el 18 sigue en curso el 19 hasta las 2 AM, así que su último día es el 19. Sirve para los filtros por día
+// ("Hoy", "Esta semana"). Sin fecha de fin, null.
+export function diaDeFin(e) {
+  const fin = finDeEvento(e);
+  return fin === null ? null : hoyManagua(fin - 1);
+}
+
+// El evento que se arma con lo que se guardó al marcarlo como favorito (guardado.datos). Se usa cuando el evento ya
+// terminó y la base ya no lo devuelve: muestra lo guardado (nombre, fechas, horas, lugar, foto, categoría y organizador)
+// y nada más: sin descripción, detalles, etiquetas ni perfil del negocio.
+export function eventoDesdeGuardado(id, datos = {}) {
+  return {
+    id,
+    nombre: datos.nombre || 'Sin nombre',
+    fechaInicio: datos.fechaInicio || null,
+    fechaFin: datos.fechaFin || null,
+    horaInicio: datos.horaInicio || null,
+    horaFin: datos.horaFin || null,
+    lugar: datos.lugar || '',
+    ubicacion: datos.lugar || '',
+    descripcion: '',
+    detalles: '',
+    eslogan: '',
+    categoria: datos.categoria || null,
+    categoriaOtro: null,
+    etiquetas: [],
+    sitioRelacionado: null,
+    imagenUrl: datos.imagenUrl || null,
+    negocioId: null,
+    organizador: datos.organizador ? { nombre: datos.organizador } : null, // sin id: no hay "Ver perfil"
+    tieneSello: false,
+    desdeGuardado: true,
+  };
+}
+
+// Un cupón vence en su fecha_expiracion (instante exacto, igual que usar_cupon y obtener_cupon en la base).
+export function cuponVencido(cupon, ahora = Date.now()) {
+  return Boolean(cupon?.fecha_expiracion) && instanteDe(cupon.fecha_expiracion) < ahora;
+}
+
+// Instante (ms) de una fecha con hora de la base. Acepta ISO ('2026-10-10T05:59:59+00:00') y el formato de Postgres
+// ('2026-10-10 05:59:59+00'), que algunos WebView no leen tal cual. Si no se entiende da NaN (y NaN no es "vencido":
+// la base manda al usar el cupón).
+export function instanteDe(valor) {
+  const texto = String(valor).trim().replace(' ', 'T').replace(/([+-]\d{2})$/, '$1:00');
+  return Date.parse(texto);
+}
+
 export function inicialDe(nombre) {
   return String(nombre || '').trim().charAt(0).toUpperCase() || '?';
 }
