@@ -114,10 +114,10 @@ export function useAdmin() {
       console.error('Error eliminando reseña:', error);
       return { exito: false, mensaje: 'No se pudo eliminar. Intenta de nuevo.' };
     }
-    if (data.exito) {
+    if (data?.exito) {
       setResenas((prev) => prev.filter((r) => r.id !== resenaId));
     }
-    return data;
+    return data ?? { exito: false, mensaje: 'No se pudo eliminar. Intenta de nuevo.' };
   }, []);
 
   const aprobar = useCallback(async (negocioId) => {

@@ -15,7 +15,8 @@ function FormularioResena({ miResena, nombreNegocio, onGuardar, onCerrar }) {
   const [comentario, setComentario] = useState(miResena?.comentario || '');
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
-  const largo = comentario.trim().length;
+  // Como el servidor (char_length): por caracteres, no por unidades UTF-16 (un emoji cuenta 1).
+  const largo = [...comentario.trim()].length;
   const completa = calificacion >= 1 && largo >= MIN;
 
   const enviar = async () => {
@@ -54,7 +55,7 @@ function FormularioResena({ miResena, nombreNegocio, onGuardar, onCerrar }) {
             aria-describedby="resenas-comentario-ayuda"
           />
           <small id="resenas-comentario-ayuda">
-            {largo < MIN ? `Escribe al menos ${MIN} caracteres (${largo} de ${MIN}).` : `${comentario.length} de ${MAX}.`}
+            {largo < MIN ? `Escribe al menos ${MIN} caracteres (${largo} de ${MIN}).` : `${[...comentario].length} de ${MAX}.`}
           </small>
         </label>
         {error && <p className="resenas-error" role="alert">{error}</p>}

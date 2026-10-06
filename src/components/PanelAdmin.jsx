@@ -57,7 +57,9 @@ function PanelAdmin({ onVolver, usuarioId }) {
 
   const negociosConResenas = [...new Map(resenas.map((r) => [r.negocioId, { id: r.negocioId, nombre: r.negocio }])).values()]
     .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
-  const resenasVisibles = filtroNegocio === 'todos' ? resenas : resenas.filter((r) => String(r.negocioId) === filtroNegocio);
+  // Si el negocio filtrado se quedó sin reseñas (se eliminó la última), vuelve a "todos".
+  const filtroVigente = negociosConResenas.some((n) => String(n.id) === filtroNegocio) ? filtroNegocio : 'todos';
+  const resenasVisibles = filtroVigente === 'todos' ? resenas : resenas.filter((r) => String(r.negocioId) === filtroVigente);
 
   return (
     <div className="panelAdmin-wrapper">
@@ -195,7 +197,7 @@ function PanelAdmin({ onVolver, usuarioId }) {
         {resenas.length > 0 && (
           <label className="panelAdmin-filtro">
             <span>Negocio</span>
-            <select value={filtroNegocio} onChange={(e) => setFiltroNegocio(e.target.value)}>
+            <select value={filtroVigente} onChange={(e) => setFiltroNegocio(e.target.value)}>
               <option value="todos">Todos los negocios</option>
               {negociosConResenas.map((n) => (
                 <option key={n.id} value={String(n.id)}>{n.nombre}</option>

@@ -11,6 +11,7 @@ const FILAS = [['cinco', 5], ['cuatro', 4], ['tres', 3], ['dos', 2], ['uno', 1]]
 function PanelResenasNegocio({ negocioId }) {
   const { resumen, resenas, cargando, error, responder } = useResenas(negocioId);
 
+  if (negocioId == null) return null;
   if (cargando) return <section className="perfilnegocio-card"><p className="resenas-vacio">Cargando reseñas…</p></section>;
   if (error) return <section className="perfilnegocio-card"><p className="resenas-error" role="alert">{error}</p></section>;
 
