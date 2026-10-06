@@ -65,6 +65,8 @@ function EnfocarSitio({ sitios, sitioEnfocadoId, onEnfocar }) {
 
     map.flyTo(sitio.position, 17);
     onEnfocar(sitio);
+    // Solo reacciona a un sitio nuevo enfocado; map, sitios y onEnfocar cambian en cada render y no deben volver a volar.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sitioEnfocadoId]);
 
   return null;

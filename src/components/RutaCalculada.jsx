@@ -56,6 +56,8 @@ function RutaCalculada({ puntos, modo = 'foot', colorLinea = '#1a3c8f', onRutaCa
       cancelado = true;
       map.removeLayer(capa);
     };
+  // onError y onRutaCalculada cambian en cada render del padre: incluirlas volvería a pedir la ruta sin parar.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, puntos, modo, colorLinea]);
 
   return null;

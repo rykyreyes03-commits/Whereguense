@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Landing from './components/Landing';
-import LandingNavbar from './components/LandingNavbar';
 import LandingEventos from './components/LandingEventos';
 import LandingMapas from './components/LandingMapas';
 import LandingRutaDetalle from './components/LandingRutaDetalle';
@@ -227,7 +226,6 @@ function App() {
     let activo = true;
     // Marca de "sincronizando con Supabase Auth"; el resto de setState de este
     // efecto ocurre dentro del callback async.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCargandoUsuario(true);
 
     (async () => {

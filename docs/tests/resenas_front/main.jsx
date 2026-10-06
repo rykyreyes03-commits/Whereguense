@@ -10,6 +10,7 @@ import LineaResenas from '/src/components/LineaResenas.jsx';
 const vista = new URLSearchParams(window.location.search).get('vista');
 const negocio = { id: 1, name: 'Café Colibrí', categoria: 'Cafetería', descripcion: 'Café de altura en el centro de León.', telefono: '8888-0000' };
 
+// eslint-disable-next-line react-refresh/only-export-components
 function Pantalla() {
   if (vista === 'publico') return <PerfilNegocioPublico negocio={negocio} onCerrar={() => {}} />;
   if (vista === 'vistaPrevia') return <PerfilNegocioPublico negocio={negocio} onCerrar={() => {}} vistaPrevia />;
