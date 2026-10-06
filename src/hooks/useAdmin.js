@@ -22,10 +22,26 @@ function mapearSolicitudSello(fila) {
     limiteCanjes: fila.limite_canjes,
     fechaInicio: fila.fecha_inicio,
     fechaFin: fila.fecha_fin,
+    horaInicio: fila.hora_inicio,
+    horaFin: fila.hora_fin,
     justificacion: fila.justificacion_sello,
     fechaCreacion: fila.fecha_creacion,
     negocio: fila.negocio?.nombre_negocio || 'Negocio sin nombre',
     duenioId: fila.negocio?.usuario_id || null,
+  };
+}
+
+function mapearResenaAdmin(f) {
+  return {
+    id: f.id,
+    negocioId: f.negocio_id,
+    negocio: f.negocio,
+    autor: f.autor,
+    calificacion: f.calificacion,
+    comentario: f.comentario,
+    fecha: f.fecha,
+    respuesta: f.respuesta,
+    fechaRespuesta: f.fecha_respuesta,
   };
 }
 
@@ -34,6 +50,8 @@ export function useAdmin() {
   const [cargando, setCargando] = useState(true);
   const [solicitudesSello, setSolicitudesSello] = useState([]);
   const [cargandoSellos, setCargandoSellos] = useState(true);
+  const [resenas, setResenas] = useState([]);
+  const [cargandoResenas, setCargandoResenas] = useState(true);
 
   const cargarPendientes = useCallback(async () => {
     setCargando(true);
@@ -58,7 +76,7 @@ export function useAdmin() {
     setCargandoSellos(true);
     const { data, error } = await supabase
       .from('actividad_negocio')
-      .select('id, nombre, descripcion, foto_url, limite_canjes, fecha_inicio, fecha_fin, justificacion_sello, fecha_creacion, negocio:negocio_id (nombre_negocio, usuario_id)')
+      .select('id, nombre, descripcion, foto_url, limite_canjes, fecha_inicio, fecha_fin, hora_inicio, hora_fin, justificacion_sello, fecha_creacion, negocio:negocio_id (nombre_negocio, usuario_id)')
       .eq('estado_sello', 'pendiente')
       .order('fecha_creacion');
 
@@ -71,10 +89,36 @@ export function useAdmin() {
     setSolicitudesSello((data || []).map(mapearSolicitudSello));
   }, []);
 
+  // Todas las reseñas, también las de negocios con la suscripción vencida (admin_resenas, 032).
+  const cargarResenas = useCallback(async () => {
+    setCargandoResenas(true);
+    const { data, error } = await supabase.rpc('admin_resenas');
+    setCargandoResenas(false);
+    if (error) {
+      console.error('Error cargando reseñas:', error);
+      setResenas([]);
+      return;
+    }
+    setResenas((data || []).map(mapearResenaAdmin));
+  }, []);
+
   useEffect(() => {
     cargarPendientes();
     cargarSolicitudesSello();
-  }, [cargarPendientes, cargarSolicitudesSello]);
+    cargarResenas();
+  }, [cargarPendientes, cargarSolicitudesSello, cargarResenas]);
+
+  const borrarResena = useCallback(async (resenaId) => {
+    const { data, error } = await supabase.rpc('admin_borrar_resena', { p_resena_id: resenaId });
+    if (error) {
+      console.error('Error eliminando reseña:', error);
+      return { exito: false, mensaje: 'No se pudo eliminar. Intenta de nuevo.' };
+    }
+    if (data.exito) {
+      setResenas((prev) => prev.filter((r) => r.id !== resenaId));
+    }
+    return data;
+  }, []);
 
   const aprobar = useCallback(async (negocioId) => {
     const { data, error } = await supabase.rpc('admin_aprobar_negocio', { p_negocio_id: negocioId });
@@ -139,5 +183,8 @@ export function useAdmin() {
     cargandoSellos,
     aprobarSello,
     rechazarSello,
+    resenas,
+    cargandoResenas,
+    borrarResena,
   };
 }

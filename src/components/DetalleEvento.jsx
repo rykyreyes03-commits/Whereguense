@@ -3,6 +3,7 @@ import { ArrowLeft, Share2, Heart, CalendarDays, MapPin, Clock, Stamp } from 'lu
 import './DetalleEvento.css';
 import AvatarOrganizador from './AvatarOrganizador';
 import PerfilNegocioPublico from './PerfilNegocioPublico';
+import LineaResenas from './LineaResenas';
 import { textoCategoria, rangoCorto, rangoConAnio, rangoHoras, notaDiaSiguiente, eventoTermino } from '../utils/eventos';
 import { useAhora } from '../hooks/useAhora';
 import { compartirEvento } from '../utils/compartir';
@@ -165,6 +166,7 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos', mod
                     <i aria-hidden="true" /> Organizador verificado
                   </span>
                 )}
+                {organizador.id != null && <LineaResenas negocioId={organizador.id} />}
               </div>
               {!modoDuenio && organizador.id != null && (
                 <button type="button" className="detalle-evento-perfil" onClick={() => setVerPerfil(true)}>

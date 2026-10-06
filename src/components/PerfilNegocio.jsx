@@ -8,6 +8,8 @@ import EstadoNegocio from './EstadoNegocio';
 import GenerarQR from './GenerarQR';
 import BottomNavNegocio from './BottomNavNegocio';
 import CampoOtro from './CampoOtro';
+import PanelResenasNegocio from './PanelResenasNegocio';
+import LineaResenas from './LineaResenas';
 import { OPCIONES_CATEGORIA_NEGOCIO, OTRO_NEGOCIO, separarCategoriaNegocio, unirCategoriaNegocio } from '../utils/categoriasNegocio';
 
 const NOMBRES_DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -286,6 +288,7 @@ function PerfilNegocio({
               telefono: negocio?.telefono,
             }}
             onCerrar={() => setViendoComoTurista(false)}
+            vistaPrevia
           />
           <button
             type="button"
@@ -306,10 +309,15 @@ function PerfilNegocio({
               <p className="perfilnegocio-saludo-texto">Esto es lo que puedes hacer hoy en tu panel.</p>
             </section>
 
-            {/* Aquí irá el resumen de reseñas ("★ 4.6 · 12 reseñas"), como una tarjeta más
-                entre el saludo y los accesos rápidos. */}
-
             <div className="perfilnegocio-accesos">
+              <button type="button" className="perfilnegocio-acceso" onClick={() => setPestana('resenas')}>
+                <span className="perfilnegocio-acceso-icono" aria-hidden="true"><Star size={22} strokeWidth={1.8} /></span>
+                <span className="perfilnegocio-acceso-texto">
+                  <strong>Reseñas</strong>
+                  <LineaResenas negocioId={negocio?.id} />
+                </span>
+                <ChevronRight size={18} strokeWidth={2} aria-hidden="true" className="perfilnegocio-acceso-chevron" />
+              </button>
               <button type="button" className="perfilnegocio-acceso" onClick={() => setPestana('negocio')}>
                 <span className="perfilnegocio-acceso-icono" aria-hidden="true"><Store size={22} strokeWidth={1.8} /></span>
                 <span className="perfilnegocio-acceso-texto">
@@ -610,12 +618,7 @@ function PerfilNegocio({
           />
         )}
 
-        {pestana === 'resenas' && (
-          <section className="perfilnegocio-card perfilnegocio-empty">
-            <span className="perfilnegocio-empty-icono" aria-hidden="true"><Star size={28} strokeWidth={1.8} /></span>
-            <p>Las reseñas de tus clientes van a aparecer aquí pronto.</p>
-          </section>
-        )}
+        {pestana === 'resenas' && <PanelResenasNegocio negocioId={negocio?.id} />}
 
         {pestana === 'diseno' && (
           <section className="perfilnegocio-card perfilnegocio-empty">

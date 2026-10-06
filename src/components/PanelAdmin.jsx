@@ -1,8 +1,14 @@
 import { useState } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, X, Trash2 } from 'lucide-react';
 import './PanelAdmin.css';
 import TopBar from './TopBar';
+import DialogoConfirmacion from './DialogoConfirmacion';
+import { EstrellasValor } from './Estrellas';
+import { fechaCorta } from '../utils/resenas';
 import { useAdmin } from '../hooks/useAdmin';
+import { useAhora } from '../hooks/useAhora';
+import { eventoTermino } from '../utils/eventos';
+import './ListaResenas.css';
 
 function formatearFecha(fechaISO) {
   return new Date(`${fechaISO}T00:00:00`).toLocaleDateString('es-NI', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -20,7 +26,15 @@ function PanelAdmin({ onVolver, usuarioId }) {
     cargandoSellos,
     aprobarSello,
     rechazarSello,
+    resenas,
+    cargandoResenas,
+    borrarResena,
   } = useAdmin();
+  const ahora = useAhora();
+  const [filtroNegocio, setFiltroNegocio] = useState('todos');
+  const [porEliminar, setPorEliminar] = useState(null);
+  const [eliminando, setEliminando] = useState(false);
+  const [errorEliminar, setErrorEliminar] = useState('');
   // Claves 'negocio-<id>' y 'sello-<id>': los ids de negocio y actividad pueden coincidir.
   const [motivoPorId, setMotivoPorId] = useState({});
   const [procesando, setProcesando] = useState(null);
@@ -40,6 +54,10 @@ function PanelAdmin({ onVolver, usuarioId }) {
     }
     ejecutar(clave, () => accion(motivo));
   };
+
+  const negociosConResenas = [...new Map(resenas.map((r) => [r.negocioId, { id: r.negocioId, nombre: r.negocio }])).values()]
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  const resenasVisibles = filtroNegocio === 'todos' ? resenas : resenas.filter((r) => String(r.negocioId) === filtroNegocio);
 
   return (
     <div className="panelAdmin-wrapper">
@@ -102,12 +120,15 @@ function PanelAdmin({ onVolver, usuarioId }) {
         {solicitudesSello.map((s) => {
           const clave = `sello-${s.id}`;
           const esPropio = Boolean(usuarioId) && s.duenioId === usuarioId;
+          // Misma regla que la base (033): una actividad que ya terminó no recibe QR; solo se puede rechazar.
+          const terminada = eventoTermino({ fechaFin: s.fechaFin, horaInicio: s.horaInicio, horaFin: s.horaFin }, ahora);
           return (
             <div key={clave} className="panelAdmin-card">
               {s.fotoUrl && (
                 <img className="panelAdmin-foto" src={s.fotoUrl} alt={`Foto de ${s.nombre}`} loading="lazy" />
               )}
               <h2>{s.nombre}</h2>
+              {terminada && <p className="panelAdmin-terminada">Ya terminó</p>}
               <p className="panelAdmin-detalle">{s.negocio}</p>
               <p className="panelAdmin-detalle">
                 {s.fechaInicio
@@ -133,13 +154,16 @@ function PanelAdmin({ onVolver, usuarioId }) {
               <button
                 className="panelAdmin-btn panelAdmin-btn-aprobar"
                 onClick={() => ejecutar(clave, () => aprobarSello(s.id))}
-                disabled={procesando === clave || esPropio}
+                disabled={procesando === clave || esPropio || terminada}
                 type="button"
               >
                 <Check size={16} strokeWidth={2.6} aria-hidden="true" /> Aprobar
               </button>
               {esPropio && (
                 <p className="panelAdmin-aviso">No puedes aprobar el sello de tu propio negocio.</p>
+              )}
+              {terminada && (
+                <p className="panelAdmin-aviso">Esta actividad ya terminó: su sello nacería vencido. Puedes rechazar la solicitud.</p>
               )}
 
               <textarea
@@ -159,7 +183,71 @@ function PanelAdmin({ onVolver, usuarioId }) {
             </div>
           );
         })}
+
+        <h2 className="panelAdmin-seccion">Reseñas</h2>
+
+        {cargandoResenas && <p className="panelAdmin-estado">Cargando reseñas…</p>}
+
+        {!cargandoResenas && resenas.length === 0 && (
+          <p className="panelAdmin-estado">Aún no hay reseñas.</p>
+        )}
+
+        {resenas.length > 0 && (
+          <label className="panelAdmin-filtro">
+            <span>Negocio</span>
+            <select value={filtroNegocio} onChange={(e) => setFiltroNegocio(e.target.value)}>
+              <option value="todos">Todos los negocios</option>
+              {negociosConResenas.map((n) => (
+                <option key={n.id} value={String(n.id)}>{n.nombre}</option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {resenasVisibles.map((r) => (
+          <div key={`resena-${r.id}`} className="panelAdmin-card">
+            <h2>{r.negocio}</h2>
+            <p className="panelAdmin-detalle">
+              <EstrellasValor valor={r.calificacion} /> · {r.autor} · {fechaCorta(r.fecha)}
+            </p>
+            <p className="panelAdmin-justificacion">{r.comentario}</p>
+            {r.respuesta && (
+              <>
+                <p className="panelAdmin-etiqueta">Respuesta del negocio</p>
+                <p className="panelAdmin-justificacion">{r.respuesta}</p>
+              </>
+            )}
+            <button
+              className="panelAdmin-btn panelAdmin-btn-rechazar"
+              onClick={() => { setErrorEliminar(''); setPorEliminar(r); }}
+              type="button"
+            >
+              <Trash2 size={16} strokeWidth={2.4} aria-hidden="true" /> Eliminar
+            </button>
+          </div>
+        ))}
       </div>
+      {porEliminar && (
+        <DialogoConfirmacion
+          titulo="¿Eliminar esta reseña?"
+          texto={`Se borra la reseña de ${porEliminar.autor} en ${porEliminar.negocio}, con la respuesta del negocio si la tiene. No se puede deshacer.`}
+          etiquetaConfirmar="Eliminar reseña"
+          etiquetaCancelar="Conservarla"
+          etiquetaCargando="Eliminando…"
+          tono="peligro"
+          cargando={eliminando}
+          error={errorEliminar}
+          onCancelar={() => setPorEliminar(null)}
+          onConfirmar={async () => {
+            setEliminando(true);
+            setErrorEliminar('');
+            const r = await borrarResena(porEliminar.id);
+            setEliminando(false);
+            if (r.exito) setPorEliminar(null);
+            else setErrorEliminar(r.mensaje);
+          }}
+        />
+      )}
     </div>
   );
 }

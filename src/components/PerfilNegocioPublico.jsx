@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CalendarDays, Stamp } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import SeccionResenas from './SeccionResenas';
 import '../components/HistoriaSitio.css';
 import './PerfilNegocioPublico.css';
 
@@ -16,7 +17,7 @@ function rangoFechas(a) {
     : `${formatearFecha(a.fecha_inicio)} – ${formatearFecha(a.fecha_fin)}`;
 }
 
-function PerfilNegocioPublico({ negocio, onCerrar }) {
+function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false }) {
   const [horarios, setHorarios] = useState([]);
   const [fotos, setFotos] = useState([]);
   const [productos, setProductos] = useState([]);
@@ -142,6 +143,8 @@ function PerfilNegocioPublico({ negocio, onCerrar }) {
             <p className="perfilpublico-telefono">📞 {negocio.telefono}</p>
           )}
         </div>
+
+        <SeccionResenas negocioId={negocio.id} nombreNegocio={negocio.name} vistaPrevia={vistaPrevia} />
 
         {actividades.length > 0 && (
           <div className="perfilpublico-card">
