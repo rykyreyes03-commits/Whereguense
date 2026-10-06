@@ -4,13 +4,6 @@
    Tokens de src/index.css.
    ========================================================= */
 
-.perfilpublico-categoria {
-  margin: 4px 0 0;
-  text-align: center;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.85); /* va sobre el hero azul */
-}
-
 .perfilpublico-card {
   background: var(--color-white);
   border: 1px solid var(--color-border);
@@ -21,7 +14,7 @@
 }
 
 .perfilpublico-seccion-titulo {
-  font-family: var(--font-display);
+  font-family: var(--ficha-titulo, var(--font-display));
   font-weight: 700;
   font-size: 1rem;
   color: var(--color-navy);
@@ -29,23 +22,35 @@
 }
 
 .perfilpublico-telefono {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 8px 0 0;
   font-size: 1rem;
   color: var(--color-text);
 }
 
-.perfilpublico-fotos {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
 .perfilpublico-fotos img {
-  width: 140px;
-  height: 100px;
+  display: block;
+  width: 100%;
   object-fit: cover;
   border-radius: var(--radius-md);
-  flex-shrink: 0;
+}
+.perfilpublico-fotos.perfilpublico-cuadricula {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.perfilpublico-fotos.perfilpublico-cuadricula img {
+  aspect-ratio: 1 / 1;
+}
+.perfilpublico-fotos.perfilpublico-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.perfilpublico-fotos.perfilpublico-lista img {
+  aspect-ratio: 16 / 10;
 }
 
 .perfilpublico-horarios {
@@ -61,20 +66,34 @@
   color: var(--color-text);
 }
 
-.perfilpublico-productos {
-  display: flex;
-  flex-wrap: wrap;
+.perfilpublico-productos.perfilpublico-cuadricula {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
+.perfilpublico-productos.perfilpublico-lista {
+  display: flex;
+  flex-direction: column;
+}
 .perfilpublico-producto-chip {
-  display: inline-block;
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
-  background: var(--color-ultramarine);
-  border: none;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #fff;
+  display: block;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-navy);
+  overflow-wrap: anywhere;
+}
+.perfilpublico-productos.perfilpublico-cuadricula .perfilpublico-producto-chip {
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--ficha-color, var(--color-primary)) 10%, #fff);
+  border: 1px solid color-mix(in srgb, var(--ficha-color, var(--color-primary)) 24%, #fff);
+}
+.perfilpublico-productos.perfilpublico-lista .perfilpublico-producto-chip {
+  padding: 10px 2px;
+  border-top: 1px solid var(--color-border);
+}
+.perfilpublico-productos.perfilpublico-lista .perfilpublico-producto-chip:first-child {
+  border-top: none;
 }
 
 .perfilpublico-actividades {
@@ -119,4 +138,146 @@
   background: color-mix(in srgb, var(--color-turquoise) 20%, #fff);
   color: var(--color-navy);
   font-weight: 700;
+}
+
+/* =========================================================
+   Ficha con diseño (035): paleta, letra, portada y botón de WhatsApp.
+   Variables --ficha-* puestas por la ficha (utils/diseno.js).
+   ========================================================= */
+.perfilpublico-ficha {
+  font-family: var(--ficha-cuerpo, var(--font-body));
+}
+
+.perfilpublico-portada {
+  position: relative;
+  height: calc(150px + env(safe-area-inset-top));
+  background: var(--ficha-color, var(--color-primary));
+  overflow: hidden;
+}
+.perfilpublico-portada-foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.perfilpublico-marca {
+  position: absolute;
+  top: calc(14px + env(safe-area-inset-top));
+  left: 16px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.perfilpublico-ficha .historia-sitio-cerrar {
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 2;
+}
+
+.perfilpublico-contenido {
+  padding-top: 0;
+}
+
+.perfilpublico-identidad {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: -36px;
+  position: relative;
+}
+.perfilpublico-logo {
+  flex: 0 0 auto;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 3px solid var(--ficha-color, var(--color-primary));
+  background: #fff;
+  color: var(--ficha-color, var(--color-primary));
+  font-family: var(--ficha-titulo, var(--font-display));
+  font-size: 1.9rem;
+  font-weight: 800;
+}
+.perfilpublico-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.perfilpublico-nombre {
+  margin: 0 0 6px;
+  font-family: var(--ficha-titulo, var(--font-display));
+  font-size: 1.4rem;
+  line-height: 1.2;
+  color: var(--color-navy);
+  overflow-wrap: anywhere;
+}
+
+.perfilpublico-pastillas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 14px;
+}
+.perfilpublico-pastilla {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: #EEF0F6;
+  color: #3A3A4E;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.perfilpublico-pastilla:empty {
+  display: none;
+}
+.perfilpublico-pastilla--abierto {
+  background: #DDF5E4;
+  color: #14633A;
+}
+
+.perfilpublico-whatsapp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  margin-bottom: 16px;
+  padding: 0 18px;
+  border-radius: var(--radius-pill);
+  background: var(--ficha-color, var(--color-primary));
+  color: var(--ficha-sobre-color, #fff);
+  font-size: 1rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.perfilpublico-whatsapp:focus-visible {
+  outline: 3px solid var(--color-turquoise);
+  outline-offset: 2px;
+}
+
+.perfilpublico-ficha .perfilpublico-actividad-sello {
+  background: color-mix(in srgb, var(--ficha-color, var(--color-primary)) 14%, #fff);
+}
+
+/* Dentro del editor (vista previa en vivo): en la página, no a pantalla completa */
+.perfilpublico-ficha--incrustada {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  overflow: visible;
+  animation: none;
+  background: var(--color-white);
+}
+.perfilpublico-ficha--incrustada .perfilpublico-portada {
+  height: 130px;
+}
+.perfilpublico-ficha--incrustada .perfilpublico-marca {
+  top: 12px;
 }

@@ -1,0 +1,377 @@
+/* =========================================================
+   EditorDiseno — pestaña "Diseño" del panel del emprendedor.
+   Móvil: la columna del editor y debajo la vista previa.
+   Escritorio (>= 900 px): editor a la izquierda, vista previa fija a la derecha.
+   Tokens de src/index.css.
+   ========================================================= */
+
+.editor-diseno {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 900px) {
+  .editor-diseno {
+    grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+    align-items: start;
+  }
+  .editor-diseno-vista {
+    position: sticky;
+    top: 16px;
+  }
+  .editor-diseno-vista-marco {
+    max-height: calc(100vh - 80px);
+  }
+}
+
+.editor-diseno-columna {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.editor-diseno-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: #fff;
+}
+.editor-diseno-cabecera h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+.editor-diseno-cabecera p {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+.editor-diseno-inicial {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.editor-diseno-bloque h3 {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--color-navy);
+}
+
+.editor-diseno-ayuda {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+}
+.editor-diseno-ayuda.error {
+  color: #B3261E;
+  font-weight: 700;
+}
+
+.editor-diseno button:focus-visible,
+.editor-diseno input:focus-visible {
+  outline: 3px solid var(--color-turquoise);
+  outline-offset: 2px;
+}
+
+/* Colores */
+.editor-diseno-paletas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.editor-diseno-paleta {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.editor-diseno-paleta.activa {
+  box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--color-navy);
+}
+
+/* Letra */
+.editor-diseno-opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.editor-diseno-opcion {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  color: var(--color-navy);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.editor-diseno-opcion.activa {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+/* Portada */
+.editor-diseno-soltar {
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 2px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--color-navy);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.editor-diseno-soltar.sobre {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 6%, #fff);
+}
+.editor-diseno-soltar:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.editor-diseno-enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  margin-top: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Secciones */
+.editor-diseno-secciones {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.editor-diseno-seccion {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 52px;
+  padding: 4px 10px 4px 8px;
+  background: var(--color-white);
+  border-top: 1px solid var(--color-border);
+}
+.editor-diseno-seccion:first-child {
+  border-top: none;
+}
+.editor-diseno-seccion.arrastrando {
+  opacity: 0.5;
+}
+.editor-diseno-seccion.oculta .editor-diseno-seccion-nombre {
+  color: var(--color-text-muted);
+}
+.editor-diseno-asa {
+  flex: 0 0 auto;
+  color: var(--color-text-soft);
+  cursor: grab;
+}
+.editor-diseno-seccion-nombre {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-left: 4px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+.editor-diseno-mover {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--color-navy);
+  cursor: pointer;
+}
+.editor-diseno-mover:disabled {
+  color: var(--color-border-strong);
+  cursor: default;
+}
+.editor-diseno-interruptor {
+  flex: 0 0 auto;
+  position: relative;
+  width: 48px;
+  height: 28px;
+  margin-left: 4px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: #8A8AA0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.editor-diseno-interruptor span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+.editor-diseno-interruptor.activo {
+  background: var(--color-primary);
+}
+.editor-diseno-interruptor.activo span {
+  transform: translateX(20px);
+}
+
+/* WhatsApp */
+.editor-diseno-campo {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--color-text);
+  font-size: 1rem;
+  font-family: var(--font-body);
+}
+.editor-diseno-campo.invalido {
+  border-color: #B3261E;
+}
+
+/* Cuadrícula / Lista */
+.editor-diseno-segmentos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  background: #EEF0F6;
+}
+.editor-diseno-segmentos button {
+  min-height: 44px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.editor-diseno-segmentos button.activo {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* Avisos y botones */
+.editor-diseno-aviso {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.editor-diseno-aviso.ok {
+  background: #DDF5E4;
+  color: #14633A;
+}
+.editor-diseno-aviso.error {
+  background: #FDE7E5;
+  color: #8C1D18;
+  border: 1px solid #F24E50;
+}
+.editor-diseno-acciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.editor-diseno-deshacer,
+.editor-diseno-guardar {
+  min-height: 52px;
+  border-radius: var(--radius-pill);
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.editor-diseno-deshacer {
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-white);
+  color: var(--color-navy);
+}
+.editor-diseno-guardar {
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+}
+.editor-diseno-deshacer:disabled,
+.editor-diseno-guardar:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Vista previa */
+.editor-diseno-vista-titulo {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+.editor-diseno-vista-marco {
+  max-height: 560px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  background: var(--color-white);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-diseno-interruptor,
+  .editor-diseno-interruptor span {
+    transition: none;
+  }
+}

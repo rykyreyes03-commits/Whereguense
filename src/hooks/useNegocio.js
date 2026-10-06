@@ -11,6 +11,7 @@ function mapearNegocio(fila) {
     descripcion: fila.descripcion,
     telefono: fila.telefono,
     logoUrl: fila.logo_url,
+    configDiseno: fila.config_diseno || {},
     estado: fila.estado,
     motivoRechazo: fila.motivo_rechazo,
     fechaEnvio: fila.fecha_envio,
@@ -275,6 +276,59 @@ export function useNegocio(usuarioId) {
 
     setNegocio(mapearNegocio(data));
     return { exito: true };
+  }, [negocio]);
+
+  // Diseño de la ficha (035): la base valida el esquema (paleta, letra, portada del propio bucket, WhatsApp, secciones).
+  const guardarDiseno = useCallback(async (config) => {
+    if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
+
+    const { data, error } = await supabase
+      .from('negocio')
+      .update({ config_diseno: config })
+      .eq('id', negocio.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error guardando el diseño:', error);
+      if (error.code === '23514') {
+        return { exito: false, mensaje: 'Algún valor del diseño no es válido. Revisa el WhatsApp y la portada.' };
+      }
+      return { exito: false, mensaje: 'No se pudo guardar el diseño. Intenta de nuevo.' };
+    }
+
+    setNegocio(mapearNegocio(data));
+    return { exito: true };
+  }, [negocio]);
+
+  // Sube la portada a <usuario_id>/portada_<negocio_id>.<ext> y devuelve su URL pública; NO la guarda en el negocio
+  // (eso lo hace guardarDiseno cuando el dueño pulsa Guardar). El servidor acepta solo jpg, png y webp de hasta 10 MB.
+  const subirPortada = useCallback(async (usuarioId, file) => {
+    if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
+
+    const extensiones = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+    const extension = extensiones[file.type];
+    if (!extension) return { exito: false, mensaje: 'La portada debe ser una imagen JPG, PNG o WebP.' };
+    if (file.size > 10 * 1024 * 1024) return { exito: false, mensaje: 'La portada no puede pesar más de 10 MB.' };
+
+    const ruta = `${usuarioId}/portada_${negocio.id}.${extension}`;
+    const { error: errorSubida } = await supabase.storage
+      .from('negocios')
+      .upload(ruta, file, { upsert: true, contentType: file.type });
+
+    if (errorSubida) {
+      console.error('Error subiendo la portada:', errorSubida);
+      return { exito: false, mensaje: 'No se pudo subir la portada. Intenta de nuevo.' };
+    }
+
+    // Una sola portada por negocio: se borran las de otra extensión (mejor esfuerzo).
+    const otras = Object.values(extensiones)
+      .filter((e) => e !== extension)
+      .map((e) => `${usuarioId}/portada_${negocio.id}.${e}`);
+    supabase.storage.from('negocios').remove(otras).catch(() => {});
+
+    const { data } = supabase.storage.from('negocios').getPublicUrl(ruta);
+    return { exito: true, url: `${data.publicUrl}?t=${Date.now()}` };
   }, [negocio]);
 
   const subirLogo = useCallback(async (usuarioId, file) => {
@@ -677,6 +731,8 @@ export function useNegocio(usuarioId) {
     actualizarHorarios,
     actualizarUbicacion,
     actualizarPerfil,
+    guardarDiseno,
+    subirPortada,
     subirLogo,
     subirFoto,
     eliminarFoto,

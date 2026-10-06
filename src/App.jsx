@@ -98,6 +98,8 @@ function App() {
     actualizarHorarios,
     actualizarUbicacion,
     actualizarPerfil,
+    guardarDiseno,
+    subirPortada,
     subirLogo,
     subirFoto,
     eliminarFoto,
@@ -833,6 +835,8 @@ function App() {
         onActualizarHorarios={actualizarHorarios}
         onActualizarUbicacion={actualizarUbicacion}
         onActualizarPerfil={actualizarPerfil}
+        onGuardarDiseno={guardarDiseno}
+        onSubirPortada={(file) => subirPortada(usuarioActual?.id, file)}
         onSubirLogo={(file) => subirLogo(usuarioActual?.id, file)}
         onSubirFoto={(file) => subirFoto(usuarioActual?.id, file)}
         onEliminarFoto={eliminarFoto}

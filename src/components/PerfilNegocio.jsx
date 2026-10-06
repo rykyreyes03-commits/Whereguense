@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Check, X, Camera, Eye, ArrowLeft, Store, QrCode, Star, Palette, ChevronRight } from 'lucide-react';
+import { Check, X, Camera, Eye, ArrowLeft, Store, QrCode, Star, ChevronRight } from 'lucide-react';
 import './PerfilNegocio.css';
 import TopBar from './TopBar';
 import SeleccionUbicacion from './SeleccionUbicacion';
@@ -9,6 +9,7 @@ import GenerarQR from './GenerarQR';
 import BottomNavNegocio from './BottomNavNegocio';
 import CampoOtro from './CampoOtro';
 import PanelResenasNegocio from './PanelResenasNegocio';
+import EditorDiseno from './EditorDiseno';
 import LineaResenas from './LineaResenas';
 import { OPCIONES_CATEGORIA_NEGOCIO, OTRO_NEGOCIO, separarCategoriaNegocio, unirCategoriaNegocio } from '../utils/categoriasNegocio';
 
@@ -44,6 +45,8 @@ function PerfilNegocio({
   onActualizarHorarios,
   onActualizarUbicacion,
   onActualizarPerfil,
+  onGuardarDiseno,
+  onSubirPortada,
   onSubirLogo,
   onSubirFoto,
   onEliminarFoto,
@@ -621,10 +624,7 @@ function PerfilNegocio({
         {pestana === 'resenas' && <PanelResenasNegocio negocioId={negocio?.id} />}
 
         {pestana === 'diseno' && (
-          <section className="perfilnegocio-card perfilnegocio-empty">
-            <span className="perfilnegocio-empty-icono" aria-hidden="true"><Palette size={28} strokeWidth={1.8} /></span>
-            <p>Personaliza tu perfil próximamente.</p>
-          </section>
+          <EditorDiseno negocio={negocio} onGuardar={onGuardarDiseno} onSubirPortada={onSubirPortada} />
         )}
       </div>
 
