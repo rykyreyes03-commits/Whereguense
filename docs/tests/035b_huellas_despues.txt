@@ -1,0 +1,30 @@
+# Huellas de los datos reales DESPUÉS de la migración 035b (2026-10-06). Misma fórmula que 035_huellas_antes.txt.
+# Nota: la huella de 'negocio' difiere de la de la 035 porque el negocio 2 subió un logo nuevo (logo.jpeg) desde la app entre una y otra; no es efecto de ninguna migración.
+# RESULTADO: las 26 tablas son IDÉNTICAS a 035b_huellas_antes.txt (la 035b solo redefine una función).
+actividad_negocio 3 5dea265ebad7c2612912c26a9bef443a
+avatar_equipado 0 d41d8cd98f00b204e9800998ecf8427e
+categoria_avatar 4 c66914bff9f8f5c33cc44b7571fe40ea
+cupon 1 f13e0fadda82fabac6275457498b5e2a
+cupon_obtenido 0 d41d8cd98f00b204e9800998ecf8427e
+evento 7 d298f911b1a594e6d4436657c234d136
+guardado 3 ce3fe6016e22afcfa389b393088b6a06
+hito_candidato 0 d41d8cd98f00b204e9800998ecf8427e
+insignia 60 5aa6a995806c12e15e7c7016ff1a2fff
+negocio 3 3ce544f1921f1fdf2103126dc0ee16e4
+negocio_foto 1 a1edcfc90dfb21358808a6e4013295a1
+negocio_horario 7 d73f960220d634cd0e90306b86480152
+negocio_token_canje 1 0ce0cbf8999fcb5f4092201733118cef
+nivel 40 55db4afa22cd120335277fc8c797ea10
+pieza_avatar 23 620d3ab296a11efd25092798543908b5
+pieza_desbloqueada 2 7ce9a849c5a2b68303ad41af2a9373d4
+producto 1 2d98e94052c5498bdd139b73c0632957
+qr_sello 1 d77f760cffc4d46dc9821d0a440a7ce4
+rango 3 f016cb9f197ee13fffce3b220ac400ab
+resena 0 d41d8cd98f00b204e9800998ecf8427e
+ruta 1 6b397895058385b3c6624b2b8d32b1c5
+ruta_guardada 0 d41d8cd98f00b204e9800998ecf8427e
+ruta_sitio 10 7d02bd5ae346d982a6433dd2eaf92777
+sello 3 cd0bdd68a986f633f5a4195b8b335f00
+sitio 60 5cadbcbe53475f14d3e3c4ff01e4c01a
+usuario 7 eaca9079ba86bf8ab9d6f2fd5a8a5317
+usuario_hito 0 d41d8cd98f00b204e9800998ecf8427e
