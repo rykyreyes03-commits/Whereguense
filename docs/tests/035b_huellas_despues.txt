@@ -28,3 +28,4 @@ sello 3 cd0bdd68a986f633f5a4195b8b335f00
 sitio 60 5cadbcbe53475f14d3e3c4ff01e4c01a
 usuario 7 eaca9079ba86bf8ab9d6f2fd5a8a5317
 usuario_hito 0 d41d8cd98f00b204e9800998ecf8427e
+# Segundo paso de la 035b (descripcion, 2026-10-06): huellas ANTES y DESPUÉS idénticas a estas (la función no toca filas).

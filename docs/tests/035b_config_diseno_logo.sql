@@ -64,6 +64,10 @@ begin
                     return false;
                 end if;
             end if;
+        elsif k = 'descripcion' then
+            if jsonb_typeof(v) <> 'null' then
+                if jsonb_typeof(v) <> 'string' or char_length(v #>> '{}') > 300 then return false; end if;
+            end if;
         elsif k = 'whatsapp' then
             if jsonb_typeof(v) <> 'null' then
                 if jsonb_typeof(v) <> 'string' or (v #>> '{}') !~ '^[0-9]{8,15}$' then return false; end if;
@@ -133,6 +137,22 @@ begin
   insert into pr values (17, 'logo es un número', pg_temp.upd(u2, 2, '{"logo_url":5}'), '[23514]');
   insert into pr values (18, 'logo es un arreglo', pg_temp.upd(u2, 2, '{"logo_url":["x"]}'), '[23514]');
   insert into pr values (19, 'logo texto libre', pg_temp.upd(u2, 2, '{"logo_url":"mi logo"}'), '[23514]');
+
+  -- descripcion (texto plano de hasta 300 caracteres)
+  insert into pr values (50, 'descripcion normal', pg_temp.upd(u2, 2, '{"descripcion":"Café de altura en el centro de León."}'), 'OK');
+  insert into pr values (51, 'descripcion null', pg_temp.upd(u2, 2, '{"descripcion":null}'), 'OK');
+  insert into pr values (52, 'descripcion vacía', pg_temp.upd(u2, 2, '{"descripcion":""}'), 'OK');
+  insert into pr values (53, 'descripcion de exactamente 300 caracteres', pg_temp.upd(u2, 2, jsonb_build_object('descripcion', repeat('a', 300))::text), 'OK');
+  insert into pr values (54, 'descripcion de 300 caracteres con tildes y ñ (cuenta caracteres, no bytes)', pg_temp.upd(u2, 2, jsonb_build_object('descripcion', repeat('ñé', 150))::text), 'OK');
+  insert into pr values (55, 'descripcion de 301 caracteres rechazada', pg_temp.upd(u2, 2, jsonb_build_object('descripcion', repeat('a', 301))::text), '[23514]');
+  insert into pr values (56, 'descripcion es un número', pg_temp.upd(u2, 2, '{"descripcion":5}'), '[23514]');
+  insert into pr values (57, 'descripcion es un arreglo', pg_temp.upd(u2, 2, '{"descripcion":["x"]}'), '[23514]');
+  insert into pr values (58, 'descripcion es un objeto', pg_temp.upd(u2, 2, '{"descripcion":{"a":1}}'), '[23514]');
+  insert into pr values (59, 'descripcion con saltos de línea pasa', pg_temp.upd(u2, 2, '{"descripcion":"Línea 1\nLínea 2"}'), 'OK');
+  insert into pr values (60, 'todas las claves juntas (nueve)', pg_temp.upd(u2, 2,
+    format('{"paleta":"rojo","letra":"elegante","logo_url":"%s%s/logo_2.png","portada_url":null,"descripcion":"Hola","whatsapp":"87074097","secciones_visibles":["horarios"],"layout_productos":"cuadricula"}', base, u2)), 'OK');
+  insert into pr values (61, 'otra cuenta no puede escribir la descripción del negocio 2 (RLS: no cambia nada)',
+    pg_temp.upd(otro, 2, '{"descripcion":"intruso"}') || ' | ' || (select (config_diseno ? 'descripcion' and config_diseno->>'descripcion' = 'intruso')::text from public.negocio where id = 2), 'OK | false');
 
   -- lo de la 035 sigue igual
   insert into pr values (30, 'portada propia sigue pasando', pg_temp.upd(u2, 2, format('{"portada_url":"%s%s/portada_2.jpg"}', base, u2)), 'OK');

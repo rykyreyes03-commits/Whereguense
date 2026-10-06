@@ -1,10 +1,14 @@
 -- docs/migrations/035b_config_diseno_logo.sql
 --
--- config_diseno gana la clave logo_url (logo del negocio desde el editor de diseño). Misma validación que portada_url:
--- null, o https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/<usuario_id>/<archivo>[?t=<números>],
--- SOLO en la carpeta del propio dueño. Solo se redefine la función config_diseno_valido (la restricción CHECK de la 035
+-- config_diseno gana dos claves:
+--   logo_url     logo del negocio desde el editor de diseño. Misma validación que portada_url: null, o
+--                https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/<usuario_id>/<archivo>[?t=<números>],
+--                SOLO en la carpeta del propio dueño.
+--   descripcion  null, o texto de hasta 300 caracteres (texto plano: el frontend lo dibuja como texto, nunca como HTML).
+-- (Se aplicó en dos pasos el 2026-10-06: primero logo_url y luego descripcion; este archivo es la versión final y es
+-- idempotente: solo se redefine la función config_diseno_valido (la restricción CHECK de la 035
 -- ya la llama; no cambia nada más: ni permisos, ni datos, ni el bucket). El logo "viejo" (columna negocio.logo_url, que usan
--- el mapa y los eventos) sigue igual y la ficha lo usa si el diseño no trae logo_url.
+-- el mapa y los eventos) sigue igual y la ficha lo usa si el diseño no trae logo_url.)
 
 begin;
 
@@ -44,6 +48,10 @@ begin
                                     || dueno::text || '/[A-Za-z0-9][A-Za-z0-9._-]*(\?t=[0-9]+)?$') then
                     return false;
                 end if;
+            end if;
+        elsif k = 'descripcion' then
+            if jsonb_typeof(v) <> 'null' then
+                if jsonb_typeof(v) <> 'string' or char_length(v #>> '{}') > 300 then return false; end if;
             end if;
         elsif k = 'whatsapp' then
             if jsonb_typeof(v) <> 'null' then
