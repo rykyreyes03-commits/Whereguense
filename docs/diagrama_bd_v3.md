@@ -1,5 +1,8 @@
 # Diagrama de base de datos — v3 (propuesta para revisión)
 
+> **HISTÓRICO.** Este documento refleja el diseño de una etapa anterior y **ya no describe la base de datos actual**.
+> El diagrama vigente (27 tablas, migraciones hasta la 033) está en [`diagramas.md`](diagramas.md).
+
 Este documento sucede a [`diagrama_bd_v2.md`](./diagrama_bd_v2.md). Se generó a partir del
 diagnóstico línea por línea del código real ya construido:
 

@@ -1,5 +1,8 @@
 # Diagrama de base de datos — v2 (actualizado)
 
+> **HISTÓRICO.** Este documento refleja el diseño de una etapa anterior y **ya no describe la base de datos actual**.
+> El diagrama vigente (27 tablas, migraciones hasta la 033) está en [`diagramas.md`](diagramas.md).
+
 Este documento reemplaza a `diagrama_bd..jpeg` (versión anterior). Se generó comparando ese diagrama campo por campo contra el código real ya construido (`src/data/*.js`, `src/hooks/useSellos.js`, `src/utils/rango.js`, `src/components/Perfil.jsx`, `src/components/Tienda.jsx`) y contra el documento de especificaciones UX/UI, secciones 2 a 4.
 
 GitHub renderiza el bloque `mermaid` de abajo automáticamente al ver este archivo en el repo — no hace falta exportar una imagen aparte.

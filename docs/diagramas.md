@@ -1,366 +1,611 @@
 # Diagramas técnicos — Wheregüense
 
-Generados a partir del esquema real de la base de datos en Supabase (21 tablas) y del
-flujo de navegación real implementado en `src/App.jsx`. Reemplaza una versión anterior
-que quedó desactualizada tras la migración completa del proyecto de `localStorage` a
-Supabase.
+Vigente a la migración **033** (2026-10). Generado a partir del esquema real de Supabase (27 tablas
+en `public`) y del código. GitHub dibuja los bloques `mermaid` directamente.
 
-## 1. Diagrama Entidad-Relación (3FN)
+Los diagramas anteriores ([`diagrama_bd_v2.md`](diagrama_bd_v2.md), [`diagrama_bd_v3.md`](diagrama_bd_v3.md))
+quedan como historia del diseño.
+
+Contenido: 1. Entidad-Relación · 2. Clases · 3. Casos de uso · 4. Flujos (actividad → sello → canje,
+cupón, reseña, "lo terminado desaparece").
+
+---
+
+## 1. Diagrama Entidad-Relación
+
+`usuario.id` es también la clave de `auth.users` (Supabase Auth). Las columnas marcadas **(cerrada)**
+no se pueden leer ni escribir directo desde la API: pasan por funciones `SECURITY DEFINER`.
 
 ```mermaid
 erDiagram
-    USUARIO ||--o{ NEGOCIO : "posee"
-    USUARIO ||--o{ SELLO : "obtiene"
-    USUARIO ||--o{ GUARDADO : "guarda"
-    USUARIO ||--o{ RUTA_GUARDADA : "guarda"
-    USUARIO ||--o{ PIEZA_DESBLOQUEADA : "desbloquea"
-    USUARIO ||--o{ AVATAR_EQUIPADO : "equipa"
-    USUARIO ||--o{ USUARIO_HITO : "genera"
+    usuario ||--o{ negocio : "es dueño de"
+    usuario ||--o{ sello : "obtiene"
+    usuario ||--o{ guardado : "guarda"
+    usuario ||--o{ ruta_guardada : "guarda"
+    usuario ||--o{ cupon_obtenido : "obtiene"
+    usuario ||--o{ resena : "escribe"
+    usuario ||--o{ avatar_equipado : "equipa"
+    usuario ||--o{ pieza_desbloqueada : "desbloquea"
+    usuario ||--o{ usuario_hito : "alcanza"
 
-    NEGOCIO ||--o{ NEGOCIO_FOTO : "muestra"
-    NEGOCIO ||--o{ NEGOCIO_HORARIO : "define"
-    NEGOCIO ||--o{ PRODUCTO : "ofrece"
-    NEGOCIO ||--o{ QR_SELLO : "crea"
-    NEGOCIO ||--o{ EVENTO : "organiza (opcional)"
+    negocio ||--o{ negocio_foto : "tiene"
+    negocio ||--o{ negocio_horario : "tiene"
+    negocio ||--o{ producto : "ofrece"
+    negocio ||--o{ actividad_negocio : "publica"
+    negocio ||--o{ qr_sello : "emite"
+    negocio ||--o{ cupon : "ofrece"
+    negocio ||--o| negocio_token_canje : "tiene un token de canje"
+    negocio ||--o{ resena : "recibe"
+    negocio |o--o{ evento : "organiza"
 
-    INSIGNIA ||--|| SITIO : "identifica"
-    SITIO ||--o{ SELLO : "es sellado en"
-    SITIO ||--o{ RUTA_SITIO : "aparece en"
-    SITIO ||--o{ EVENTO : "relaciona (opcional)"
+    actividad_negocio |o--o| qr_sello : "solicita y recibe"
+    actividad_negocio |o--o| evento : "se publica como"
+    qr_sello ||--o{ sello : "se canjea en"
+    sitio ||--o{ sello : "se sella en"
+    sitio ||--o{ ruta_sitio : "forma parte de"
+    ruta ||--o{ ruta_sitio : "incluye"
+    ruta ||--o{ ruta_guardada : "es guardada"
+    sitio }o--|| insignia : "otorga"
+    sitio |o--o{ evento : "se relaciona con"
 
-    RUTA ||--o{ RUTA_SITIO : "contiene"
-    RUTA ||--o{ RUTA_GUARDADA : "es guardada"
+    cupon ||--o{ cupon_obtenido : "se obtiene como"
 
-    QR_SELLO ||--o{ SELLO : "genera"
+    categoria_avatar ||--o{ pieza_avatar : "agrupa"
+    categoria_avatar ||--o{ avatar_equipado : "ranura"
+    pieza_avatar |o--o{ avatar_equipado : "equipada en"
+    pieza_avatar ||--o{ pieza_desbloqueada : "desbloqueada como"
+    pieza_avatar ||--o{ hito_candidato : "ofrecida en"
+    usuario_hito ||--o{ hito_candidato : "ofrece"
 
-    CATEGORIA_AVATAR ||--o{ PIEZA_AVATAR : "clasifica"
-    CATEGORIA_AVATAR ||--o{ AVATAR_EQUIPADO : "corresponde a"
-
-    PIEZA_AVATAR ||--o{ PIEZA_DESBLOQUEADA : "es desbloqueada como"
-    PIEZA_AVATAR ||--o{ AVATAR_EQUIPADO : "es usada en (opcional)"
-    PIEZA_AVATAR ||--o{ HITO_CANDIDATO : "es candidata en"
-    PIEZA_AVATAR ||--o{ USUARIO_HITO : "es elegida en (opcional)"
-
-    USUARIO_HITO ||--o{ HITO_CANDIDATO : "ofrece"
-
-    USUARIO {
-        uuid id PK
-        string nombre_usuario
-        string email UK
-        string rol
-        string pais
-        string idioma_preferido
-        string avatar_personaje
-        string foto_perfil_url
-        timestamp fecha_registro
+    usuario {
+        uuid id PK "= auth.users.id"
+        text nombre_usuario
+        text email
+        text rol "turista | admin | auditor"
+        text pais
+        text idioma_preferido
+        text avatar_personaje "cabezon | gigantona"
+        text foto_perfil_url
+        timestamptz fecha_registro
         boolean onboarding_completado
     }
-    NEGOCIO {
+
+    negocio {
         int id PK
-        uuid usuario_id FK
-        string nombre_negocio
-        string categoria
-        string responsable
-        string cedula_ruc
-        string telefono
-        float latitud
-        float longitud
-        string descripcion
-        string estado
-        string motivo_rechazo
-        timestamp fecha_envio
-        timestamp fecha_aprobacion
-        timestamp fecha_vencimiento_suscripcion
+        uuid usuario_id FK "dueño"
+        text nombre_negocio
+        text categoria
+        text responsable
+        text cedula_ruc
+        text telefono
+        double latitud
+        double longitud
+        text descripcion
+        text logo_url
+        text estado "pendiente | activo | rechazado"
+        text motivo_rechazo
+        timestamptz fecha_envio
+        timestamptz fecha_aprobacion
+        timestamptz fecha_vencimiento_suscripcion
         boolean suscripcion_activa
-        string logo_url
+        text nivel_suscripcion "basico | profesional"
+        jsonb config_diseno
     }
-    NEGOCIO_FOTO {
+
+    negocio_foto {
         int id PK
         int negocio_id FK
-        string url
-        string tipo
+        text url
+        text tipo
         smallint orden
     }
-    NEGOCIO_HORARIO {
-        int negocio_id PK_FK
+
+    negocio_horario {
+        int negocio_id PK,FK
         smallint dia_semana PK
         time hora_apertura
         time hora_cierre
         boolean cerrado
     }
-    PRODUCTO {
+
+    producto {
         int id PK
         int negocio_id FK
-        string nombre
+        text nombre
         smallint orden
     }
-    QR_SELLO {
+
+    actividad_negocio {
+        bigint id PK
+        int negocio_id FK
+        text nombre
+        text descripcion
+        text foto_url
+        date fecha_inicio
+        date fecha_fin
+        time hora_inicio
+        time hora_fin
+        text categoria
+        text categoria_otro
+        text lugar
+        text eslogan
+        text detalles
+        text_array etiquetas
+        boolean solicita_sello
+        text estado_sello "no_solicitado | pendiente | aprobado | rechazado"
+        text justificacion_sello
+        text motivo_rechazo_sello
+        int limite_canjes
+        int qr_sello_id FK
+        int evento_id FK
+        timestamptz fecha_creacion
+    }
+
+    qr_sello {
         int id PK
         int negocio_id FK
-        string token UK
-        string nombre_actividad
-        string color
-        timestamp fecha_creacion
-        timestamp fecha_expiracion
+        text token "(cerrada)"
+        text nombre_actividad
+        text color
+        timestamptz fecha_creacion
+        timestamptz fecha_expiracion "= fin real de la actividad"
         int limite_canjes
     }
-    SITIO {
-        int id PK
-        int insignia_id FK_UK
-        string nombre
-        string descripcion_corta
-        string historia
-        float latitud
-        float longitud
-        string imagen_url
-    }
-    INSIGNIA {
-        int id PK
-        string clave UK
-        string nombre
-        string imagen_url
-    }
-    SELLO {
+
+    sello {
         bigint id PK
         uuid usuario_id FK
-        int sitio_id FK
-        int qr_sello_id FK
-        string tipo
-        timestamp fecha_sello
+        int sitio_id FK "si tipo = geolocalizacion"
+        int qr_sello_id FK "si tipo = qr"
+        text tipo "geolocalizacion | qr"
+        timestamptz fecha_sello
     }
-    RUTA {
-        int id PK
-        string nombre
-        string ciudad
+
+    cupon {
+        bigint id PK
+        int negocio_id FK
+        text token "(cerrada)"
+        text descripcion
+        int descuento_porcentaje
+        timestamptz fecha_expiracion
+        int limite_total
+        boolean activo
+        timestamptz fecha_creacion
     }
-    RUTA_SITIO {
-        int ruta_id PK_FK
-        int sitio_id PK_FK
-        smallint orden
+
+    cupon_obtenido {
+        bigint id PK
+        bigint cupon_id FK
+        uuid usuario_id FK
+        text estado "obtenido | usado"
+        timestamptz fecha_obtenido
+        timestamptz fecha_uso
     }
-    RUTA_GUARDADA {
-        uuid usuario_id PK_FK
-        int ruta_id PK_FK
-        timestamp fecha_guardado
+
+    negocio_token_canje {
+        int negocio_id PK,FK
+        text token "(cerrada) QR de canje del negocio"
+        timestamptz fecha_creacion
     }
-    EVENTO {
+
+    resena {
+        bigint id PK
+        int negocio_id FK
+        uuid usuario_id FK "(cerrada)"
+        smallint calificacion "1 a 5"
+        text comentario "10 a 2000, obligatorio"
+        timestamptz fecha
+        text respuesta_emprendedor "hasta 2000"
+        timestamptz fecha_respuesta
+    }
+
+    evento {
         int id PK
         int sitio_relacionado_id FK
         int negocio_organizador_id FK
-        string nombre
+        text nombre
         date fecha_inicio
         date fecha_fin
-        string ubicacion
-        string descripcion
-        string imagen_url
+        time hora_inicio
+        time hora_fin
+        text ubicacion
+        text descripcion
+        text imagen_url
+        text categoria
+        text categoria_otro
+        text eslogan
+        text detalles
+        text_array etiquetas
     }
-    GUARDADO {
-        uuid usuario_id PK_FK
-        string tipo PK
-        string referencia_id PK
-        jsonb datos
-        timestamp fecha_guardado
+
+    guardado {
+        uuid usuario_id PK,FK
+        text tipo PK "evento | sitio | negocio..."
+        text referencia_id PK
+        jsonb datos "copia para mostrarlo aunque termine"
+        timestamptz fecha_guardado
     }
-    NIVEL {
+
+    sitio {
+        int id PK
+        int insignia_id FK
+        text nombre
+        text descripcion_corta
+        text historia
+        double latitud
+        double longitud
+        text imagen_url
+        int radio_sello_metros
+    }
+
+    insignia {
+        int id PK
+        text clave
+        text nombre
+        text imagen_url
+    }
+
+    ruta {
+        int id PK
+        text nombre
+        text ciudad
+    }
+
+    ruta_sitio {
+        int ruta_id PK,FK
+        int sitio_id PK,FK
+        smallint orden
+    }
+
+    ruta_guardada {
+        uuid usuario_id PK,FK
+        int ruta_id PK,FK
+        timestamptz fecha_guardado
+    }
+
+    nivel {
         smallint numero PK
-        int sellos_necesarios UK
+        int sellos_necesarios
     }
-    RANGO {
+
+    rango {
         int id PK
-        string nombre UK
-        int sellos_necesarios UK
-        string beneficio
-        string color
+        text nombre
+        int sellos_necesarios
+        text beneficio
+        text color
     }
-    CATEGORIA_AVATAR {
+
+    categoria_avatar {
         int id PK
-        string clave UK
-        string nombre
+        text clave
+        text nombre
         boolean obligatoria
     }
-    PIEZA_AVATAR {
+
+    pieza_avatar {
         int id PK
         int categoria_id FK
-        string clave
-        string imagen_url
+        text clave
+        text imagen_url
         boolean es_inicial
     }
-    PIEZA_DESBLOQUEADA {
-        uuid usuario_id PK_FK
-        int pieza_id PK_FK
-        smallint nivel_hito
-        timestamp fecha_desbloqueo
-    }
-    AVATAR_EQUIPADO {
-        uuid usuario_id PK_FK
-        int categoria_id PK_FK
+
+    avatar_equipado {
+        uuid usuario_id PK,FK
+        int categoria_id PK,FK
         int pieza_id FK
     }
-    USUARIO_HITO {
-        uuid usuario_id PK_FK
+
+    pieza_desbloqueada {
+        uuid usuario_id PK,FK
+        int pieza_id PK,FK
+        smallint nivel_hito
+        timestamptz fecha_desbloqueo
+    }
+
+    usuario_hito {
+        uuid usuario_id PK,FK
         smallint nivel_hito PK
         int pieza_elegida_id FK
-        timestamp fecha_generado
-        timestamp fecha_resuelto
+        timestamptz fecha_generado
+        timestamptz fecha_resuelto
     }
-    HITO_CANDIDATO {
-        uuid usuario_id PK_FK
-        smallint nivel_hito PK_FK
-        int pieza_id PK_FK
+
+    hito_candidato {
+        uuid usuario_id PK,FK
+        smallint nivel_hito PK,FK
+        int pieza_id PK,FK
     }
 ```
 
-**Nota sobre 3FN:** cada tabla depende solo de su llave primaria completa. `NIVEL` y `RANGO`
-son catálogos de referencia independientes (el nivel/rango de un usuario se calcula en el
-código a partir de su cantidad de sellos, no se guarda como columna redundante). `SELLO` usa
-un CHECK (`sello_origen_valido`) para garantizar que sea de tipo `geolocalizacion` (con
-`sitio_id`) o de tipo `qr` (con `qr_sello_id`), nunca ambos ni ninguno — evita una tabla
-polimórfica desnormalizada.
+Notas de diseño:
+
+- `sello` tiene exactamente uno de `sitio_id` o `qr_sello_id` según `tipo`. Un sello de QR es **la prueba**
+  de haber visitado ese negocio: de ahí sale quién puede reseñar (`puede_resenar`).
+- `actividad_negocio` y `evento` son dos cosas: la actividad es lo que el negocio gestiona; el evento es lo
+  que ve el público (`crear_evento_desde_actividad`). `actividades_negocio_publicas()` solo devuelve lo no terminado.
+- Una **reseña es del negocio, no de la actividad**: sigue visible aunque la actividad que dio el sello haya terminado.
+- `cupon_obtenido.cupon_id` es `ON DELETE RESTRICT`: un cupón con canjes no se borra; se desactiva o vence.
+- `negocio_token_canje` es una tabla aparte (no una columna de `negocio`) para que el token no se lea con el
+  `select('*')` público de `negocio`.
+- Funciones internas sin tabla propia: `fin_de_actividad` (la regla de "terminó"), `negocio_visible` (candado de
+  suscripción), `es_duenio_negocio`, `autor_visible`.
+
+---
 
 ## 2. Diagrama de clases
 
+Capa de datos (hooks) y de dominio, tal como están en `src/`. Las "clases" son módulos de funciones.
+
 ```mermaid
 classDiagram
-    class Usuario {
-        +string id
-        +string nombreUsuario
-        +string email
-        +string rol
-        +string avatarPersonaje
-        +iniciarSesionOTP(email)
-        +verificarCodigoOTP(email, codigo)
-        +cerrarSesion()
-    }
-    class Negocio {
-        +int id
-        +string nombreNegocio
-        +string categoria
-        +string estado
-        +registrar(datos)
-        +actualizarPerfil(datos)
-        +subirLogo(file)
-        +subirFoto(file)
-        +eliminarFoto(fotoId)
-    }
-    class Sitio {
-        +int id
-        +string nombre
-        +float latitud
-        +float longitud
-    }
-    class Insignia {
-        +int id
-        +string clave
-        +string imagenUrl
-    }
-    class Sello {
-        +int id
-        +string tipo
-        +Date fechaSello
-    }
-    class QRSello {
-        +int id
-        +string token
-        +string nombreActividad
-        +int limiteCanjes
-        +crearActividad(datos)
-        +eliminarActividad(id)
-    }
-    class Producto {
-        +int id
-        +string nombre
-        +agregarProducto(nombre)
-        +eliminarProducto(id)
-    }
-    class Ruta {
-        +int id
-        +string nombre
-    }
-    class Evento {
-        +int id
-        +string nombre
-        +Date fechaInicio
-        +Date fechaFin
-    }
-    class AvatarPersonalizado {
-        +Object desbloqueados
-        +Object seleccion
-        +int nivel
-        +elegir(categoria, id)
-        +elegirDesbloqueo(opcion)
+    class SupabaseClient {
+        +from(tabla)
+        +rpc(funcion, args)
+        +auth
+        +storage
     }
 
-    Usuario "1" --> "0..*" Negocio : posee
-    Usuario "1" --> "0..*" Sello : obtiene
-    Usuario "1" --> "1" AvatarPersonalizado : personaliza
-    Negocio "1" --> "0..*" Producto : ofrece
-    Negocio "1" --> "0..*" QRSello : crea
-    Negocio "1" --> "0..*" Evento : organiza
-    QRSello "1" --> "0..*" Sello : genera
-    Sitio "1" --> "1" Insignia : usa
-    Sitio "1" --> "0..*" Sello : recibe
-    Ruta "1" --> "0..*" Sitio : contiene
+    class useNegocio {
+        +negocio
+        +actividades
+        +actividadesQR
+        +cupones
+        +guardarPerfil()
+        +crearActividad()
+        +editarActividad()
+        +eliminarActividad()
+        +reenviarSello()
+    }
+    class useSellos {
+        +sellos
+        +sellarPorGeolocalizacion()
+        +canjearQR()
+    }
+    class useEventosPublicos {
+        +eventos_vigentes
+        +todos
+    }
+    class useResenas {
+        +resumen
+        +resenas
+        +puedeResenar
+        +guardar()
+        +responder()
+    }
+    class useAdmin {
+        +pendientes
+        +solicitudesSello
+        +resenas
+        +aprobar()
+        +aprobarSello()
+        +rechazarSello()
+        +borrarResena()
+    }
+    class useAhora {
+        +ahora_cada_60s
+    }
+    class eventosUtil {
+        +finDeEvento()
+        +eventoTermino()
+        +diaDeFin()
+        +hoyManagua()
+        +cuponVencido()
+        +eventoDesdeGuardado()
+    }
+
+    class App {
+        -pantalla
+        +navegar()
+    }
+    class PerfilNegocio {
+        +pestana_resumen
+        +pestana_negocio
+        +pestana_actividades
+        +pestana_resenas
+    }
+    class PerfilNegocioPublico
+    class SeccionResenas
+    class PanelResenasNegocio
+    class PanelAdmin
+    class DetalleEvento
+    class MisCupones
+    class GenerarQR
+
+    App --> PerfilNegocio
+    App --> PanelAdmin
+    App --> DetalleEvento
+    App --> MisCupones
+    PerfilNegocio --> GenerarQR
+    PerfilNegocio --> PanelResenasNegocio
+    PerfilNegocio --> PerfilNegocioPublico : vista previa
+    DetalleEvento --> PerfilNegocioPublico
+    PerfilNegocioPublico --> SeccionResenas
+
+    SeccionResenas ..> useResenas
+    PanelResenasNegocio ..> useResenas
+    PanelAdmin ..> useAdmin
+    PanelAdmin ..> useAhora
+    PerfilNegocio ..> useNegocio
+    MisCupones ..> useAhora
+    DetalleEvento ..> eventosUtil
+    useAhora ..> eventosUtil : instante actual
+    useEventosPublicos ..> eventosUtil
+
+    useNegocio ..> SupabaseClient
+    useSellos ..> SupabaseClient
+    useEventosPublicos ..> SupabaseClient
+    useResenas ..> SupabaseClient
+    useAdmin ..> SupabaseClient
 ```
 
-## 3. Diagrama de casos de uso
+---
+
+## 3. Casos de uso
 
 ```mermaid
 flowchart LR
-    Turista((Turista))
-    Emprendedor((Emprendedor))
+    T([Turista])
+    E([Emprendedor])
+    A([Administrador])
+    V([Visitante sin sesión])
 
-    Turista --> UC1[Iniciar sesión por OTP]
-    Turista --> UC2[Explorar mapa de la Ruta Dariana]
-    Turista --> UC3[Sellar pasaporte por geolocalización]
-    Turista --> UC4[Escanear QR de negocio]
-    Turista --> UC5[Ver mis sellos / pasaporte]
-    Turista --> UC6[Personalizar avatar]
-    Turista --> UC7[Guardar sitios y negocios]
-    Turista --> UC8[Ver ranking]
-    Turista --> UC9[Ver eventos]
-    Turista --> UC10[Editar mi perfil]
+    subgraph Turista
+        direction TB
+        t1[Ver mapa y rutas]
+        t2[Sellar por geolocalización]
+        t3[Canjear QR de un negocio]
+        t4[Obtener y usar cupones]
+        t5[Escribir y editar reseña]
+        t6[Guardar eventos, sitios y rutas]
+        t7[Personalizar avatar]
+    end
 
-    Emprendedor --> UC11[Registrar negocio]
-    Emprendedor --> UC12[Ver estado de mi solicitud]
-    Emprendedor --> UC13[Editar perfil de negocio]
-    Emprendedor --> UC14[Gestionar productos]
-    Emprendedor --> UC15[Crear actividad de sello QR]
-    Emprendedor --> UC16[Eliminar actividad de sello QR]
+    subgraph Emprendedor
+        direction TB
+        e1[Registrar negocio]
+        e2[Editar perfil, horarios, fotos, productos]
+        e3[Crear, editar y eliminar actividades]
+        e4[Pedir un sello para una actividad]
+        e5[Crear cupones y QR de canje]
+        e6[Ver y responder reseñas]
+    end
+
+    subgraph Administrador
+        direction TB
+        a1[Aprobar o rechazar negocios]
+        a2[Aprobar o rechazar solicitudes de sello]
+        a3[Renovar suscripciones]
+        a4[Eliminar reseñas]
+    end
+
+    subgraph Público
+        direction TB
+        v1[Ver landing, eventos y mapa]
+        v2[Leer reseñas de un negocio visible]
+    end
+
+    V --> v1
+    V --> v2
+    T --> t1 & t2 & t3 & t4 & t5 & t6 & t7
+    E --> e1 & e2 & e3 & e4 & e5 & e6
+    A --> a1 & a2 & a3 & a4
+    t5 -. "requiere sello del negocio" .-> t3
+    e4 -. "lo aprueba" .-> a2
 ```
 
-> Los roles **Administrador** y **Auditor** están planificados pero aún no implementados
-> como actores funcionales del sistema (ver `README.md`, sección "Roles y seguridad").
+---
 
-## 4. Diagrama de actividades (flujo de navegación)
+## 4. Flujos
+
+### 4.1 Actividad → sello → canje
+
+El dueño no crea el QR: lo crea el administrador al aprobar. Una actividad ya terminada no puede aprobarse (033).
+
+```mermaid
+sequenceDiagram
+    actor D as Emprendedor
+    participant DB as Supabase (RPC + RLS)
+    actor Ad as Administrador
+    actor T as Turista
+
+    D->>DB: insert actividad_negocio (solicita_sello = true, justificación)
+    Note over DB: el trigger fija estado_sello = pendiente
+    Ad->>DB: admin_aprobar_sello(actividad)
+    alt la actividad ya terminó
+        DB-->>Ad: "Esta actividad ya terminó." (solo se puede rechazar)
+    else vigente
+        DB->>DB: crea qr_sello (token, límite, fecha_expiracion = fin real)
+        DB-->>Ad: Sello aprobado
+    end
+    D->>DB: mis_actividades_qr(negocio) → token para dibujar el QR
+    T->>DB: canjear_qr_sello(token)
+    alt vencido, agotado, negocio no visible o ya canjeado
+        DB-->>T: { exito: false, mensaje }
+    else válido
+        DB->>DB: insert sello (tipo = qr)
+        DB-->>T: { exito: true }
+    end
+```
+
+### 4.2 Cupón: obtener y canjear
+
+```mermaid
+sequenceDiagram
+    actor D as Emprendedor
+    actor T as Turista
+    participant DB as Supabase
+
+    D->>DB: crea cupón (descuento, vencimiento, límite)
+    Note over DB: genera token del cupón y, la primera vez, token de canje del negocio
+    T->>DB: obtener_cupon(token del cupón)
+    DB-->>T: cupon_obtenido (estado = obtenido)
+    Note over T: en el negocio, muestra su cupón
+    T->>DB: iniciar_canje_cupon(token de canje del negocio)
+    DB-->>T: cupones disponibles de ese negocio
+    T->>DB: usar_cupon(cupon_obtenido, token de canje)
+    alt vencido, inactivo, ya usado o negocio no visible
+        DB-->>T: { exito: false, mensaje }
+    else válido
+        DB->>DB: estado = usado, fecha_uso = now()
+        DB-->>T: { exito: true }
+    end
+```
+
+### 4.3 Reseña
+
+```mermaid
+sequenceDiagram
+    actor T as Turista
+    actor D as Emprendedor
+    actor Ad as Administrador
+    participant DB as Supabase
+
+    T->>DB: puede_resenar(negocio)
+    Note over DB: true solo con sesión + sello de ESE negocio + no ser el dueño + negocio visible
+    T->>DB: guardar_resena(negocio, 1 a 5, comentario 10-2000)
+    DB-->>T: crea o edita (una por persona y negocio)
+    Note over DB: la lectura pública (resenas_publicas) muestra el alias "Viajero", nunca usuario_id ni el correo
+    D->>DB: responder_resena(id, respuesta 1-2000)
+    DB-->>D: solo si es dueño de ese negocio
+    Ad->>DB: admin_resenas() → todas, también de negocios vencidos
+    Ad->>DB: admin_borrar_resena(id)
+```
+
+### 4.4 "Lo terminado desaparece"
+
+Una sola regla, en la base y en el frontend (mismos casos de prueba):
+una actividad termina en `fecha_fin + hora_fin` en **America/Managua (UTC-6)**; si `hora_fin < hora_inicio`
+cruza la medianoche y termina al día siguiente; sin hora, termina a las 00:00 del día siguiente.
 
 ```mermaid
 flowchart TD
-    A[Landing] -->|Registrarse / Comenzar| B[Login por OTP]
-    B --> C{¿Ya completó el onboarding?}
-    C -->|No| D[Selección de rol]
-    C -->|Sí| Z[Inicio]
+    R["fin = fecha_fin + hora_fin (Managua)"] --> Q{"¿ahora ≥ fin?"}
+    Q -- No --> V["Vigente: se muestra en Eventos, Inicio, ficha del negocio y se puede canjear"]
+    Q -- Sí --> X["Terminada"]
+    X --> X1["actividades_negocio_publicas() no la devuelve"]
+    X --> X2["canjear_qr_sello: 'Esta actividad ya terminó.'"]
+    X --> X3["admin_aprobar_sello: 'Esta actividad ya terminó.'; PanelAdmin: etiqueta 'Ya terminó', Aprobar desactivado"]
+    X --> X4["Emprendedor: pasa a 'Finalizadas (N)'"]
+    X --> X5["Favorito: abre el detalle guardado con 'Ya terminó', sin descripción ni perfil"]
+    X --> X6["Reseñas: NO cambian (son del negocio)"]
+    C["Cupón con fecha_expiracion < ahora"] --> C1["Turista: pasa a 'Vencidos y usados'"]
+    C --> C2["Emprendedor: 'Vencidos (N)'"]
+    H["useAhora: re-lee la hora cada 60 s y al volver a la app"] -.-> Q
+```
 
-    D -->|Turista| E[Onboarding: 3 pasos]
-    D -->|Emprendedor| F[Registro de negocio]
+### 4.5 Navegación (resumen)
 
-    E --> G[Datos de perfil: nombre, país, idioma]
-    G --> H[Selección de Danzante: Cabezón o Gigantona]
-    H --> Z
-
-    F -->|Envío exitoso| I[Onboarding del emprendedor: 3 pasos]
-    I --> J[Solicitud enviada]
-    J -->|Pendiente 5 días o aprobación manual| K[Perfil de negocio]
-
-    Z --> L[Mapa: explorar sitios]
-    L -->|A menos de 80m de un sitio| M[Sello automático + aviso]
-    Z --> N[Escanear QR de negocio]
-    N -->|Token válido, no canjeado antes, dentro del límite| O[Sello por QR + aviso]
-    Z --> P[Mis sellos / Pasaporte]
-    Z --> Q[Personalizar avatar]
-    Q -->|Cada 5 niveles| R[Elegir 1 de 3 piezas ofrecidas]
-    Z --> S[Editar mi perfil]
-    Z --> T[Menú: Guardados, Ranking, Mi negocio]
-
-    K --> U[Editar horarios, fotos, productos, logo]
-    K --> V[Crear actividades de sello QR]
+```mermaid
+flowchart TD
+    L[Landing] --> Lg[Login: correo + código + TOTP]
+    Lg --> O{¿Onboarding completo?}
+    O -- No --> Ob[Onboarding / registro de negocio]
+    O -- Sí --> R{Rol}
+    R -- turista --> Tu[Inicio · Mapa · Eventos · Mis sellos · Cupones · Perfil]
+    R -- dueño de negocio --> Em[Panel del negocio: Resumen · Negocio · Actividades · Reseñas]
+    R -- admin --> Ad[Panel Admin: negocios · sellos · reseñas]
+    Tu --> Dt[Detalle de evento / sitio / ruta]
+    Dt --> Pn[Ficha pública del negocio + reseñas]
 ```

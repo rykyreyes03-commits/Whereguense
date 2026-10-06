@@ -27,3 +27,10 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Llave de firma de Android (nunca al repositorio)
+android/keystore.properties
+*.jks
+*.keystore
+*.apk
+*.aab
