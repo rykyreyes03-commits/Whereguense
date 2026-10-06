@@ -9,6 +9,7 @@ import {
   disenoDesdeConfig,
   disenosIguales,
   textoSobre,
+  MAX_DESCRIPCION,
 } from '../utils/diseno';
 import './EditorDiseno.css';
 
@@ -27,7 +28,12 @@ function digitosValidos(w) {
 // Pestaña "Diseño" del panel del emprendedor. El borrador solo vive aquí hasta pulsar Guardar; "Deshacer" vuelve al último
 // diseño guardado. La ficha que ve el turista se abre con "Ver como te ven los turistas" del panel.
 function EditorDiseno({ negocio, onGuardar, onSubirPortada, onSubirLogo }) {
-  const guardado = useMemo(() => disenoDesdeConfig(negocio?.configDiseno), [negocio?.configDiseno]);
+  // Un negocio que aún no guardó descripción en el diseño parte de la que ya tenía en su perfil (no cuenta como cambio).
+  const guardado = useMemo(() => {
+    const d = disenoDesdeConfig(negocio?.configDiseno);
+    const propia = typeof negocio?.configDiseno?.descripcion === 'string';
+    return propia ? d : { ...d, descripcion: (negocio?.descripcion || '').slice(0, MAX_DESCRIPCION) };
+  }, [negocio?.configDiseno, negocio?.descripcion]);
   const [borrador, setBorrador] = useState(guardado);
   const [filas, setFilas] = useState(() => filasDesdeDiseno(guardado));
   const [subiendo, setSubiendo] = useState(null); // 'portada' | 'logo' | null
@@ -162,6 +168,21 @@ function EditorDiseno({ negocio, onGuardar, onSubirPortada, onSubirLogo }) {
           <p>{subiendo === 'logo' ? 'Subiendo logo...' : 'Vista previa en vivo'}</p>
         </div>
       </header>
+
+      <section className="editor-diseno-bloque">
+        <label htmlFor="ed-descripcion" className="editor-diseno-etiqueta">Descripción</label>
+        <textarea
+          id="ed-descripcion"
+          className="editor-diseno-campo editor-diseno-descripcion"
+          rows={4}
+          maxLength={MAX_DESCRIPCION}
+          placeholder="Describe tu negocio..."
+          aria-describedby="ed-descripcion-contador"
+          value={borrador.descripcion}
+          onChange={(e) => cambiar({ descripcion: e.target.value.slice(0, MAX_DESCRIPCION) })}
+        />
+        <p id="ed-descripcion-contador" className="editor-diseno-contador">{[...borrador.descripcion].length}/{MAX_DESCRIPCION}</p>
+      </section>
 
       <section className="editor-diseno-bloque" aria-labelledby="ed-colores">
         <h3 id="ed-colores">Colores</h3>

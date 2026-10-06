@@ -63,6 +63,11 @@ for (const ancho of [360, 412]) {
     ok((await titulos(page)).join('|') === 'Horarios|Productos|Fotos|Actividades|Reseñas', `${t} defecto: orden Horarios, Productos, Fotos, Actividades, Reseñas`);
     ok(await page.locator('.perfilpublico-horarios li').first().innerText().then((x) => /Lun a Sáb\s*8:00 AM - 6:00 PM/.test(x.replace(/\n/g, ' '))), `${t} horarios agrupados "Lun a Sáb 8:00 AM - 6:00 PM"`);
     ok(await page.locator('.perfilpublico-whatsapp').count() === 0, `${t} sin WhatsApp no hay botón`);
+    ok(await page.locator('.perfilpublico-descripcion').innerText() === 'Café de altura en el centro de León.', `${t} sin descripción en el diseño: usa la del perfil, bajo el nombre`);
+    const yNombre = (await page.locator('.perfilpublico-nombre').boundingBox()).y;
+    const yDescripcion = (await page.locator('.perfilpublico-descripcion').boundingBox()).y;
+    const yPastillas = (await page.locator('.perfilpublico-pastillas').boundingBox()).y;
+    ok(yNombre < yDescripcion && yDescripcion < yPastillas, `${t} la descripción va debajo del nombre y antes de las pastillas`);
     ok(await page.locator('.perfilpublico-productos.perfilpublico-cuadricula').count() === 1, `${t} productos en cuadrícula por defecto`);
     ok(await page.locator('.perfilpublico-pastilla', { hasText: '4.6' }).count() === 1, `${t} calificación en la cabecera`);
     ok(await sinDesborde(page), `${t} ficha sin desborde horizontal`);
@@ -74,7 +79,7 @@ for (const ancho of [360, 412]) {
 
   // 2. Ficha con diseño guardado: terracota, elegante, WhatsApp, 3 secciones en otro orden, lista
   {
-    const cfg = { paleta: 'terracota', letra: 'elegante', whatsapp: '87074097', secciones_visibles: ['resenas', 'productos', 'horarios'], layout_productos: 'lista', portada_url: null, logo_url: 'https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/u/logo_1.png' };
+    const cfg = { paleta: 'terracota', letra: 'elegante', whatsapp: '87074097', secciones_visibles: ['resenas', 'productos', 'horarios'], layout_productos: 'lista', portada_url: null, descripcion: 'Texto del diseño\nsegunda línea', logo_url: 'https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/u/logo_1.png' };
     const { ctx, page, errores } = await abrir(ancho, 'ficha', datos(cfg));
     await page.waitForSelector('.perfilpublico-whatsapp');
     await page.waitForSelector('.resenas-seccion');
@@ -83,6 +88,7 @@ for (const ancho of [360, 412]) {
     ok(await page.locator('.perfilpublico-whatsapp').getAttribute('href') === 'https://wa.me/50587074097', `${t} WhatsApp de 8 dígitos abre wa.me/505…`);
     ok((await titulos(page)).join('|') === 'Reseñas|Productos|Horarios', `${t} guardado: orden Reseñas, Productos, Horarios (Fotos y Actividades ocultas)`);
     ok(await page.locator('.perfilpublico-productos.perfilpublico-lista').count() === 1, `${t} productos en lista`);
+    ok(await page.locator('.perfilpublico-descripcion').innerText() === 'Texto del diseño\nsegunda línea', `${t} guardado: la descripción del diseño manda y respeta los saltos de línea`);
     const fondo = await page.locator('.perfilpublico-whatsapp').evaluate((e) => getComputedStyle(e).backgroundColor);
     ok(fondo === 'rgb(192, 98, 42)', `${t} el botón de WhatsApp usa el color de la paleta (${fondo})`);
     ok(await page.locator('.perfilpublico-logo img').getAttribute('src') === 'https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/u/logo_1.png', `${t} guardado: la ficha usa el logo_url del diseño`);
@@ -99,6 +105,26 @@ for (const ancho of [360, 412]) {
     await page.waitForSelector('.perfilpublico-nombre');
     ok(await variable(page, '--ficha-color') === '#1B2A6B', `${t} config corrupta: vuelve a azul_marino`);
     ok((await titulos(page)).length >= 3 && errores.length === 0, `${t} config corrupta: la ficha se dibuja completa y sin errores`);
+    await ctx.close();
+  }
+
+  // 3b. La descripción es texto plano: el HTML no se interpreta
+  {
+    const malo = '<img src=x onerror="window.__xss=1"><b>negrita</b>';
+    const { ctx, page, errores } = await abrir(ancho, 'ficha', datos({ descripcion: malo }));
+    await page.waitForSelector('.perfilpublico-descripcion');
+    ok(await page.locator('.perfilpublico-descripcion').innerText() === malo, `${t} descripción con HTML: se ve como texto literal`);
+    ok(await page.locator('.perfilpublico-descripcion img, .perfilpublico-descripcion b').count() === 0 && !(await page.evaluate(() => window.__xss)), `${t} descripción con HTML: no crea elementos ni ejecuta nada`);
+    ok(errores.length === 0, `${t} descripción con HTML: sin errores de página`);
+    await ctx.close();
+  }
+
+  // 3c. Sin descripción en ningún lado: no se dibuja nada (ni texto de relleno)
+  {
+    const { ctx, page } = await abrir(ancho, 'ficha-sin-descripcion', datos({}));
+    await page.waitForSelector('.perfilpublico-nombre');
+    ok(await page.locator('.perfilpublico-descripcion').count() === 0, `${t} sin descripción: no se dibuja el párrafo`);
+    ok(await page.getByText('aún no agregó una descripción').count() === 0, `${t} sin descripción: ya no hay texto de relleno`);
     await ctx.close();
   }
 
@@ -135,6 +161,22 @@ for (const ancho of [360, 412]) {
     ok(await page.locator('.editor-diseno-cabecera p').innerText() === 'Vista previa en vivo', `${t} cabecera: subtítulo "Vista previa en vivo"`);
     ok(await page.locator('.editor-diseno-logo span').first().innerText() === 'C', `${t} cabecera: sin logo muestra la inicial`);
     ok(await page.locator('.editor-diseno-logo').evaluate((e) => getComputedStyle(e).backgroundColor) === 'rgb(232, 234, 240)', `${t} cabecera: cuadro gris claro`);
+
+    // Descripción: textarea bajo el header, contador X/300, tope de 300
+    const desc = page.getByRole('textbox', { name: 'Descripción' });
+    ok(await desc.getAttribute('placeholder') === 'Describe tu negocio...' && await desc.getAttribute('maxlength') === '300', `${t} descripción: placeholder "Describe tu negocio..." y máximo 300`);
+    ok(await desc.inputValue() === 'Café de altura en el centro de León.' && await page.locator('#ed-descripcion-contador').innerText() === '36/300', `${t} descripción: parte de la descripción del perfil y muestra 36/300`);
+    const yCabecera = (await page.locator('.editor-diseno-cabecera').boundingBox()).y + (await page.locator('.editor-diseno-cabecera').boundingBox()).height;
+    const yDesc = (await desc.boundingBox()).y;
+    const yColores = (await page.locator('#ed-colores').boundingBox()).y;
+    ok(yDesc > yCabecera && yDesc < yColores, `${t} descripción: está bajo el header y sobre los colores`);
+    ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} descripción: abrir el editor no cuenta como cambio`);
+    await desc.fill('x'.repeat(400));
+    ok((await desc.inputValue()).length === 300 && await page.locator('#ed-descripcion-contador').innerText() === '300/300', `${t} descripción: no pasa de 300 caracteres (300/300)`);
+    await desc.fill('Hola mundo');
+    ok(await page.locator('#ed-descripcion-contador').innerText() === '10/300' && await page.getByRole('button', { name: 'Guardar' }).isEnabled(), `${t} descripción: contador 10/300 y Guardar activo`);
+    await page.getByRole('button', { name: 'Deshacer' }).click();
+    ok(await desc.inputValue() === 'Café de altura en el centro de León.' && await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} descripción: Deshacer la devuelve`);
 
     // Secciones: orden, flechas de las puntas, asas
     ok((await nombres()).join('|') === 'Horarios|Productos|Fotos|Actividades|Reseñas', `${t} secciones: las cinco, en el orden guardado`);
@@ -198,12 +240,14 @@ for (const ancho of [360, 412]) {
     await page.setInputFiles('input[data-campo=logo]', { name: 'logo.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('x') });
     await page.waitForSelector('.editor-diseno-logo img');
     await campo.fill('50587074097');
+    await desc.fill('Línea uno\nLínea dos');
     await page.getByRole('button', { name: 'Guardar' }).click();
     await page.getByText('Diseño guardado.').waitFor();
     const llamadas = await page.evaluate(() => window.__llamadas);
     const guardada = llamadas.filter((l) => l[0] === 'guardar').pop()[1];
-    ok(guardada.logo_url.startsWith('https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/') && guardada.portada_url === null && Object.keys(guardada).sort().join(',') === 'layout_productos,letra,logo_url,paleta,portada_url,secciones_visibles,whatsapp',
-      `${t} guardar: envía las siete claves (logo_url incluida) y nada más -> ${Object.keys(guardada).sort().join(',')}`);
+    ok(guardada.logo_url.startsWith('https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/') && guardada.portada_url === null && Object.keys(guardada).sort().join(',') === 'descripcion,layout_productos,letra,logo_url,paleta,portada_url,secciones_visibles,whatsapp',
+      `${t} guardar: envía las ocho claves (logo_url y descripcion incluidas) y nada más -> ${Object.keys(guardada).sort().join(',')}`);
+    ok(guardada.descripcion === 'Línea uno\nLínea dos', `${t} guardar: la descripción viaja como texto plano`);
     ok(guardada.paleta === 'verde' && guardada.whatsapp === '50587074097' && guardada.secciones_visibles.join(',') === 'productos,fotos,actividades,resenas', `${t} guardar: valores correctos`);
     ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} guardar: tras guardar, Guardar desactivado`);
     ok(errores.length === 0, `${t} editor sin errores de página${errores.length ? ': ' + errores[0] : ''}`);

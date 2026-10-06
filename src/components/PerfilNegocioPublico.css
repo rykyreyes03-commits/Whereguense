@@ -265,3 +265,15 @@
 .perfilpublico-ficha .perfilpublico-actividad-sello {
   background: color-mix(in srgb, var(--ficha-color, var(--color-primary)) 14%, #fff);
 }
+
+.perfilpublico-descripcion {
+  margin: 10px 0 0;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: var(--color-text);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.perfilpublico-telefono--solo {
+  margin: 0;
+}

@@ -390,3 +390,26 @@
     transition: none;
   }
 }
+
+/* Descripción */
+.editor-diseno-etiqueta {
+  display: block;
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+.editor-diseno-descripcion {
+  display: block;
+  min-height: 104px;
+  padding: 12px 14px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.editor-diseno-contador {
+  margin: 6px 0 0;
+  text-align: right;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}

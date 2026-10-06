@@ -43,6 +43,7 @@ function Editor() {
 // eslint-disable-next-line react-refresh/only-export-components
 function Pantalla() {
   if (vista === 'ficha') return <PerfilNegocioPublico negocio={datos} onCerrar={() => {}} />;
+  if (vista === 'ficha-sin-descripcion') return <PerfilNegocioPublico negocio={{ ...datos, descripcion: '' }} onCerrar={() => {}} />;
   if (vista === 'editor') return <Editor />;
   return null;
 }

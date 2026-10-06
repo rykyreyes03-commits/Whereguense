@@ -150,6 +150,8 @@ function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false }) {
   if (!negocio) return null;
 
   const logo = diseno.logoUrl || fila?.logo_url;
+  // Texto plano: se dibuja como texto (React lo escapa), nunca como HTML. Sin descripción en el diseño, la del perfil de siempre.
+  const descripcion = (diseno.descripcion || negocio.descripcion || '').trim();
   const inicial = (negocio.name || '?').trim().charAt(0).toUpperCase();
   const portada = diseno.portadaUrl && portadaRota !== diseno.portadaUrl ? diseno.portadaUrl : null;
   const whatsapp = enlaceWhatsapp(diseno.whatsapp);
@@ -239,6 +241,8 @@ function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false }) {
           <h2 className="perfilpublico-nombre">{negocio.name}</h2>
         </div>
 
+        {descripcion && <p className="perfilpublico-descripcion">{descripcion}</p>}
+
         <div className="perfilpublico-pastillas">
           {negocio.categoria && <span className="perfilpublico-pastilla">{negocio.categoria}</span>}
           {estado && (
@@ -257,16 +261,13 @@ function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false }) {
           </a>
         )}
 
-        <div className="perfilpublico-card">
-          <p className="historia-sitio-texto">
-            {negocio.descripcion || 'Este negocio aún no agregó una descripción.'}
-          </p>
-          {negocio.telefono && (
-            <p className="perfilpublico-telefono">
+        {negocio.telefono && (
+          <div className="perfilpublico-card">
+            <p className="perfilpublico-telefono perfilpublico-telefono--solo">
               <Phone size={16} strokeWidth={2} aria-hidden="true" /> {negocio.telefono}
             </p>
-          )}
-        </div>
+          </div>
+        )}
 
         {diseno.secciones.map((id) => secciones[id] || null)}
       </div>

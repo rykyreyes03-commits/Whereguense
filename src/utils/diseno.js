@@ -31,11 +31,14 @@ export const LAYOUTS = [
   { id: 'lista', nombre: 'Lista' },
 ];
 
+export const MAX_DESCRIPCION = 300;
+
 export const DISENO_POR_DEFECTO = {
   paleta: 'azul_marino',
   letra: 'clasica',
   portadaUrl: null,
   logoUrl: null,
+  descripcion: '',
   whatsapp: '',
   secciones: SECCIONES.map((s) => s.id), // visibles, en orden
   layoutProductos: 'cuadricula',
@@ -56,6 +59,7 @@ export function disenoDesdeConfig(config) {
     letra: LETRAS.some((l) => l.id === c.letra) ? c.letra : base.letra,
     portadaUrl: typeof c.portada_url === 'string' && c.portada_url.startsWith('https://') ? c.portada_url : null,
     logoUrl: typeof c.logo_url === 'string' && c.logo_url.startsWith('https://') ? c.logo_url : null,
+    descripcion: typeof c.descripcion === 'string' ? c.descripcion.slice(0, MAX_DESCRIPCION) : '',
     whatsapp: typeof c.whatsapp === 'string' && /^[0-9]{8,15}$/.test(c.whatsapp) ? c.whatsapp : '',
     secciones,
     layoutProductos: LAYOUTS.some((l) => l.id === c.layout_productos) ? c.layout_productos : base.layoutProductos,
@@ -69,6 +73,7 @@ export function configDesdeDiseno(d) {
     letra: d.letra,
     portada_url: d.portadaUrl || null,
     logo_url: d.logoUrl || null,
+    descripcion: (d.descripcion || '').trim() || null,
     whatsapp: d.whatsapp || null,
     secciones_visibles: d.secciones,
     layout_productos: d.layoutProductos,
