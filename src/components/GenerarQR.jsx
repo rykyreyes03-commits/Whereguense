@@ -8,10 +8,13 @@ import FormularioActividad from './FormularioActividad';
 import DetalleActividad from './DetalleActividad';
 import DialogoConfirmacion from './DialogoConfirmacion';
 import BloqueQR from './BloqueQR';
-import { rangoEscrito, inicialDe } from '../utils/eventos';
+import { rangoEscrito, inicialDe, eventoTermino } from '../utils/eventos';
+import { useAhora } from '../hooks/useAhora';
 
-// Etiqueta de la fila: sin sello la actividad ya está publicada; con sello depende de la revisión del admin.
-function estadoDeActividad(actividad) {
+// Etiqueta de la fila: una actividad que terminó es "Finalizada"; sin sello la actividad ya está publicada; con sello
+// depende de la revisión del admin.
+function estadoDeActividad(actividad, finalizada) {
+  if (finalizada) return { texto: 'Finalizada', tono: 'inactiva' };
   if (actividad.solicita_sello && actividad.estado_sello === 'pendiente') return { texto: 'En revisión', tono: 'revision' };
   if (actividad.solicita_sello && actividad.estado_sello === 'rechazado') return { texto: 'Rechazada', tono: 'rechazada' };
   return { texto: 'Publicada', tono: 'publicada' };
@@ -51,6 +54,8 @@ function GenerarQR({
   const avisoRef = useRef(null);
   const [expandidoId, setExpandidoId] = useState(null); // solo para "Sellos anteriores"
   const [sellosAbiertos, setSellosAbiertos] = useState(false);
+  const [finalizadasAbiertas, setFinalizadasAbiertas] = useState(false);
+  const ahora = useAhora(); // cada minuto se vuelve a evaluar qué terminó: pasa sola a "Finalizadas"
 
   // Al terminar algo (crear, eliminar) el foco pasa al aviso, que además lo anuncia: la pantalla desde la que se actuó ya no existe.
   useEffect(() => {
@@ -65,6 +70,10 @@ function GenerarQR({
   const qrPorId = new Map(actividadesQR.map((qr) => [qr.id, qr]));
   const idsConActividad = new Set(actividades.map((a) => a.qr_sello_id).filter(Boolean));
   const sellosAnteriores = actividadesQR.filter((qr) => !idsConActividad.has(qr.id));
+  // Sin fechas (actividades antiguas) no se puede saber cuándo terminan: quedan en la lista principal.
+  const terminada = (a) => Boolean(a.fecha_inicio) && eventoTermino(a, ahora);
+  const activas = actividades.filter((a) => !terminada(a));
+  const finalizadas = actividades.filter(terminada);
   const actividadAbierta = detalleId == null ? null : actividades.find((a) => a.id === detalleId) || null;
   const actividadEnEdicion = editandoId == null ? null : actividades.find((a) => a.id === editandoId) || null;
 
@@ -106,36 +115,58 @@ function GenerarQR({
     if (expandidoId === `qr-${id}`) setExpandidoId(null);
   };
 
+  const renderFilaActividad = (actividad, finalizada) => {
+    const clave = `actividad-${actividad.id}`;
+    return (
+      <FilaCompacta
+        key={clave}
+        id={clave}
+        miniatura={actividad.foto_url
+          ? <img src={actividad.foto_url} alt="" loading="lazy" />
+          : inicialDe(actividad.nombre)}
+        titulo={actividad.nombre}
+        subtitulo={actividad.fecha_inicio ? rangoEscrito(actividad.fecha_inicio, actividad.fecha_fin) : 'Sin fechas'}
+        estado={estadoDeActividad(actividad, finalizada)}
+        onAbrir={() => { setAviso(''); setAvisoDetalle(''); setDetalleId(actividad.id); }}
+      />
+    );
+  };
+
   const vistaActividades = (
     <>
       {aviso && <p className="generarqr-aviso" role="status" tabIndex={-1} ref={avisoRef}>{aviso}</p>}
 
-      {actividades.length > 0 ? (
-        <ul className="fila-compacta-lista">
-          {actividades.map((actividad) => {
-            const clave = `actividad-${actividad.id}`;
-            return (
-              <FilaCompacta
-                key={clave}
-                id={clave}
-                miniatura={actividad.foto_url
-                  ? <img src={actividad.foto_url} alt="" loading="lazy" />
-                  : inicialDe(actividad.nombre)}
-                titulo={actividad.nombre}
-                subtitulo={actividad.fecha_inicio ? rangoEscrito(actividad.fecha_inicio, actividad.fecha_fin) : 'Sin fechas'}
-                estado={estadoDeActividad(actividad)}
-                onAbrir={() => { setAviso(''); setAvisoDetalle(''); setDetalleId(actividad.id); }}
-              />
-            );
-          })}
-        </ul>
+      {activas.length > 0 ? (
+        <ul className="fila-compacta-lista">{activas.map((actividad) => renderFilaActividad(actividad, false))}</ul>
       ) : (
-        <p className="generarqr-vacio">Aún no tienes actividades. Publica la primera con el botón de abajo.</p>
+        <p className="generarqr-vacio">
+          {actividades.length === 0
+            ? 'Aún no tienes actividades. Publica la primera con el botón de abajo.'
+            : 'No tienes actividades activas ni próximas. Publica una con el botón de abajo.'}
+        </p>
       )}
 
       <button type="button" className="generarqr-nuevo" onClick={() => { setAviso(''); setCreando(true); }}>
         <Plus size={18} strokeWidth={2.4} aria-hidden="true" /> Nueva actividad
       </button>
+
+      {finalizadas.length > 0 && (
+        <div className="generarqr-anteriores">
+          <button
+            type="button"
+            className="generarqr-anteriores-toggle"
+            aria-expanded={finalizadasAbiertas}
+            aria-controls={finalizadasAbiertas ? 'actividades-finalizadas' : undefined}
+            onClick={() => setFinalizadasAbiertas((v) => !v)}
+          >
+            Finalizadas ({finalizadas.length})
+            <ChevronDown size={16} strokeWidth={2.2} aria-hidden="true" className={finalizadasAbiertas ? 'girada' : ''} />
+          </button>
+          {finalizadasAbiertas && (
+            <ul className="fila-compacta-lista" id="actividades-finalizadas">{finalizadas.map((actividad) => renderFilaActividad(actividad, true))}</ul>
+          )}
+        </div>
+      )}
 
       {sellosAnteriores.length > 0 && (
         <div className="generarqr-anteriores">

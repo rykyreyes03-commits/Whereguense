@@ -7,7 +7,8 @@ import PantallaFormulario from './PantallaFormulario';
 import TarjetaCupon from './TarjetaCupon';
 import BloqueQR from './BloqueQR';
 import { valorQRCupon } from '../utils/qr';
-import { rangoEscrito, hoyISO } from '../utils/eventos';
+import { rangoEscrito, hoyISO, cuponVencido } from '../utils/eventos';
+import { useAhora } from '../hooks/useAhora';
 
 // Pantalla de un cupón del negocio: arriba "Así lo ve el turista" con su tarjeta, los números del cupón y las
 // acciones. Las reglas de la base se explican donde importan: no se puede eliminar un cupón que ya obtuvieron
@@ -25,13 +26,14 @@ function DetalleCupon({
   aviso = '',
 }) {
   const idAviso = useId();
+  const ahora = useAhora(); // si el cupón vence con la pantalla abierta, pasa a "Venció" sin recargar
   const [verQR, setVerQR] = useState(false);
   const [verOtorgados, setVerOtorgados] = useState(false);
   const [cambiando, setCambiando] = useState(false);
 
   const obtenidos = cupon.obtenidos || 0;
   const puedeEliminar = obtenidos === 0;
-  const vencido = Boolean(cupon.fecha_expiracion) && new Date(cupon.fecha_expiracion) < new Date();
+  const vencido = cuponVencido(cupon, ahora);
   const dia = (valor) => rangoEscrito(hoyISO(new Date(valor)));
 
   const alternarOtorgados = async () => {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Plus, QrCode, Download } from 'lucide-react';
+import { Plus, QrCode, Download, ChevronDown } from 'lucide-react';
 import './GenerarQR.css';
 import './CuponesNegocio.css';
 import FilaCompacta from './FilaCompacta';
@@ -11,7 +11,8 @@ import DialogoConfirmacion from './DialogoConfirmacion';
 import PantallaFormulario from './PantallaFormulario';
 import { useCuponesNegocio } from '../hooks/useCuponesNegocio';
 import { valorQRCanje } from '../utils/qr';
-import { rangoEscrito, hoyISO } from '../utils/eventos';
+import { rangoEscrito, hoyISO, cuponVencido } from '../utils/eventos';
+import { useAhora } from '../hooks/useAhora';
 
 // Las fechas con hora (vencimiento) se muestran por su día local: en Nicaragua (UTC-6) el día UTC puede ser el siguiente.
 const diaLocal = (valor) => hoyISO(new Date(valor));
@@ -65,6 +66,8 @@ function CuponesNegocio({ negocioId, nombreNegocio = '' }) {
   } = useCuponesNegocio(negocioId);
 
   const [creando, setCreando] = useState(false);
+  const [vencidosAbiertos, setVencidosAbiertos] = useState(false);
+  const ahora = useAhora(); // cada minuto se vuelve a evaluar qué venció: pasa solo a "Vencidos"
   const [aviso, setAviso] = useState('');
   const [detalleId, setDetalleId] = useState(null);
   const [editandoId, setEditandoId] = useState(null);
@@ -75,6 +78,28 @@ function CuponesNegocio({ negocioId, nombreNegocio = '' }) {
   const eliminandoRef = useRef(false);
   const [errorEliminar, setErrorEliminar] = useState('');
   const avisoRef = useRef(null);
+
+  const vencidos = cupones.filter((c) => cuponVencido(c, ahora));
+  const vigentes = cupones.filter((c) => !cuponVencido(c, ahora)); // activos y desactivados que aún no vencieron
+
+  const renderFilaCupon = (cupon) => {
+    const vencido = cuponVencido(cupon, ahora);
+    return (
+      <FilaCompacta
+        key={cupon.id}
+        id={`cupon-${cupon.id}`}
+        miniatura={<span className="cupon-miniatura-porcentaje">{cupon.descuento_porcentaje}%</span>}
+        titulo={cupon.descripcion}
+        subtitulo={cupon.fecha_expiracion
+          ? `${vencido ? 'Venció' : 'Vence'} el ${rangoEscrito(diaLocal(cupon.fecha_expiracion))}`
+          : (cupon.limite_total
+            ? `${cupon.obtenidos} de ${cupon.limite_total} obtenidos`
+            : `${cupon.obtenidos} obtenido${cupon.obtenidos === 1 ? '' : 's'}`)}
+        estado={estadoDeCuponFila(cupon, vencido)}
+        onAbrir={() => { setAviso(''); setAvisoDetalle(''); setDetalleId(cupon.id); cargar(); }}
+      />
+    );
+  };
 
   const cuponAbierto = detalleId == null ? null : cupones.find((c) => c.id === detalleId) || null;
   const cuponEnEdicion = editandoId == null ? null : cupones.find((c) => c.id === editandoId) || null;
@@ -132,34 +157,37 @@ function CuponesNegocio({ negocioId, nombreNegocio = '' }) {
 
       {aviso && <p className="generarqr-aviso" role="status" tabIndex={-1} ref={avisoRef}>{aviso}</p>}
 
-      {cupones.length > 0 ? (
-        <ul className="fila-compacta-lista">
-          {cupones.map((cupon) => {
-            const vencido = Boolean(cupon.fecha_expiracion) && new Date(cupon.fecha_expiracion) < new Date();
-            return (
-              <FilaCompacta
-                key={cupon.id}
-                id={`cupon-${cupon.id}`}
-                miniatura={<span className="cupon-miniatura-porcentaje">{cupon.descuento_porcentaje}%</span>}
-                titulo={cupon.descripcion}
-                subtitulo={cupon.fecha_expiracion
-                  ? `${vencido ? 'Venció' : 'Vence'} el ${rangoEscrito(diaLocal(cupon.fecha_expiracion))}`
-                  : (cupon.limite_total
-                    ? `${cupon.obtenidos} de ${cupon.limite_total} obtenidos`
-                    : `${cupon.obtenidos} obtenido${cupon.obtenidos === 1 ? '' : 's'}`)}
-                estado={estadoDeCuponFila(cupon, vencido)}
-                onAbrir={() => { setAviso(''); setAvisoDetalle(''); setDetalleId(cupon.id); cargar(); }}
-              />
-            );
-          })}
-        </ul>
+      {vigentes.length > 0 ? (
+        <ul className="fila-compacta-lista">{vigentes.map(renderFilaCupon)}</ul>
       ) : (
-        !cargando && <p className="generarqr-vacio cupones-vacio">Aún no tienes cupones. Crea el primero con el botón de abajo.</p>
+        !cargando && (
+          <p className="generarqr-vacio cupones-vacio">
+            {cupones.length === 0
+              ? 'Aún no tienes cupones. Crea el primero con el botón de abajo.'
+              : 'No tienes cupones vigentes. Crea uno con el botón de abajo.'}
+          </p>
+        )
       )}
 
       <button type="button" className="generarqr-nuevo" onClick={() => { setAviso(''); setCreando(true); }}>
         <Plus size={18} strokeWidth={2.4} aria-hidden="true" /> Nuevo cupón
       </button>
+
+      {vencidos.length > 0 && (
+        <div className="generarqr-anteriores">
+          <button
+            type="button"
+            className="generarqr-anteriores-toggle"
+            aria-expanded={vencidosAbiertos}
+            aria-controls={vencidosAbiertos ? 'cupones-vencidos' : undefined}
+            onClick={() => setVencidosAbiertos((v) => !v)}
+          >
+            Vencidos ({vencidos.length})
+            <ChevronDown size={16} strokeWidth={2.2} aria-hidden="true" className={vencidosAbiertos ? 'girada' : ''} />
+          </button>
+          {vencidosAbiertos && <ul className="fila-compacta-lista" id="cupones-vencidos">{vencidos.map(renderFilaCupon)}</ul>}
+        </div>
+      )}
 
       {cuponAbierto && (
         <DetalleCupon

@@ -4,7 +4,8 @@ import './DetalleActividad.css';
 import PantallaFormulario from './PantallaFormulario';
 import DetalleEvento from './DetalleEvento';
 import BloqueQR from './BloqueQR';
-import { eventoDesdeActividad } from '../utils/eventos';
+import { eventoDesdeActividad, eventoTermino } from '../utils/eventos';
+import { useAhora } from '../hooks/useAhora';
 import { valorQRSello } from '../utils/qr';
 
 const ESTADOS_SELLO = {
@@ -30,6 +31,7 @@ function DetalleActividad({
   onReenviarSello,
 }) {
   const idAviso = useId();
+  const ahora = useAhora();
   const [verQR, setVerQR] = useState(false);
   const [reenvio, setReenvio] = useState(null); // { original, texto }
   const [reenviando, setReenviando] = useState(false);
@@ -37,6 +39,7 @@ function DetalleActividad({
   const evento = eventoDesdeActividad(actividad, organizador ? { ...organizador, verificado: true } : null);
   const estadoSello = ESTADOS_SELLO[actividad.estado_sello];
   const sinFechas = !actividad.fecha_inicio || !actividad.fecha_fin;
+  const finalizada = !sinFechas && eventoTermino(actividad, ahora);
   const aprobado = actividad.estado_sello === 'aprobado';
   const comprobando = entregados == null && Boolean(actividad.qr_sello_id);
   const puedeEliminar = !comprobando && !entregados;
@@ -57,7 +60,7 @@ function DetalleActividad({
     setReenvio(null);
   };
 
-  const hayAcciones = Boolean(onEditar || onEliminar || (aprobado && qr));
+  const hayAcciones = Boolean(onEditar || onEliminar || (aprobado && qr && !finalizada));
   const barra = !hayAcciones ? null : (
     <div className="detact-barra">
       {onEditar && (
@@ -76,7 +79,7 @@ function DetalleActividad({
           <Trash2 size={18} strokeWidth={2} aria-hidden="true" /> Eliminar
         </button>
       )}
-      {aprobado && qr && (
+      {aprobado && qr && !finalizada && (
         <button type="button" className="detact-boton detact-boton--qr" onClick={() => setVerQR(true)}>
           <QrCode size={18} strokeWidth={2} aria-hidden="true" /> Ver QR
         </button>
@@ -88,10 +91,16 @@ function DetalleActividad({
     <>
       <PantallaFormulario titulo="Tu actividad" onVolver={onVolver} pie={barra} sinRelleno>
         <p className="detact-franja">
-          <Eye size={18} strokeWidth={2} aria-hidden="true" /> Así lo ven los turistas
+          <Eye size={18} strokeWidth={2} aria-hidden="true" /> {finalizada ? 'Así lo veían los turistas' : 'Así lo ven los turistas'}
         </p>
 
         {aviso && <p className="detact-aviso detact-aviso--ok" role="status">{aviso}</p>}
+
+        {finalizada && (
+          <p className="detact-aviso detact-aviso--info" role="status">
+            Esta actividad ya terminó. Ya no aparece en Eventos y su sello ya no se puede canjear.
+          </p>
+        )}
 
         {sinFechas && (
           <p className="detact-aviso detact-aviso--info" role="status">
@@ -180,7 +189,7 @@ function DetalleActividad({
         </div>
       </PantallaFormulario>
 
-      {verQR && qr && (
+      {verQR && qr && !finalizada && (
         <PantallaFormulario titulo="QR del sello" onVolver={() => setVerQR(false)}>
           <h2 className="detact-qr-titulo">{actividad.nombre}</h2>
           <BloqueQR valor={valorQRSello(qr.token)} color={qr.color} nombreArchivo={`sello-qr-${actividad.nombre}`} />
