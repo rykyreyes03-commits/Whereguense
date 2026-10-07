@@ -475,7 +475,6 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
             console.error('Error al guardar sitio:', resultado.mensaje);
           }
         }}
-        onHistoria={(sitio) => setSitioHistoria(sitio)}
         onVerDetalle={(sitio) => setSitioDetalle(sitio)}
       />
 
