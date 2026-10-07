@@ -80,6 +80,7 @@ function App() {
   };
   const [sitioSeleccionadoId, setSitioSeleccionadoId] = useState(null);
   const [sitioEnfocadoId, setSitioEnfocadoId] = useState(null);
+  const [negocioEnfocadoId, setNegocioEnfocadoId] = useState(null); // negocio al que se llegó con "Ver en el mapa"
   const { sellos, sellar, canjearQR } = useSellos(usuarioActual?.id);
   const {
     cupones,
@@ -317,8 +318,21 @@ function App() {
 
   const irAlMapaConSitio = (sitioId) => {
     setSitioEnfocadoId(sitioId);
+    setNegocioEnfocadoId(null);
     cambiarPantalla('mapa');
   };
+
+  // "Ver en el mapa" de la ficha de un negocio: abre el mapa principal centrado en él y con su marcador resaltado.
+  const irAlMapaConNegocio = (negocioId) => {
+    setSitioEnfocadoId(null);
+    setNegocioEnfocadoId(negocioId);
+    cambiarPantalla('mapa');
+  };
+
+  // El negocio enfocado (y con él el botón "Estoy aquí") solo vive mientras se está en el mapa.
+  useEffect(() => {
+    if (pantalla !== 'mapa') setNegocioEnfocadoId(null);
+  }, [pantalla]);
 
   const irAFlujoNegocio = () => {
     if (negocio?.estado === 'activo') {
@@ -638,6 +652,7 @@ function App() {
           onSellar={handleSellar}
           onSellarAutomatico={intentarSellarPorGeofencing}
           sitioEnfocadoId={sitioEnfocadoId}
+          negocioEnfocadoId={negocioEnfocadoId}
           onVolver={() => cambiarPantalla('inicio')}
           usuarioId={usuarioActual?.id}
         />
@@ -748,6 +763,7 @@ function App() {
         onNavigate={cambiarPantalla}
         usuarioId={usuarioActual?.id}
         volverA={origenDetalleEvento}
+        onVerNegocioEnMapa={irAlMapaConNegocio}
       />
     );
   }

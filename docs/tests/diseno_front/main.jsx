@@ -1,12 +1,16 @@
 // Página de prueba: monta la ficha pública o el editor de diseño contra el Supabase simulado.
 //   ?vista=ficha   la ficha a pantalla completa, como la ve el turista
+//   ?vista=ficha-mapa  la ficha con el botón "Ver en el mapa" (registra en window.__llamadas: cerrar, ver)
+//   ?vista=mapa[&enfocar=ID]  el mapa principal; con enfocar, como si se llegara con "Ver en el mapa"
 //   ?vista=editor  la pestaña Diseño del emprendedor (guardar y subir logo/portada quedan registrados en window.__llamadas)
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import '/src/index.css';
+import '/src/App.css';
 import '/src/components/PerfilNegocio.css';
 import PerfilNegocioPublico from '/src/components/PerfilNegocioPublico.jsx';
 import EditorDiseno from '/src/components/EditorDiseno.jsx';
+import MapaRuta from '/src/components/MapaRuta.jsx';
 import { motivoDeRechazo } from '/src/utils/fotos.js';
 
 const vista = new URLSearchParams(window.location.search).get('vista');
@@ -65,8 +69,47 @@ function Editor() {
   );
 }
 
+// Imita a App.jsx: el mapa vive en una pantalla; al salir se desmonta y, al volver por el menú, el negocio enfocado ya no existe.
+// eslint-disable-next-line react-refresh/only-export-components
+function PantallaMapa() {
+  const enfocar = Number(new URLSearchParams(window.location.search).get('enfocar')) || null;
+  const [pantalla, setPantalla] = useState('mapa');
+  const [negocioEnfocadoId, setNegocioEnfocadoId] = useState(enfocar);
+  if (pantalla !== 'mapa') {
+    return (
+      <div style={{ padding: 24 }}>
+        <p id="otra-seccion">Pantalla de inicio</p>
+        <button type="button" onClick={() => { setNegocioEnfocadoId(null); setPantalla('mapa'); }}>Ir al mapa</button>
+      </div>
+    );
+  }
+  return (
+    <div className="mapa-pantalla">
+      <MapaRuta
+        sitios={[]}
+        sellos={[]}
+        onSellarAutomatico={() => {}}
+        sitioEnfocadoId={null}
+        negocioEnfocadoId={negocioEnfocadoId}
+        onVolver={() => setPantalla('inicio')}
+        usuarioId={undefined}
+      />
+    </div>
+  );
+}
+
 // eslint-disable-next-line react-refresh/only-export-components
 function Pantalla() {
+  if (vista === 'mapa') return <PantallaMapa />;
+  if (vista === 'ficha-mapa') {
+    return (
+      <PerfilNegocioPublico
+        negocio={datos}
+        onCerrar={() => window.__llamadas.push(['cerrar'])}
+        onVerEnMapa={(id) => window.__llamadas.push(['ver', id])}
+      />
+    );
+  }
   if (vista === 'ficha') return <PerfilNegocioPublico negocio={datos} onCerrar={() => {}} />;
   if (vista === 'ficha-sin-descripcion') return <PerfilNegocioPublico negocio={{ ...datos, descripcion: '' }} onCerrar={() => {}} />;
   if (vista === 'editor') return <Editor />;

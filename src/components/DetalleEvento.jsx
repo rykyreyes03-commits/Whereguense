@@ -15,7 +15,7 @@ import { useGuardados } from '../hooks/useGuardados';
 //   volverA: pantalla a la que lleva "Volver" (por defecto la agenda; Mis guardados la cambia).
 //   modoDuenio: la misma pantalla sin los botones del turista (volver, compartir, favorito, ver perfil); la usa el
 //   dueño del negocio para ver su actividad tal como se publica.
-function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos', modoDuenio = false }) {
+function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos', modoDuenio = false, onVerNegocioEnMapa = null }) {
   // URL de portada que falló al cargar: el encabezado vuelve a navy con degradado, sin foto.
   const [portadaFallida, setPortadaFallida] = useState(null);
   const [verPerfil, setVerPerfil] = useState(false);
@@ -219,6 +219,7 @@ function DetalleEvento({ evento, onNavigate, usuarioId, volverA = 'eventos', mod
             telefono: organizador.telefono,
           }}
           onCerrar={() => setVerPerfil(false)}
+          onVerEnMapa={onVerNegocioEnMapa}
         />
       )}
     </div>

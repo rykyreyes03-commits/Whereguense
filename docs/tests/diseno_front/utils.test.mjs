@@ -1,6 +1,6 @@
 // Pruebas de las reglas puras del diseño (src/utils/diseno.js) y de "Abierto ahora" (src/utils/horarios.js).
 // Correr: node docs/tests/diseno_front/utils.test.mjs   (TZ da igual: todo se calcula en UTC-6 fijo)
-import { SECCIONES, enlaceComoLlegar, PALETAS, contraste, textoSobre, disenoDesdeConfig, configDesdeDiseno, enlaceWhatsapp, variablesFicha, DISENO_POR_DEFECTO } from '../../../src/utils/diseno.js';
+import { SECCIONES, tieneCoordenadas, PALETAS, contraste, textoSobre, disenoDesdeConfig, configDesdeDiseno, enlaceWhatsapp, variablesFicha, DISENO_POR_DEFECTO } from '../../../src/utils/diseno.js';
 import { MAX_FOTOS, motivoDeRechazo, rutaDeFoto, moverElemento, ACEPTA_FOTOS } from '../../../src/utils/fotos.js';
 import { rutaFotoDeUrl } from '../../../src/utils/eventos.js';
 import { estadoAbierto, resumenHorarios, ahoraEnManagua } from '../../../src/utils/horarios.js';
@@ -79,14 +79,15 @@ eq('sin horarios: no hay filas', resumenHorarios([]), []);
 eq('las filas sin horas se ignoran', resumenHorarios([fila(1, null, null, false)]), []);
 eq('hora con minutos', resumenHorarios([fila(1, '07:30', '19:45')]), [{ dias: 'Lunes', horas: '7:30 AM – 7:45 PM' }]);
 
-// --- cómo llegar
-eq('enlace de Google Maps con las coordenadas', enlaceComoLlegar(12.4355375908998, -86.8805694580078), 'https://www.google.com/maps/dir/?api=1&destination=12.4355375908998,-86.8805694580078');
-eq('coordenadas como texto (la base puede devolver texto)', enlaceComoLlegar('12.4355', '-86.8805'), 'https://www.google.com/maps/dir/?api=1&destination=12.4355,-86.8805');
-eq('sin coordenadas: null', enlaceComoLlegar(null, null), null);
-eq('sin una coordenada: null', enlaceComoLlegar(12.4, undefined), null);
-eq('texto raro: null', enlaceComoLlegar('abc', '1'), null);
-eq('fuera de rango: null', enlaceComoLlegar(120, 10), null);
-eq('cero es una coordenada válida (no es "falta")', enlaceComoLlegar(0, 0), 'https://www.google.com/maps/dir/?api=1&destination=0,0');
+// --- ubicación (mini-mapa de la ficha)
+eq('coordenadas numéricas', tieneCoordenadas(12.4355375908998, -86.8805694580078), true);
+eq('coordenadas como texto (la base puede devolver texto)', tieneCoordenadas('12.4355', '-86.8805'), true);
+eq('sin coordenadas', tieneCoordenadas(null, null), false);
+eq('falta una', tieneCoordenadas(12.4, undefined), false);
+eq('texto vacío no es cero', tieneCoordenadas('', ''), false);
+eq('texto raro', tieneCoordenadas('abc', '1'), false);
+eq('fuera de rango', tieneCoordenadas(120, 10), false);
+eq('cero es una coordenada válida', tieneCoordenadas(0, 0), true);
 eq('la ubicación es una sección posible', SECCIONES.map((x) => x.id), ['horarios', 'productos', 'fotos', 'actividades', 'resenas', 'ubicacion']);
 eq('por defecto las seis secciones están visibles', DISENO_POR_DEFECTO.secciones, ['horarios', 'productos', 'fotos', 'actividades', 'resenas', 'ubicacion']);
 eq('config con ubicación primero se respeta', disenoDesdeConfig({ secciones_visibles: ['ubicacion', 'horarios'] }).secciones, ['ubicacion', 'horarios']);

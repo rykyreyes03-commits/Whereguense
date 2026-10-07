@@ -32,8 +32,12 @@ const datos = (config = {}) => ({
 
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
 
-async function abrir(ancho, vista, db, alto = 900) {
-  const ctx = await browser.newContext({ viewport: { width: ancho, height: alto }, deviceScaleFactor: 2 });
+async function abrir(ancho, vista, db, alto = 900, extra = {}) {
+  const ctx = await browser.newContext({
+    viewport: { width: ancho, height: alto },
+    deviceScaleFactor: 2,
+    ...(extra.geo ? { permissions: ['geolocation'], geolocation: extra.geo } : {}),
+  });
   // Las imágenes que "sube" el arnés son URLs https del bucket: se responden con un dibujo para que se vean
   await ctx.route('https://spybqychnydgvidwjrlh.supabase.co/**', (ruta) => ruta.fulfill({
     contentType: 'image/svg+xml',
@@ -48,8 +52,9 @@ async function abrir(ancho, vista, db, alto = 900) {
   page.teselas = teselas;
   const errores = [];
   page.on('pageerror', (e) => errores.push(e.message));
-  await page.addInitScript(([d, ahora]) => { window.__db = d; Date.now = () => ahora; }, [db, AHORA]);
-  await page.goto(`${base}?vista=${vista}`);
+  // El reloj se congela para probar "Abierto ahora"; los mapas necesitan el real (las animaciones de Leaflet dependen de Date.now).
+  await page.addInitScript(([d, ahora, congelar]) => { window.__db = d; if (congelar) Date.now = () => ahora; }, [db, AHORA, !extra.relojReal]);
+  await page.goto(`${base}?vista=${vista}${extra.query ? '&' + extra.query : ''}`);
   return { ctx, page, errores };
 }
 const variable = (page, nombre) => page.evaluate((n) => getComputedStyle(document.querySelector('.perfilpublico-ficha')).getPropertyValue(n).trim(), nombre);
@@ -77,11 +82,8 @@ for (const ancho of [360, 412]) {
     ok(await page.locator('.minimapa .leaflet-container').count() === 1 && await page.locator('.minimapa .leaflet-marker-icon').count() === 1, `${t} cómo llegar: mini-mapa con un marcador`);
     await page.waitForTimeout(500);
     ok(page.teselas.some((u) => /\/15\/\d+\/\d+/.test(u)), `${t} cómo llegar: el mapa carga teselas de zoom 15 (${page.teselas.length} pedidas)`);
-    const enlace = page.getByRole('link', { name: 'Cómo llegar' });
-    ok(await enlace.getAttribute('href') === 'https://www.google.com/maps/dir/?api=1&destination=12.4355375908998,-86.8805694580078', `${t} cómo llegar: el botón abre indicaciones de Google Maps hasta las coordenadas`);
-    ok(await enlace.getAttribute('target') === '_blank' && (await enlace.getAttribute('rel')).includes('noopener'), `${t} cómo llegar: se abre en una pestaña nueva, con noopener`);
-    const yMapa = (await page.locator('.minimapa').boundingBox()).y + (await page.locator('.minimapa').boundingBox()).height;
-    ok((await enlace.boundingBox()).y >= yMapa, `${t} cómo llegar: el botón va debajo del mapa`);
+    ok(await page.locator('a[href*="google"]').count() === 0 && await page.getByRole('link', { name: 'Cómo llegar' }).count() === 0, `${t} cómo llegar: ya no hay enlace a Google Maps`);
+    ok(await page.getByRole('button', { name: 'Ver en el mapa' }).count() === 0, `${t} cómo llegar: sin manejador (vista previa del dueño) no hay botón "Ver en el mapa"`);
     ok(await page.locator('.minimapa').evaluate((e) => e.getBoundingClientRect().width <= window.innerWidth), `${t} cómo llegar: el mapa cabe en la pantalla`);
     ok(await page.locator('.perfilpublico-whatsapp').count() === 0, `${t} sin WhatsApp no hay botón`);
     ok(await page.locator('.perfilpublico-descripcion').innerText() === 'Café de altura en el centro de León.', `${t} sin descripción en el diseño: usa la del perfil, bajo el nombre`);
@@ -146,6 +148,20 @@ for (const ancho of [360, 412]) {
     await page.waitForSelector('.perfilpublico-nombre');
     ok(await page.locator('.perfilpublico-descripcion').count() === 0, `${t} sin descripción: no se dibuja el párrafo`);
     ok(await page.getByText('aún no agregó una descripción').count() === 0, `${t} sin descripción: ya no hay texto de relleno`);
+    await ctx.close();
+  }
+
+  // 3g. Ficha con "Ver en el mapa": cierra la ficha y lleva al mapa con el id del negocio
+  {
+    const { ctx, page } = await abrir(ancho, 'ficha-mapa', datos({}));
+    await page.waitForSelector('.minimapa');
+    const boton = page.getByRole('button', { name: 'Ver en el mapa' });
+    const yMapa = (await page.locator('.minimapa').boundingBox()).y + (await page.locator('.minimapa').boundingBox()).height;
+    ok(await boton.isVisible() && (await boton.boundingBox()).y >= yMapa, `${t} ver en el mapa: el botón está debajo del mini-mapa`);
+    ok(await page.locator('.minimapa .leaflet-marker-icon').count() === 1 && await page.locator('.minimapa .leaflet-control-zoom').count() === 0, `${t} ver en el mapa: el mini-mapa tiene marcador y no tiene controles de zoom`);
+    await boton.click();
+    const llamadas = await page.evaluate(() => window.__llamadas);
+    ok(JSON.stringify(llamadas) === '[["cerrar"],["ver",1]]', `${t} ver en el mapa: primero cierra la ficha y luego pide el mapa con el id del negocio -> ${JSON.stringify(llamadas)}`);
     await ctx.close();
   }
 
@@ -393,6 +409,106 @@ for (const ancho of [360, 412]) {
     ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} guardar: tras guardar, Guardar desactivado`);
     ok(errores.length === 0, `${t} editor sin errores de página${errores.length ? ': ' + errores[0] : ''}`);
     await ctx.close();
+  }
+
+  // 7. Mapa principal: "Ver en el mapa", negocio resaltado y botón "Estoy aquí"
+  {
+    const negociosMapa = [
+      { id: 1, nombre_negocio: 'Café Colibrí', categoria: 'Cafetería', descripcion: 'Café de altura en el centro de León.', telefono: '87074097', latitud: 12.4373, longitud: -86.8767 },
+      { id: 2, nombre_negocio: 'Artesanías Sutiaba', categoria: 'Artesanías', descripcion: 'Hamacas y cerámica.', telefono: '88880000', latitud: 12.4355, longitud: -86.8805 },
+    ];
+    const conMapa = () => ({ ...datos({}), negociosMapa });
+    const GEO = { latitude: 12.4392, longitude: -86.8790 };
+    const centroX = ancho / 2;
+    const xDe = async (loc) => { const b = await loc.boundingBox(); return b.x + b.width / 2; };
+
+    // 7a. Se llega con "Ver en el mapa" al negocio 1 (permiso de ubicación concedido)
+    {
+      const { ctx, page, errores } = await abrir(ancho, 'mapa', conMapa(), 800, { relojReal: true, query: 'enfocar=1', geo: GEO });
+      await page.waitForSelector('.negocio-marcador-resaltado');
+      await page.waitForTimeout(4000); // termina el vuelo
+      ok(await page.locator('.negocio-marcador-resaltado').count() === 1, `${t} mapa: el negocio al que se llegó tiene el marcador resaltado`);
+      ok(await page.locator('.negocio-marcador-icono:not(.negocio-marcador-resaltado)').count() === 1, `${t} mapa: el otro negocio conserva su marcador normal`);
+      const caja = await page.locator('.negocio-marcador-resaltado svg').boundingBox();
+      ok(caja.width > 30 && caja.height > 45, `${t} mapa: el marcador resaltado es más grande (${Math.round(caja.width)}x${Math.round(caja.height)} frente a 28x36)`);
+      ok(Math.abs((await xDe(page.locator('.negocio-marcador-resaltado svg'))) - centroX) < 30, `${t} mapa: el mapa quedó centrado en el negocio`);
+      for (let k = 0; k < 40 && !page.teselas.some((u) => /\/17\/\d+\/\d+/.test(u)); k += 1) await page.waitForTimeout(200);
+      ok(page.teselas.some((u) => /\/17\/\d+\/\d+/.test(u)), `${t} mapa: acercó a zoom 17`);
+      ok(await page.locator('.panel-sitio').count() === 0, `${t} mapa: no se abre el panel que taparía el marcador y el botón`);
+      const boton = page.getByRole('button', { name: 'Estoy aquí' });
+      ok(await boton.isVisible(), `${t} mapa: el botón flotante "Estoy aquí" está visible`);
+      const bb = await boton.boundingBox();
+      ok(bb.x + bb.width <= ancho - 8 && bb.x + bb.width >= ancho - 40 && bb.y > 800 / 2, `${t} mapa: el botón está en la esquina inferior derecha (derecha ${Math.round(ancho - bb.x - bb.width)} px, y ${Math.round(bb.y)})`);
+      const fab = await page.getByRole('button', { name: 'Centrar en mi ubicación' }).boundingBox();
+      ok(bb.y + bb.height <= fab.y, `${t} mapa: no tapa el botón de centrar en mi ubicación`);
+      await page.screenshot({ path: path.join(capturas, `mapa_llegada_${ancho}.png`) });
+
+      // "Estoy aquí" con permiso concedido
+      ok(await page.locator('.estoy-aqui-icono').count() === 0, `${t} mapa: antes de tocar no hay pin "Estoy aquí"`);
+      await boton.click();
+      await page.waitForSelector('.estoy-aqui-icono');
+      await page.waitForTimeout(4000);
+      ok(await page.locator('.estoy-aqui-icono').count() === 1, `${t} estoy aquí: aparece el pin del turista`);
+      ok(await page.locator('.estoy-aqui-punto').evaluate((e) => getComputedStyle(e).backgroundColor) === 'rgb(124, 200, 242)', `${t} estoy aquí: el pin es azul claro`);
+      ok(await page.locator('.negocio-marcador-icono').count() === 2 && await page.locator('.negocio-marcador-resaltado').count() === 1, `${t} estoy aquí: el pin es distinto de los de negocio y estos siguen donde estaban`);
+      ok(await page.locator('.ubicacion-usuario-icono').count() === 0, `${t} estoy aquí: no se duplica con el punto de ubicación de siempre`);
+      ok(Math.abs((await xDe(page.locator('.estoy-aqui-punto'))) - centroX) < 30, `${t} estoy aquí: el mapa se centró en el turista`);
+      ok(await page.getByRole('status').filter({ hasText: 'Activa la ubicación' }).count() === 0, `${t} estoy aquí: con permiso no hay aviso`);
+      await page.screenshot({ path: path.join(capturas, `mapa_estoy_aqui_${ancho}.png`) });
+
+      // salir a otra sección: el botón desaparece; al volver por el menú ya no está
+      await page.getByRole('button', { name: 'Volver al inicio' }).click();
+      await page.waitForSelector('#otra-seccion');
+      ok(await page.getByRole('button', { name: 'Estoy aquí' }).count() === 0, `${t} navegar a otra sección: el botón desaparece`);
+      await page.getByRole('button', { name: 'Ir al mapa' }).click();
+      await page.waitForSelector('.mapa-mi-ubicacion-btn');
+      ok(await page.getByRole('button', { name: 'Estoy aquí' }).count() === 0 && await page.locator('.negocio-marcador-resaltado').count() === 0, `${t} volver al mapa por el menú: sin botón ni resaltado`);
+      ok(errores.length === 0, `${t} mapa sin errores de página${errores.length ? ': ' + errores[0] : ''}`);
+      await ctx.close();
+    }
+
+    // 7b. Permiso de ubicación rechazado
+    {
+      const { ctx, page } = await abrir(ancho, 'mapa', conMapa(), 800, { relojReal: true, query: 'enfocar=1' });
+      await page.waitForSelector('.negocio-marcador-resaltado');
+      await page.getByRole('button', { name: 'Estoy aquí' }).click();
+      await page.getByRole('status').filter({ hasText: 'Activa la ubicación en tu navegador' }).waitFor();
+      ok(true, `${t} estoy aquí: sin permiso se avisa "Activa la ubicación en tu navegador"`);
+      ok(await page.locator('.estoy-aqui-icono').count() === 0, `${t} estoy aquí: sin permiso no se pone el pin`);
+      ok(await page.getByRole('button', { name: 'Estoy aquí' }).isEnabled(), `${t} estoy aquí: el botón sigue disponible para reintentar`);
+      await page.waitForTimeout(5000);
+      ok(await page.getByRole('status').filter({ hasText: 'Activa la ubicación' }).count() === 0, `${t} estoy aquí: el aviso es corto y se quita solo`);
+      await ctx.close();
+    }
+
+    // 7c. Mapa normal (sin "Ver en el mapa"): sin botón ni resaltado
+    {
+      const { ctx, page } = await abrir(ancho, 'mapa', conMapa(), 800, { relojReal: true, geo: GEO });
+      await page.waitForSelector('.negocio-marcador-icono');
+      await page.waitForTimeout(500);
+      ok(await page.getByRole('button', { name: 'Estoy aquí' }).count() === 0 && await page.locator('.negocio-marcador-resaltado').count() === 0, `${t} mapa normal: sin botón "Estoy aquí" ni marcador resaltado`);
+      ok(await page.getByRole('button', { name: 'Centrar en mi ubicación' }).count() === 1, `${t} mapa normal: el botón de siempre sigue`);
+
+      // 7d. Desde la ficha dentro del mapa: Perfil de negocio -> Ver en el mapa
+      await page.locator('.negocio-marcador-icono').first().dispatchEvent('click'); // el punto de ubicación del turista se superpone
+      await page.getByRole('button', { name: 'Perfil de negocio' }).click();
+      await page.waitForSelector('.perfilpublico-ficha');
+      await page.waitForSelector('.minimapa');
+      await page.getByRole('button', { name: 'Ver en el mapa' }).click();
+      await page.waitForSelector('.negocio-marcador-resaltado');
+      ok(await page.locator('.perfilpublico-ficha').count() === 0, `${t} ficha en el mapa: "Ver en el mapa" cierra la ficha`);
+      ok(await page.locator('.negocio-marcador-resaltado').count() === 1, `${t} ficha en el mapa: el negocio queda resaltado`);
+      ok(await page.getByRole('button', { name: 'Estoy aquí' }).isVisible(), `${t} ficha en el mapa: aparece "Estoy aquí"`);
+      await ctx.close();
+    }
+
+    // 7e. Negocio que ya no está en el mapa
+    {
+      const { ctx, page } = await abrir(ancho, 'mapa', conMapa(), 800, { relojReal: true, query: 'enfocar=99' });
+      await page.getByRole('status').filter({ hasText: 'Este negocio no está en el mapa por ahora.' }).waitFor();
+      ok(await page.locator('.negocio-marcador-resaltado').count() === 0, `${t} negocio fuera del mapa: se avisa y no se resalta nada`);
+      await ctx.close();
+    }
   }
 
   // 6. Editor: error al guardar

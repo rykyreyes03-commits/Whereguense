@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -34,6 +34,25 @@ const iconoNegocio = L.divIcon({
   </svg>`,
   iconSize: [28, 36],
   iconAnchor: [14, 36],
+});
+
+// Marcador del negocio al que se llegó con "Ver en el mapa": más grande y con un halo que pulsa.
+const iconoNegocioResaltado = L.divIcon({
+  className: 'negocio-marcador-icono negocio-marcador-resaltado',
+  html: `<span class="negocio-marcador-halo"></span><svg viewBox="0 0 24 32" width="38" height="50">
+    <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z" fill="var(--color-coral)" stroke="white" stroke-width="1.5"/>
+    <circle cx="12" cy="12" r="5" fill="white"/>
+  </svg>`,
+  iconSize: [38, 50],
+  iconAnchor: [19, 50],
+});
+
+// "Estoy aquí": pin azul claro, distinto del pin coral de los negocios.
+const iconoEstoyAqui = L.divIcon({
+  className: 'estoy-aqui-icono',
+  html: '<span class="estoy-aqui-halo"></span><span class="estoy-aqui-punto"></span>',
+  iconSize: [44, 44],
+  iconAnchor: [22, 22],
 });
 
 function normalizarTexto(s) {
@@ -96,11 +115,11 @@ function SeguidorUbicacion({ ubicacion, activo, onSeguirDesactivado }) {
   return null;
 }
 
-function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuarioId }) {
+function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocadoId = null, onVolver, usuarioId }) {
   const mapRef = useRef(null);
   const { ubicacion, error } = useUbicacionActual();
   const { estaGuardado: estaGuardadoSupabase, toggleGuardar } = useGuardados(usuarioId);
-  const { negocios } = useNegociosActivos();
+  const { negocios, cargando: cargandoNegocios } = useNegociosActivos();
   const [busqueda, setBusqueda] = useState('');
 
   const resultadosBusqueda = busqueda.trim()
@@ -125,6 +144,59 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
   const [resumenRuta, setResumenRuta] = useState(null);
   const [errorRuta, setErrorRuta] = useState(null);
   const [modoRuta, setModoRuta] = useState('foot'); // 'foot' | 'bike' | 'car'
+  // Llegada con "Ver en el mapa": negocio resaltado y botón "Estoy aquí" (que vive solo mientras se está en esta pantalla).
+  const [llegadaDesdeFicha, setLlegadaDesdeFicha] = useState(Boolean(negocioEnfocadoId));
+  const [negocioResaltadoId, setNegocioResaltadoId] = useState(null);
+  const [estoyAqui, setEstoyAqui] = useState(null); // { lat, lng } de la última vez que se tocó "Estoy aquí"
+  const [buscandoUbicacion, setBuscandoUbicacion] = useState(false);
+  const [avisoMapa, setAvisoMapa] = useState(null);
+
+  // Vuela hasta el negocio y deja su marcador resaltado. No abre su panel: taparía el marcador (queda en el centro del mapa) y el
+  // botón "Estoy aquí"; el panel se abre tocando el marcador, como siempre.
+  const enfocarNegocio = useCallback((negocio) => {
+    setNegocioResaltadoId(negocio.id);
+    setNegocioSeleccionado(null);
+    setLlegadaDesdeFicha(true);
+    if (mapRef.current) mapRef.current.flyTo(negocio.position, 17);
+  }, []);
+
+  useEffect(() => {
+    if (!negocioEnfocadoId || cargandoNegocios) return;
+    const negocio = negocios.find((n) => n.id === negocioEnfocadoId);
+    if (negocio) enfocarNegocio(negocio);
+    else setAvisoMapa('Este negocio no está en el mapa por ahora.');
+    // Solo reacciona a un negocio nuevo enfocado o a que termine de cargar la lista.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [negocioEnfocadoId, cargandoNegocios]);
+
+  useEffect(() => {
+    if (!avisoMapa) return undefined;
+    const t = setTimeout(() => setAvisoMapa(null), 4500);
+    return () => clearTimeout(t);
+  }, [avisoMapa]);
+
+  // Pide la ubicación del navegador (al tocar, no antes). Si acepta: centra el mapa y pone el pin azul claro.
+  const irAEstoyAqui = () => {
+    if (!('geolocation' in navigator)) {
+      setAvisoMapa('Activa la ubicación en tu navegador');
+      return;
+    }
+    setBuscandoUbicacion(true);
+    navigator.geolocation.getCurrentPosition(
+      (posicion) => {
+        const punto = { lat: posicion.coords.latitude, lng: posicion.coords.longitude };
+        setBuscandoUbicacion(false);
+        setEstoyAqui(punto);
+        setAvisoMapa(null);
+        if (mapRef.current) mapRef.current.flyTo([punto.lat, punto.lng], 17);
+      },
+      (err) => {
+        setBuscandoUbicacion(false);
+        setAvisoMapa(err.code === err.PERMISSION_DENIED ? 'Activa la ubicación en tu navegador' : 'No se pudo obtener tu ubicación. Intenta de nuevo.');
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    );
+  };
 
   useEffect(() => {
     if (!ubicacion) return;
@@ -282,17 +354,28 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
 
         {negocios.map(negocio => (
           <Marker
-            key={`negocio-${negocio.id}`}
+            key={`negocio-${negocio.id}${negocio.id === negocioResaltadoId ? '-resaltado' : ''}`}
             position={negocio.position}
-            icon={iconoNegocio}
+            icon={negocio.id === negocioResaltadoId ? iconoNegocioResaltado : iconoNegocio}
+            zIndexOffset={negocio.id === negocioResaltadoId ? 900 : 0}
             eventHandlers={{
               click: () => setNegocioSeleccionado(negocio),
             }}
           />
         ))}
 
-        {ubicacion && (
+        {ubicacion && !estoyAqui && (
           <Marker position={[ubicacion.lat, ubicacion.lng]} icon={iconoUbicacion} zIndexOffset={1000} />
+        )}
+
+        {estoyAqui && (
+          <Marker
+            position={ubicacion ? [ubicacion.lat, ubicacion.lng] : [estoyAqui.lat, estoyAqui.lng]}
+            icon={iconoEstoyAqui}
+            zIndexOffset={1100}
+            interactive={false}
+            keyboard={false}
+          />
         )}
 
         <EnfocarSitio sitios={sitios} sitioEnfocadoId={sitioEnfocadoId} onEnfocar={setSitioSeleccionado} />
@@ -421,7 +504,28 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
       <PerfilNegocioPublico
         negocio={negocioPerfilPublico}
         onCerrar={() => setNegocioPerfilPublico(null)}
+        onVerEnMapa={(id) => {
+          const negocio = negocios.find((n) => n.id === id);
+          if (negocio) enfocarNegocio(negocio);
+          else setAvisoMapa('Este negocio no está en el mapa por ahora.');
+        }}
       />
+
+      {llegadaDesdeFicha && (
+        <button
+          type="button"
+          className="mapa-estoy-aqui-btn"
+          onClick={irAEstoyAqui}
+          disabled={buscandoUbicacion}
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" fill="currentColor" />
+            <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2" />
+            <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          {buscandoUbicacion ? 'Buscando…' : 'Estoy aquí'}
+        </button>
+      )}
 
       <button
         className={`mapa-mi-ubicacion-btn ${modoSeguir ? 'siguiendo' : ''}`}
@@ -436,7 +540,8 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
         </svg>
       </button>
 
-      {error && <p className="mapa-ubicacion-error">{error}</p>}
+      {avisoMapa && <p className="mapa-ubicacion-error" role="status">{avisoMapa}</p>}
+      {error && !avisoMapa && <p className="mapa-ubicacion-error">{error}</p>}
       {errorRuta && !destinoRuta && <p className="mapa-ubicacion-error">{errorRuta}</p>}
     </div>
   );

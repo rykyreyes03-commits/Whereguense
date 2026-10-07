@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, MessageCircle, Navigation, Phone, Stamp, X } from 'lucide-react';
+import { CalendarDays, MapPin, MessageCircle, Phone, Stamp, X } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import SeccionResenas from './SeccionResenas';
 import LineaResenas from './LineaResenas';
 import MiniMapaNegocio from './MiniMapaNegocio';
 import { useAhora } from '../hooks/useAhora';
-import { disenoDesdeConfig, enlaceComoLlegar, enlaceWhatsapp, variablesFicha } from '../utils/diseno';
+import { disenoDesdeConfig, enlaceWhatsapp, tieneCoordenadas, variablesFicha } from '../utils/diseno';
 import { estadoAbierto, resumenHorarios } from '../utils/horarios';
 import '../components/HistoriaSitio.css';
 import './PerfilNegocioPublico.css';
@@ -22,7 +22,7 @@ function rangoFechas(a) {
 
 // Ficha pública del negocio. Lee negocio.config_diseno (paleta, letra, logo, portada, orden y visibilidad de secciones,
 // WhatsApp y layout de productos/fotos). Sin logo en el diseño usa el logo de siempre (negocio.logo_url) y, sin ninguno, la inicial.
-function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false }) {
+function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false, onVerEnMapa = null }) {
   const [horarios, setHorarios] = useState([]);
   const [fotos, setFotos] = useState([]);
   const [productos, setProductos] = useState([]);
@@ -157,7 +157,7 @@ function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false }) {
   const inicial = (negocio.name || '?').trim().charAt(0).toUpperCase();
   const portada = diseno.portadaUrl && portadaRota !== diseno.portadaUrl ? diseno.portadaUrl : null;
   const whatsapp = enlaceWhatsapp(diseno.whatsapp);
-  const comoLlegar = enlaceComoLlegar(fila?.latitud, fila?.longitud);
+  const conCoordenadas = tieneCoordenadas(fila?.latitud, fila?.longitud);
   const verResenas = diseno.secciones.includes('resenas');
   const clase = (base) => `${base} perfilpublico-${diseno.layoutProductos}`;
 
@@ -216,13 +216,22 @@ function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false }) {
         </ul>
       </div>
     ),
-    ubicacion: comoLlegar && (
+    ubicacion: conCoordenadas && (
       <div className="perfilpublico-card" key="ubicacion">
         <h3 className="perfilpublico-seccion-titulo">Cómo llegar</h3>
         <MiniMapaNegocio lat={Number(fila.latitud)} lng={Number(fila.longitud)} nombre={negocio.name} />
-        <a className="perfilpublico-como-llegar" href={comoLlegar} target="_blank" rel="noopener noreferrer">
-          <Navigation size={18} strokeWidth={2} aria-hidden="true" /> Cómo llegar
-        </a>
+        {onVerEnMapa && (
+          <button
+            type="button"
+            className="perfilpublico-como-llegar"
+            onClick={() => {
+              onCerrar?.();
+              onVerEnMapa(negocio.id);
+            }}
+          >
+            <MapPin size={18} strokeWidth={2} aria-hidden="true" /> Ver en el mapa
+          </button>
+        )}
       </div>
     ),
     resenas: (

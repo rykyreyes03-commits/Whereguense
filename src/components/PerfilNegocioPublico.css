@@ -288,6 +288,10 @@
 }
 
 .perfilpublico-como-llegar {
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
   display: flex;
   align-items: center;
   justify-content: center;

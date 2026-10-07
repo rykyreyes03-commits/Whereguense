@@ -123,11 +123,10 @@ export function enlaceWhatsapp(digitos) {
   return `https://wa.me/${numero}`;
 }
 
-// Enlace de "Cómo llegar": indicaciones de Google Maps hasta las coordenadas del negocio; null si no hay coordenadas válidas.
-export function enlaceComoLlegar(lat, lng) {
+// ¿Hay coordenadas válidas para dibujar el mapa? (la base puede devolver número, texto o null)
+export function tieneCoordenadas(lat, lng) {
+  if (lat === null || lng === null || lat === undefined || lng === undefined || lat === '' || lng === '') return false;
   const a = Number(lat);
   const b = Number(lng);
-  if (lat === null || lng === null || lat === undefined || lng === undefined || !Number.isFinite(a) || !Number.isFinite(b)) return null;
-  if (Math.abs(a) > 90 || Math.abs(b) > 180) return null;
-  return `https://www.google.com/maps/dir/?api=1&destination=${a},${b}`;
+  return Number.isFinite(a) && Number.isFinite(b) && Math.abs(a) <= 90 && Math.abs(b) <= 180;
 }
