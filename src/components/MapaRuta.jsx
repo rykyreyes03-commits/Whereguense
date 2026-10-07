@@ -9,6 +9,7 @@ import RutaCalculada from './RutaCalculada';
 import PanelSitio from './PanelSitio';
 import HistoriaSitio from './HistoriaSitio';
 import DetalleSitio from './DetalleSitio';
+import { getCategoriaIcono } from '../utils/categoriaSitio';
 import { useGuardados } from '../hooks/useGuardados';
 import { useNegociosActivos } from '../hooks/useNegociosActivos';
 import PanelNegocio from './PanelNegocio';
@@ -55,6 +56,23 @@ const iconoEstoyAqui = L.divIcon({
   iconSize: [44, 44],
   iconAnchor: [22, 22],
 });
+
+// Marcador de sitio: círculo blanco de 36 px con el emoji de su categoría y borde del color de la categoría.
+// Seleccionado: relleno coral y borde blanco (el coral de los pines), con el emoji encima.
+const iconosSitio = new Map();
+function iconoSitio(sitio, seleccionado) {
+  const categoria = getCategoriaIcono(sitio);
+  const clave = `${categoria.clave}-${seleccionado ? 's' : 'n'}`;
+  if (!iconosSitio.has(clave)) {
+    iconosSitio.set(clave, L.divIcon({
+      className: 'sitio-marcador-icono',
+      html: `<span class="sitio-marcador${seleccionado ? ' sitio-marcador--activo' : ''}" style="--sitio-color:${categoria.color}" aria-hidden="true">${categoria.emoji}</span>`,
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+    }));
+  }
+  return iconosSitio.get(clave);
+}
 
 function normalizarTexto(s) {
   return s
@@ -348,6 +366,8 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
           <Marker
             key={sitio.id}
             position={sitio.position}
+            icon={iconoSitio(sitio, sitio.id === sitioSeleccionado?.id)}
+            zIndexOffset={sitio.id === sitioSeleccionado?.id ? 800 : 0}
             eventHandlers={{
               click: () => setSitioSeleccionado(sitio),
             }}
