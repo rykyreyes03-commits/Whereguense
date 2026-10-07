@@ -37,6 +37,7 @@ function suscripcionVencida(negocio) {
 function PerfilNegocio({
   negocio,
   horarios,
+  horariosGuardados = true,
   fotos,
   productos,
   onNavigate,
@@ -135,6 +136,12 @@ function PerfilNegocio({
     } else {
       window.alert(resultado.mensaje);
     }
+  };
+
+  // Publica tal cual los horarios de ejemplo que muestra el panel cuando el negocio aún no guardó ninguno.
+  const guardarHorariosDeEjemplo = async () => {
+    const resultado = await onActualizarHorarios(horarios);
+    if (!resultado.exito) window.alert(resultado.mensaje);
   };
 
   const abrirEdicionPerfil = () => {
@@ -459,6 +466,17 @@ function PerfilNegocio({
                   </button>
                 </div>
               ) : (
+                <>
+                {!horariosGuardados && (
+                  <div className="perfilnegocio-aviso-horarios" role="status">
+                    <p>
+                      <strong>Aún no guardaste tus horarios.</strong> Estos son de ejemplo y los turistas todavía no los ven en tu ficha.
+                    </p>
+                    <button type="button" className="perfilnegocio-btn-primario" onClick={guardarHorariosDeEjemplo}>
+                      Guardar estos horarios
+                    </button>
+                  </div>
+                )}
                 <ul className="perfilnegocio-horarios-lista">
                   {horarios.map((h) => (
                     <li key={h.diaSemana}>
@@ -467,6 +485,7 @@ function PerfilNegocio({
                     </li>
                   ))}
                 </ul>
+                </>
               )}
             </section>
 

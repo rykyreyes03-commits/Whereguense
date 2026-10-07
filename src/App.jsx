@@ -92,6 +92,7 @@ function App() {
   const {
     negocio,
     horarios,
+    horariosGuardados,
     fotos,
     productos,
     registrar,
@@ -831,6 +832,7 @@ function App() {
       <PerfilNegocio
         negocio={negocio}
         horarios={horarios}
+        horariosGuardados={horariosGuardados}
         fotos={fotos}
         productos={productos}
         onNavigate={cambiarPantalla}

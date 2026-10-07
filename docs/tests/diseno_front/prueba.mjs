@@ -23,7 +23,7 @@ const hr = (d, a, c, cerrado = false) => ({ dia_semana: d, hora_apertura: a, hor
 const horarios = [hr(0, null, null, true), ...[1, 2, 3, 4, 5, 6].map((d) => hr(d, '08:00:00', '18:00:00'))];
 const FOTO = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='400' height='300' fill='%2354C8C0'/></svg>";
 const datos = (config = {}) => ({
-  negocio: { config_diseno: config, logo_url: null },
+  negocio: { config_diseno: config, logo_url: null, latitud: 12.4355375908998, longitud: -86.8805694580078 },
   horarios,
   productos: [{ id: 1, nombre: 'Café de altura', orden: 1 }, { id: 2, nombre: 'Cacao', orden: 2 }, { id: 3, nombre: 'Pan dulce', orden: 3 }],
   fotos: [{ url: FOTO }],
@@ -39,7 +39,13 @@ async function abrir(ancho, vista, db, alto = 900) {
     contentType: 'image/svg+xml',
     body: "<svg xmlns='http://www.w3.org/2000/svg' width='600' height='300'><rect width='600' height='300' fill='#d98c3a'/><circle cx='300' cy='150' r='80' fill='#fff3d6'/></svg>",
   }));
+  const teselas = [];
+  await ctx.route(/basemaps.cartocdn.com/, (ruta) => {
+    teselas.push(ruta.request().url());
+    return ruta.fulfill({ contentType: 'image/svg+xml', body: "<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect width='256' height='256' fill='#dfe8d5'/></svg>" });
+  });
   const page = await ctx.newPage();
+  page.teselas = teselas;
   const errores = [];
   page.on('pageerror', (e) => errores.push(e.message));
   await page.addInitScript(([d, ahora]) => { window.__db = d; Date.now = () => ahora; }, [db, AHORA]);
@@ -60,8 +66,23 @@ for (const ancho of [360, 412]) {
     await page.waitForSelector('.resenas-seccion');
     ok(await variable(page, '--ficha-color') === '#1B2A6B', `${t} defecto: paleta azul_marino`);
     ok(await page.locator('.perfilpublico-pastilla--abierto').innerText() === 'Abierto ahora · cierra 6:00 PM', `${t} "Abierto ahora · cierra 6:00 PM" (lunes 10:00 en Managua)`);
-    ok((await titulos(page)).join('|') === 'Horarios|Productos|Fotos|Actividades|Reseñas', `${t} defecto: orden Horarios, Productos, Fotos, Actividades, Reseñas`);
-    ok(await page.locator('.perfilpublico-horarios li').first().innerText().then((x) => /Lun a Sáb\s*8:00 AM - 6:00 PM/.test(x.replace(/\n/g, ' '))), `${t} horarios agrupados "Lun a Sáb 8:00 AM - 6:00 PM"`);
+    ok((await titulos(page)).join('|') === 'Horarios|Productos|Fotos|Actividades|Reseñas|Cómo llegar', `${t} defecto: orden Horarios, Productos, Fotos, Actividades, Reseñas, Cómo llegar`);
+    const filasHorario = await page.$$eval('.perfilpublico-horarios li', (els) => els.map((e) => [e.children[0].textContent.trim(), e.children[1].textContent.trim()]));
+    ok(JSON.stringify(filasHorario) === JSON.stringify([['Lun a Sáb', '8:00 AM – 6:00 PM']]), `${t} horarios: una fila "Lun a Sáb" / "8:00 AM – 6:00 PM" y el domingo cerrado no se muestra -> ${JSON.stringify(filasHorario)}`);
+    const li = await page.locator('.perfilpublico-horarios li').first().boundingBox();
+    const dias = await page.locator('.perfilpublico-horarios li span').first().boundingBox();
+    const horas = await page.locator('.perfilpublico-horarios li strong').first().boundingBox();
+    ok(dias.x < horas.x && dias.x - li.x < 4 && Math.abs((horas.x + horas.width) - (li.x + li.width)) < 4, `${t} horarios: días a la izquierda y horas a la derecha`);
+    // Cómo llegar
+    ok(await page.locator('.minimapa .leaflet-container').count() === 1 && await page.locator('.minimapa .leaflet-marker-icon').count() === 1, `${t} cómo llegar: mini-mapa con un marcador`);
+    await page.waitForTimeout(500);
+    ok(page.teselas.some((u) => /\/15\/\d+\/\d+/.test(u)), `${t} cómo llegar: el mapa carga teselas de zoom 15 (${page.teselas.length} pedidas)`);
+    const enlace = page.getByRole('link', { name: 'Cómo llegar' });
+    ok(await enlace.getAttribute('href') === 'https://www.google.com/maps/dir/?api=1&destination=12.4355375908998,-86.8805694580078', `${t} cómo llegar: el botón abre indicaciones de Google Maps hasta las coordenadas`);
+    ok(await enlace.getAttribute('target') === '_blank' && (await enlace.getAttribute('rel')).includes('noopener'), `${t} cómo llegar: se abre en una pestaña nueva, con noopener`);
+    const yMapa = (await page.locator('.minimapa').boundingBox()).y + (await page.locator('.minimapa').boundingBox()).height;
+    ok((await enlace.boundingBox()).y >= yMapa, `${t} cómo llegar: el botón va debajo del mapa`);
+    ok(await page.locator('.minimapa').evaluate((e) => e.getBoundingClientRect().width <= window.innerWidth), `${t} cómo llegar: el mapa cabe en la pantalla`);
     ok(await page.locator('.perfilpublico-whatsapp').count() === 0, `${t} sin WhatsApp no hay botón`);
     ok(await page.locator('.perfilpublico-descripcion').innerText() === 'Café de altura en el centro de León.', `${t} sin descripción en el diseño: usa la del perfil, bajo el nombre`);
     const yNombre = (await page.locator('.perfilpublico-nombre').boundingBox()).y;
@@ -125,6 +146,45 @@ for (const ancho of [360, 412]) {
     await page.waitForSelector('.perfilpublico-nombre');
     ok(await page.locator('.perfilpublico-descripcion').count() === 0, `${t} sin descripción: no se dibuja el párrafo`);
     ok(await page.getByText('aún no agregó una descripción').count() === 0, `${t} sin descripción: ya no hay texto de relleno`);
+    await ctx.close();
+  }
+
+  // 3e. Horarios con varios grupos: lunes a viernes, sábado solo, domingo cerrado
+  {
+    const d = datos({});
+    d.horarios = [hr(0, null, null, true), ...[1, 2, 3, 4, 5].map((n) => hr(n, '08:00:00', '18:00:00')), hr(6, '09:00:00', '13:00:00')];
+    const { ctx, page } = await abrir(ancho, 'ficha', d);
+    await page.waitForSelector('.perfilpublico-horarios');
+    const filasH = await page.$$eval('.perfilpublico-horarios li', (els) => els.map((e) => [e.children[0].textContent.trim(), e.children[1].textContent.trim()]));
+    ok(JSON.stringify(filasH) === JSON.stringify([['Lun a Vie', '8:00 AM – 6:00 PM'], ['Sábado', '9:00 AM – 1:00 PM']]), `${t} horarios: "Lun a Vie" y "Sábado" en filas aparte, sin el domingo cerrado -> ${JSON.stringify(filasH)}`);
+    ok(await page.locator('.perfilpublico-horarios li').nth(1).evaluate((e) => getComputedStyle(e).borderTopWidth) === '1px', `${t} horarios: separador entre filas`);
+    await ctx.close();
+  }
+
+  // 3f. Ubicación: sin coordenadas no hay sección; oculta en el diseño tampoco
+  {
+    const d = datos({});
+    d.negocio.latitud = null;
+    d.negocio.longitud = null;
+    const { ctx, page } = await abrir(ancho, 'ficha', d);
+    await page.waitForSelector('.perfilpublico-nombre');
+    await page.waitForSelector('.resenas-seccion');
+    ok(!(await titulos(page)).includes('Cómo llegar') && await page.locator('.minimapa').count() === 0, `${t} sin coordenadas: no hay sección Cómo llegar ni mapa`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await abrir(ancho, 'ficha', datos({ secciones_visibles: ['horarios', 'resenas'] }));
+    await page.waitForSelector('.perfilpublico-nombre');
+    await page.waitForSelector('.resenas-seccion');
+    ok(!(await titulos(page)).includes('Cómo llegar') && await page.locator('.minimapa').count() === 0, `${t} con coordenadas pero la sección oculta: no se dibuja`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await abrir(ancho, 'ficha', datos({ secciones_visibles: ['ubicacion', 'horarios'] }));
+    await page.waitForSelector('.minimapa');
+    ok((await titulos(page)).join('|') === 'Cómo llegar|Horarios', `${t} la ubicación puede ir primero (orden del diseño) -> ${(await titulos(page)).join('|')}`);
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: path.join(capturas, `diseno_ficha_ubicacion_${ancho}.png`) });
     await ctx.close();
   }
 
@@ -250,17 +310,17 @@ for (const ancho of [360, 412]) {
     ok(await page.locator('#ed-fotos-contador').innerText() === '0/10', `${t} fotos: se pueden quitar todas (0/10)`);
 
     // Secciones: orden, flechas de las puntas, asas
-    ok((await nombres()).join('|') === 'Horarios|Productos|Fotos|Actividades|Reseñas', `${t} secciones: las cinco, en el orden guardado`);
+    ok((await nombres()).join('|') === 'Horarios|Productos|Fotos|Actividades|Reseñas|Ubicación', `${t} secciones: las seis, en el orden por defecto (Ubicación al final)`);
     ok(await page.getByRole('button', { name: 'Subir Horarios' }).count() === 0, `${t} secciones: la primera no tiene ↑`);
-    ok(await page.getByRole('button', { name: 'Bajar Reseñas' }).count() === 0, `${t} secciones: la última no tiene ↓`);
+    ok(await page.getByRole('button', { name: 'Bajar Ubicación' }).count() === 0, `${t} secciones: la última (Ubicación) no tiene ↓`);
     ok(await page.getByRole('button', { name: 'Bajar Horarios' }).count() === 1 && await page.getByRole('button', { name: 'Subir Reseñas' }).count() === 1, `${t} secciones: las demás flechas sí`);
-    ok(await page.getByRole('button', { name: /^Arrastrar / }).count() === 5, `${t} secciones: cinco asas de arrastre`);
+    ok(await page.getByRole('button', { name: /^Arrastrar / }).count() === 6, `${t} secciones: seis asas de arrastre`);
     ok(await page.locator('.editor-diseno-seccion').nth(1).evaluate((e) => getComputedStyle(e).borderTopWidth) === '1px', `${t} secciones: separador entre filas`);
 
     await page.getByRole('button', { name: 'Bajar Horarios' }).click();
-    ok((await nombres()).join('|') === 'Productos|Horarios|Fotos|Actividades|Reseñas', `${t} secciones: ↓ baja Horarios`);
+    ok((await nombres()).join('|') === 'Productos|Horarios|Fotos|Actividades|Reseñas|Ubicación', `${t} secciones: ↓ baja Horarios`);
     await page.getByRole('button', { name: 'Subir Horarios' }).click();
-    ok((await nombres()).join('|') === 'Horarios|Productos|Fotos|Actividades|Reseñas', `${t} secciones: ↑ la devuelve`);
+    ok((await nombres()).join('|') === 'Horarios|Productos|Fotos|Actividades|Reseñas|Ubicación', `${t} secciones: ↑ la devuelve`);
     ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} secciones: volver al orden original = sin cambios`);
 
     // Arrastrar: Reseñas (fila 5) hasta la fila 1
@@ -270,7 +330,17 @@ for (const ancho of [360, 412]) {
     await page.mouse.down();
     await page.mouse.move(asa.x + asa.width / 2, primera.y + 10, { steps: 12 });
     await page.mouse.up();
-    ok((await nombres()).join('|') === 'Reseñas|Horarios|Productos|Fotos|Actividades', `${t} secciones: arrastrar Reseñas a la primera fila -> ${(await nombres()).join('|')}`);
+    ok((await nombres()).join('|') === 'Reseñas|Horarios|Productos|Fotos|Actividades|Ubicación', `${t} secciones: arrastrar Reseñas a la primera fila -> ${(await nombres()).join('|')}`);
+
+    // Ubicación: su toggle y su orden como las demás
+    ok(await page.getByRole('switch', { name: 'Mostrar Ubicación' }).getAttribute('aria-checked') === 'true', `${t} ubicación: visible por defecto en el editor`);
+    await page.getByRole('switch', { name: 'Mostrar Ubicación' }).click();
+    ok(await page.getByRole('switch', { name: 'Mostrar Ubicación' }).getAttribute('aria-checked') === 'false', `${t} ubicación: su toggle la oculta`);
+    await page.getByRole('switch', { name: 'Mostrar Ubicación' }).click();
+    await page.getByRole('button', { name: 'Subir Ubicación' }).click();
+    ok((await nombres()).join('|') === 'Reseñas|Horarios|Productos|Fotos|Ubicación|Actividades', `${t} ubicación: ↑ la sube un lugar -> ${(await nombres()).join('|')}`);
+    await page.getByRole('button', { name: 'Bajar Ubicación' }).click();
+    ok((await nombres()).join('|') === 'Reseñas|Horarios|Productos|Fotos|Actividades|Ubicación', `${t} ubicación: ↓ la devuelve`);
 
     // Toggle
     await page.getByRole('switch', { name: 'Mostrar Fotos' }).click();
@@ -302,7 +372,7 @@ for (const ancho of [360, 412]) {
 
     // Deshacer
     await page.getByRole('button', { name: 'Deshacer' }).click();
-    ok((await nombres()).join('|') === 'Horarios|Productos|Fotos|Actividades|Reseñas' && await page.locator('.editor-diseno-logo img').count() === 0 && await campo.inputValue() === '', `${t} deshacer: vuelve al último guardado (orden, logo y WhatsApp)`);
+    ok((await nombres()).join('|') === 'Horarios|Productos|Fotos|Actividades|Reseñas|Ubicación' && await page.locator('.editor-diseno-logo img').count() === 0 && await campo.inputValue() === '', `${t} deshacer: vuelve al último guardado (orden, logo y WhatsApp)`);
     ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} deshacer: Guardar desactivado`);
 
     // Guardar: siete claves, nada de texto libre
@@ -319,7 +389,7 @@ for (const ancho of [360, 412]) {
     ok(guardada.logo_url.startsWith('https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/') && guardada.portada_url === null && Object.keys(guardada).sort().join(',') === 'descripcion,layout_productos,letra,logo_url,paleta,portada_url,secciones_visibles,whatsapp',
       `${t} guardar: envía las ocho claves (logo_url y descripcion incluidas) y nada más -> ${Object.keys(guardada).sort().join(',')}`);
     ok(guardada.descripcion === 'Línea uno\nLínea dos', `${t} guardar: la descripción viaja como texto plano`);
-    ok(guardada.paleta === 'verde' && guardada.whatsapp === '50587074097' && guardada.secciones_visibles.join(',') === 'productos,fotos,actividades,resenas', `${t} guardar: valores correctos`);
+    ok(guardada.paleta === 'verde' && guardada.whatsapp === '50587074097' && guardada.secciones_visibles.join(',') === 'productos,fotos,actividades,resenas,ubicacion', `${t} guardar: valores correctos (incluye ubicacion)`);
     ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} guardar: tras guardar, Guardar desactivado`);
     ok(errores.length === 0, `${t} editor sin errores de página${errores.length ? ': ' + errores[0] : ''}`);
     await ctx.close();

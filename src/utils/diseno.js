@@ -24,6 +24,7 @@ export const SECCIONES = [
   { id: 'fotos', nombre: 'Fotos' },
   { id: 'actividades', nombre: 'Actividades' },
   { id: 'resenas', nombre: 'Reseñas' },
+  { id: 'ubicacion', nombre: 'Ubicación' },
 ];
 
 export const LAYOUTS = [
@@ -120,4 +121,13 @@ export function enlaceWhatsapp(digitos) {
   if (!/^[0-9]{8,15}$/.test(digitos || '')) return null;
   const numero = digitos.length === 8 ? `505${digitos}` : digitos;
   return `https://wa.me/${numero}`;
+}
+
+// Enlace de "Cómo llegar": indicaciones de Google Maps hasta las coordenadas del negocio; null si no hay coordenadas válidas.
+export function enlaceComoLlegar(lat, lng) {
+  const a = Number(lat);
+  const b = Number(lng);
+  if (lat === null || lng === null || lat === undefined || lng === undefined || !Number.isFinite(a) || !Number.isFinite(b)) return null;
+  if (Math.abs(a) > 90 || Math.abs(b) > 180) return null;
+  return `https://www.google.com/maps/dir/?api=1&destination=${a},${b}`;
 }

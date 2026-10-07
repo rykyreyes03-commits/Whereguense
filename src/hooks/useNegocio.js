@@ -37,6 +37,7 @@ export function useNegocio(usuarioId) {
   const [negocio, setNegocio] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [horarios, setHorarios] = useState([]);
+  const [horariosGuardados, setHorariosGuardados] = useState(true); // false = el panel muestra horarios de relleno que NO están en la base
   const [fotos, setFotos] = useState([]);
   const [productos, setProductos] = useState([]);
   const [actividadesQR, setActividadesQR] = useState([]);
@@ -92,9 +93,12 @@ export function useNegocio(usuarioId) {
           return;
         }
         if (!data || data.length === 0) {
+          // Sin filas en la base: se muestra un horario de relleno para poder editarlo, pero los turistas NO lo ven.
           setHorarios(horarioPorDefecto());
+          setHorariosGuardados(false);
           return;
         }
+        setHorariosGuardados(true);
         setHorarios(
           data.map((f) => ({
             diaSemana: f.dia_semana,
@@ -472,6 +476,7 @@ export function useNegocio(usuarioId) {
     }
 
     setHorarios(nuevosHorarios);
+    setHorariosGuardados(true);
     return { exito: true };
   }, [negocio]);
   const agregarProducto = useCallback(async (nombre) => {
@@ -759,6 +764,7 @@ export function useNegocio(usuarioId) {
     negocio,
     cargando,
     horarios,
+    horariosGuardados,
     fotos,
     productos,
     registrar,

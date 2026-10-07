@@ -59,25 +59,31 @@ export function estadoAbierto(horarios, ahora = Date.now()) {
   return { abierto: false, texto: 'Cerrado' };
 }
 
-// Agrupa días consecutivos (lunes a domingo) con el mismo horario: 'Lun a Sáb' · '8:00 AM - 6:00 PM'; 'Dom' · 'Cerrado'.
+// Filas para mostrar en la ficha: días consecutivos (de lunes a domingo) con el mismo horario en una sola fila.
+//   'Lun a Vie' · '8:00 AM – 6:00 PM'     un día solo: 'Sábado' · '9:00 AM – 1:00 PM'
+// Los días cerrados (o sin horas) no se muestran, y un día cerrado en medio corta el grupo.
 export function resumenHorarios(horarios) {
   const orden = [1, 2, 3, 4, 5, 6, 0];
   const porDia = new Map((horarios || []).map((h) => [Number(h.dia_semana), h]));
-  const texto = (h) => (!h || h.cerrado ? 'Cerrado' : `${horaCorta(h.hora_apertura)} - ${horaCorta(h.hora_cierre)}`);
   const grupos = [];
+  let ultimo = null;
   orden.forEach((d) => {
-    if (!porDia.has(d)) return;
-    const t = texto(porDia.get(d));
-    const ultimo = grupos[grupos.length - 1];
-    if (ultimo && ultimo.texto === t && ultimo.siguiente === d) {
+    const h = porDia.get(d);
+    const t = tramo(h);
+    if (!t) {
+      ultimo = null;
+      return;
+    }
+    const texto = `${horaCorta(h.hora_apertura)} – ${horaCorta(h.hora_cierre)}`;
+    if (ultimo && ultimo.horas === texto) {
       ultimo.fin = d;
-      ultimo.siguiente = orden[(orden.indexOf(d) + 1) % 7];
     } else {
-      grupos.push({ inicio: d, fin: d, texto: t, siguiente: orden[(orden.indexOf(d) + 1) % 7] });
+      ultimo = { inicio: d, fin: d, horas: texto };
+      grupos.push(ultimo);
     }
   });
   return grupos.map((g) => ({
-    dias: g.inicio === g.fin ? NOMBRES_CORTOS[g.inicio] : `${NOMBRES_CORTOS[g.inicio]} a ${NOMBRES_CORTOS[g.fin]}`,
-    horas: g.texto,
+    dias: g.inicio === g.fin ? NOMBRES_DIA[g.inicio] : `${NOMBRES_CORTOS[g.inicio]} a ${NOMBRES_CORTOS[g.fin]}`,
+    horas: g.horas,
   }));
 }

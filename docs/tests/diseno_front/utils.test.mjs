@@ -1,6 +1,6 @@
 // Pruebas de las reglas puras del diseño (src/utils/diseno.js) y de "Abierto ahora" (src/utils/horarios.js).
 // Correr: node docs/tests/diseno_front/utils.test.mjs   (TZ da igual: todo se calcula en UTC-6 fijo)
-import { PALETAS, contraste, textoSobre, disenoDesdeConfig, configDesdeDiseno, enlaceWhatsapp, variablesFicha, DISENO_POR_DEFECTO } from '../../../src/utils/diseno.js';
+import { SECCIONES, enlaceComoLlegar, PALETAS, contraste, textoSobre, disenoDesdeConfig, configDesdeDiseno, enlaceWhatsapp, variablesFicha, DISENO_POR_DEFECTO } from '../../../src/utils/diseno.js';
 import { MAX_FOTOS, motivoDeRechazo, rutaDeFoto, moverElemento, ACEPTA_FOTOS } from '../../../src/utils/fotos.js';
 import { rutaFotoDeUrl } from '../../../src/utils/eventos.js';
 import { estadoAbierto, resumenHorarios, ahoraEnManagua } from '../../../src/utils/horarios.js';
@@ -64,11 +64,33 @@ const soloLunesNoche = [fila(1, '18:00', '02:00'), fila(2, null, null, true), ..
 eq('1 AM del martes abierto por el tramo del lunes', estadoAbierto(soloLunesNoche, managua(2026, 10, 6, 1, 0)).abierto, true);
 
 // --- resumen agrupado
-eq('Lun a Sáb igual, Dom cerrado', resumenHorarios([fila(0, null, null, true), ...[1, 2, 3, 4, 5, 6].map((d) => fila(d, '08:00:00', '18:00:00'))]),
-  [{ dias: 'Lun a Sáb', horas: '8:00 AM - 6:00 PM' }, { dias: 'Dom', horas: 'Cerrado' }]);
-eq('siete días iguales', resumenHorarios(semana('08:00', '18:00')), [{ dias: 'Lun a Dom', horas: '8:00 AM - 6:00 PM' }]);
-eq('sábado distinto', resumenHorarios([1, 2, 3, 4, 5].map((d) => fila(d, '08:00', '18:00')).concat([fila(6, '09:00', '13:00'), fila(0, null, null, true)])),
-  [{ dias: 'Lun a Vie', horas: '8:00 AM - 6:00 PM' }, { dias: 'Sáb', horas: '9:00 AM - 1:00 PM' }, { dias: 'Dom', horas: 'Cerrado' }]);
+eq('Lun a Sáb igual, Dom cerrado: el cerrado no se muestra', resumenHorarios([fila(0, null, null, true), ...[1, 2, 3, 4, 5, 6].map((d) => fila(d, '08:00:00', '18:00:00'))]),
+  [{ dias: 'Lun a Sáb', horas: '8:00 AM – 6:00 PM' }]);
+eq('siete días iguales', resumenHorarios(semana('08:00', '18:00')), [{ dias: 'Lun a Dom', horas: '8:00 AM – 6:00 PM' }]);
+eq('lunes a viernes y sábado distinto (un día solo con nombre completo)', resumenHorarios([1, 2, 3, 4, 5].map((d) => fila(d, '08:00', '18:00')).concat([fila(6, '09:00', '13:00'), fila(0, null, null, true)])),
+  [{ dias: 'Lun a Vie', horas: '8:00 AM – 6:00 PM' }, { dias: 'Sábado', horas: '9:00 AM – 1:00 PM' }]);
+eq('un día cerrado en medio corta el grupo', resumenHorarios([fila(1, '08:00', '18:00'), fila(2, '08:00', '18:00'), fila(3, null, null, true), fila(4, '08:00', '18:00'), fila(5, '08:00', '18:00')]),
+  [{ dias: 'Lun a Mar', horas: '8:00 AM – 6:00 PM' }, { dias: 'Jue a Vie', horas: '8:00 AM – 6:00 PM' }]);
+eq('días sueltos con el mismo horario no se unen', resumenHorarios([fila(1, '08:00', '12:00'), fila(2, null, null, true), fila(3, '08:00', '12:00')]),
+  [{ dias: 'Lunes', horas: '8:00 AM – 12:00 PM' }, { dias: 'Miércoles', horas: '8:00 AM – 12:00 PM' }]);
+eq('sábado y domingo iguales se unen (la semana va de lunes a domingo)', resumenHorarios([fila(6, '09:00', '13:00'), fila(0, '09:00', '13:00')]), [{ dias: 'Sáb a Dom', horas: '9:00 AM – 1:00 PM' }]);
+eq('todo cerrado: no hay filas', resumenHorarios([0, 1, 2, 3, 4, 5, 6].map((d) => fila(d, null, null, true))), []);
+eq('sin horarios: no hay filas', resumenHorarios([]), []);
+eq('las filas sin horas se ignoran', resumenHorarios([fila(1, null, null, false)]), []);
+eq('hora con minutos', resumenHorarios([fila(1, '07:30', '19:45')]), [{ dias: 'Lunes', horas: '7:30 AM – 7:45 PM' }]);
+
+// --- cómo llegar
+eq('enlace de Google Maps con las coordenadas', enlaceComoLlegar(12.4355375908998, -86.8805694580078), 'https://www.google.com/maps/dir/?api=1&destination=12.4355375908998,-86.8805694580078');
+eq('coordenadas como texto (la base puede devolver texto)', enlaceComoLlegar('12.4355', '-86.8805'), 'https://www.google.com/maps/dir/?api=1&destination=12.4355,-86.8805');
+eq('sin coordenadas: null', enlaceComoLlegar(null, null), null);
+eq('sin una coordenada: null', enlaceComoLlegar(12.4, undefined), null);
+eq('texto raro: null', enlaceComoLlegar('abc', '1'), null);
+eq('fuera de rango: null', enlaceComoLlegar(120, 10), null);
+eq('cero es una coordenada válida (no es "falta")', enlaceComoLlegar(0, 0), 'https://www.google.com/maps/dir/?api=1&destination=0,0');
+eq('la ubicación es una sección posible', SECCIONES.map((x) => x.id), ['horarios', 'productos', 'fotos', 'actividades', 'resenas', 'ubicacion']);
+eq('por defecto las seis secciones están visibles', DISENO_POR_DEFECTO.secciones, ['horarios', 'productos', 'fotos', 'actividades', 'resenas', 'ubicacion']);
+eq('config con ubicación primero se respeta', disenoDesdeConfig({ secciones_visibles: ['ubicacion', 'horarios'] }).secciones, ['ubicacion', 'horarios']);
+eq('sección desconocida se descarta', disenoDesdeConfig({ secciones_visibles: ['mapa', 'ubicacion'] }).secciones, ['ubicacion']);
 
 // --- fotos del negocio (utils/fotos.js)
 const f = (name, type, size = 1000) => ({ name, type, size });
