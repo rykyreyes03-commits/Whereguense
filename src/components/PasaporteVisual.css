@@ -1,0 +1,187 @@
+/* =========================================================
+   Pasaporte de viajero: la imagen del documento con los datos encima.
+   Todas las posiciones son porcentajes del documento recortado (2230 x 2451 px de la imagen original), medidas sobre
+   los campos impresos; los tamaños de letra usan cqw (1 % del ancho del documento) para que todo escale junto.
+   ========================================================= */
+
+.pasaporte-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 12px 20px;
+  background: rgba(10, 14, 40, 0.74);
+  overflow-y: auto;
+  animation: pasaporteFondo 0.2s ease-out;
+}
+@keyframes pasaporteFondo { from { opacity: 0; } to { opacity: 1; } }
+
+.pasaporte-cerrar {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top));
+  right: 12px;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.pasaporte-cerrar:hover { background: rgba(255, 255, 255, 0.3); }
+.pasaporte-cerrar:focus-visible { outline: 3px solid var(--color-turquoise, #54C8C0); outline-offset: 2px; }
+
+.pasaporte-doc {
+  position: relative;
+  container-type: inline-size;
+  width: min(100%, 440px, calc((100dvh - 100px) * 2230 / 2451));
+  aspect-ratio: 2230 / 2451;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.5));
+  color: #141A33;
+  font-family: var(--font-body, sans-serif);
+  animation: pasaporteDoc 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes pasaporteDoc {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Número de pasaporte, sobre la línea que sigue al título */
+.pasaporte-numero {
+  position: absolute;
+  left: 48.7%;
+  width: 32.5%;
+  top: 2.8%;
+  height: 3.2%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  font-size: 3.4cqw;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Foto: cubre la silueta impresa con el mismo fondo oscuro del marco */
+.pasaporte-foto {
+  position: absolute;
+  left: 19.2%;
+  width: 34.4%;
+  top: 14.1%;
+  height: 27.1%;
+  padding: 2% 3% 0;
+  overflow: hidden;
+  border-radius: 1.6cqw;
+  background: #121A25;
+}
+.pasaporte-foto-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+.pasaporte-foto-img--perfil { object-fit: cover; object-position: center; margin: -2% -3% 0; width: 106%; height: 102%; }
+
+/* Datos: encima de la línea de cada campo */
+.pasaporte-valor {
+  position: absolute;
+  left: 54.9%;
+  width: 29.1%;
+  height: 3.5%;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 0.5cqw;
+  font-size: 3.6cqw;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pasaporte-valor--nombre { top: 17%; }
+.pasaporte-valor--nacionalidad { top: 61.6%; }
+.pasaporte-valor--sellos { top: 74.3%; }
+.pasaporte-valor--ruta { top: 86.4%; }
+
+/* Sellos: seis círculos en dos columnas; cada uno tapa su "?" con un disco blanco y lleva la insignia y la marca SELLADO */
+.pasaporte-sello {
+  position: absolute;
+  width: 15.5%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff;
+}
+.pasaporte-sello--0 { left: 19.4%; top: 43.7%; }
+.pasaporte-sello--1 { left: 36.9%; top: 43.7%; }
+.pasaporte-sello--2 { left: 19.4%; top: 60.1%; }
+.pasaporte-sello--3 { left: 36.9%; top: 60.1%; }
+.pasaporte-sello--4 { left: 19.4%; top: 76.6%; }
+.pasaporte-sello--5 { left: 36.9%; top: 76.6%; }
+.pasaporte-sello-insignia {
+  width: 76%;
+  height: 76%;
+  object-fit: contain;
+}
+.pasaporte-sello-marca {
+  position: absolute;
+  inset: 3%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-15deg);
+  color: #C62828;
+  mix-blend-mode: multiply;
+  opacity: 0.9;
+  pointer-events: none;
+}
+.pasaporte-sello-marca > span {
+  width: 94%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.55cqw solid currentColor;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 0.3cqw rgba(198, 40, 40, 0.3);
+  font-size: 2.35cqw;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-shadow: 0 0 0.5cqw rgba(255, 255, 255, 0.95), 0 0 0.9cqw rgba(255, 255, 255, 0.85);
+}
+
+/* "+N": hay más sellos de los que caben */
+.pasaporte-mas {
+  position: absolute;
+  left: 27.3%;
+  width: 17%;
+  top: 94.2%;
+  height: 3.4%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4.4cqw;
+  font-weight: 900;
+  color: #fff;
+  background: #1B2A6B;
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pasaporte-fondo, .pasaporte-doc { animation: none; }
+}

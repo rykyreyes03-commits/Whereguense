@@ -88,6 +88,7 @@ function opcionesMenu(esAdmin, modoNegocio) {
   const deTurista = [
     { clave: 'escanearSello', Icono: IconoQR, pantalla: 'escanearQR' },
     { clave: 'escanearCupon', Icono: IconoCupon, pantalla: 'escanearCupon' },
+    { clave: 'misCupones', Icono: IconoCupon, pantalla: 'misCupones' },
     { clave: 'miNegocio', Icono: IconoNegocio, accion: 'miNegocio' },
   ];
   const comunes = [

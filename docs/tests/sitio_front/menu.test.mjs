@@ -35,7 +35,9 @@ const etiquetas = (page) => page.locator('.menu-item-texto').allTextContents();
 {
   const { ctx, page } = await abrir('vista=menu', '.menu-lista');
   const e = await etiquetas(page);
-  ok(e.join(' | ') === 'Escanear sello QR | Escanear cupón | Mi negocio | Cambiar idioma | Notificaciones | Tema | Privacidad | Ayuda y soporte | Acerca de', `turista: ${e.join(' | ')}`);
+  ok(e.join(' | ') === 'Escanear sello QR | Escanear cupón | Mis cupones | Mi negocio | Cambiar idioma | Notificaciones | Tema | Privacidad | Ayuda y soporte | Acerca de', `turista: ${e.join(' | ')}`);
+  await page.click('.menu-item:has-text("Mis cupones")');
+  ok((await page.evaluate(() => window.__eventos.map((x) => x[1]).join(','))) === 'misCupones', 'turista: "Mis cupones" (ya no está en el pasaporte) abre la pantalla de cupones');
   await ctx.close();
 }
 {
@@ -50,7 +52,7 @@ for (const ancho of [360, 412]) {
   const { ctx, page, errores, dialogos } = await abrir('vista=menu&negocio=1', '.menu-lista', ancho);
   const e = await etiquetas(page);
   ok(e.join(' | ') === 'Cambiar idioma | Notificaciones | Tema | Privacidad | Ayuda y soporte | Acerca de', `${t} emprendedor: ${e.join(' | ')}`);
-  ok(!e.includes('Escanear sello QR') && !e.includes('Escanear cupón'), `${t} emprendedor: sin escanear sello ni cupón`);
+  ok(!e.includes('Escanear sello QR') && !e.includes('Escanear cupón') && !e.includes('Mis cupones'), `${t} emprendedor: sin escanear sello ni cupón ni Mis cupones`);
   ok(!e.includes('Mi negocio'), `${t} emprendedor: sin "Mi negocio"`);
   ok(!e.includes('Panel Admin'), `${t} emprendedor que no es admin: sin "Panel Admin"`);
   ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `${t} sin desborde horizontal`);

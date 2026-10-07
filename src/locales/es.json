@@ -105,16 +105,14 @@
   "pasaporte": {
     "titulo": "Mis sellos",
     "progreso": "{{n}} de {{total}} sellos obtenidos ({{pct}}%)",
-    "cupones": "Mis cupones",
-    "cuponesDisponibles_one": "{{count}} disponible",
-    "cuponesDisponibles_other": "{{count}} disponibles",
-    "cuponesDescuentos": "Descuentos de los negocios",
     "seccion": "PASAPORTE",
     "sinSellar": "Sin sellar",
     "bloqueado": "{{nombre}} (sello bloqueado)",
     "verRanking": "Ver ranking",
     "ciudadSellos": "{{n}} de {{total}} sellos",
-    "ciudadProximamente": "Próximamente"
+    "ciudadProximamente": "Próximamente",
+    "miPasaporte": "Mi pasaporte",
+    "verPasaporte": "Ver tu pasaporte de viajero"
   },
   "nivel": {
     "nivel": "Nivel {{n}}",
@@ -279,7 +277,8 @@
     "acerca": "Acerca de",
     "proximamente": "{{opcion}}: próximamente 🚧",
     "temaClaro": "Claro",
-    "temaOscuro": "Oscuro"
+    "temaOscuro": "Oscuro",
+    "misCupones": "Mis cupones"
   },
   "sellosCiudad": {
     "titulo": "Sellos de {{ciudad}}",
@@ -294,5 +293,13 @@
     "titulo": "Próximamente en WhereGüense",
     "texto": "Estamos preparando los sitios de {{ciudad}}.",
     "pie": "Completa tu pasaporte de León primero."
+  },
+  "pasaporteVisual": {
+    "cerrar": "Cerrar pasaporte",
+    "aria": "Pasaporte de {{nombre}}",
+    "invitado": "Invitado",
+    "sinRuta": "Sin ruta aún",
+    "sellado": "Sellado",
+    "masAria": "{{n}} sellos más"
   }
 }

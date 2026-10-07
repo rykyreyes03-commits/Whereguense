@@ -58,7 +58,7 @@ for (const ancho of [360, 412]) {
   ok(cajas[0].fondo.includes('rgb(27, 42, 107)') && cajas[0].fondo.includes('gradient'), `${t} fondo azul marino #1B2A6B con degradado`);
   ok(cajas.every((c) => c.nombre.color === 'rgb(255, 255, 255)' && Number(c.nombre.fontWeight) >= 700), `${t} el nombre va en blanco y en negrita`);
   ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `${t} sin desborde horizontal`);
-  ok((await page.locator('.nivel-progreso').count()) === 1 && (await page.locator('.mis-sellos-cupones').count()) === 1, `${t} se mantienen el nivel y "Mis cupones" arriba`);
+  ok((await page.locator('.nivel-progreso').count()) === 1 && (await page.locator('.mis-sellos-pasaporte').count()) === 1, `${t} se mantienen el nivel y la tarjeta "Mi pasaporte" arriba`);
   ok((await page.locator('.bottom-nav').count()) === 1, `${t} se mantiene la barra inferior`);
   await page.screenshot({ path: path.join(capturas, `pasaporte_ciudades_${ancho}.png`) });
 

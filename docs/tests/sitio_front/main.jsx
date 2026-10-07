@@ -25,6 +25,7 @@ import PerfilNegocio from '/src/components/PerfilNegocio.jsx';
 import Eventos from '/src/components/Eventos.jsx';
 import { useNivel } from '/src/hooks/useNivel.js';
 import { sitios } from '/src/data/sitios.js';
+import { rutas } from '/src/data/rutas.js';
 
 const params = new URLSearchParams(window.location.search);
 const sitio = sitios.find((s) => s.id === Number(params.get('sitio') || 1));
@@ -34,10 +35,12 @@ const registrar = (n) => (...a) => { window.__eventos.push([n, a[0]?.id ?? null]
 
 // eslint-disable-next-line react-refresh/only-export-components
 function Pasaporte() {
-  const sellos = params.get('sinsellos') === '1' ? [] : [{ id: 1, sitioId: 1, fecha: '1/10/2026' }, { id: 2, sitioId: 6, fecha: '2/10/2026' }, { id: 3, sitioId: 12, fecha: '3/10/2026' }, { id: 4, sitioId: null, fecha: '4/10/2026' }];
+  const muchos = [1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => ({ id: n, sitioId: n, fecha: `${n}/10/2026` }));
+  const sellos = params.get('sinsellos') === '1' ? [] : params.get('muchos') === '1' ? muchos : [{ id: 1, sitioId: 1, fecha: '1/10/2026' }, { id: 2, sitioId: 6, fecha: '2/10/2026' }, { id: 3, sitioId: 12, fecha: '3/10/2026' }, { id: 4, sitioId: null, fecha: '4/10/2026' }];
+  const usuario = params.get('invitado') === '1' ? null : { id: '3f9a1c2e-5b7d-4e08-9a41-c0ffee123456', nombre_usuario: 'Ryky', avatar_personaje: params.get('gigantona') === '1' ? 'gigantona' : null };
   const nivelInfo = useNivel('yo', sellos);
   return (
-    <MisSellos sellos={sellos} sitios={sitios} nivelInfo={nivelInfo} sitioResaltadoId={params.get('resaltado') ? Number(params.get('resaltado')) : null}
+    <MisSellos sellos={sellos} sitios={sitios} rutas={rutas} usuario={usuario} nivelInfo={nivelInfo} sitioResaltadoId={params.get('resaltado') ? Number(params.get('resaltado')) : null}
       onNavigate={(p) => window.__eventos.push(['ir', p])} onSeleccionarSitio={(id) => window.__eventos.push(['sitio', id])} />
   );
 }

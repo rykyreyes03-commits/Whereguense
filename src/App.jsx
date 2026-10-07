@@ -732,7 +732,8 @@ function App() {
         onNavigate={cambiarPantalla}
         onSeleccionarSitio={setSitioSeleccionadoId}
         sitioResaltadoId={sitioResaltadoPasaporte}
-        cuponesDisponibles={cupones.filter((c) => c.disponible).length}
+        usuario={usuarioActual}
+        rutas={rutas}
         nivelInfo={nivelInfo}
       />
     );

@@ -105,16 +105,14 @@
   "pasaporte": {
     "titulo": "My stamps",
     "progreso": "{{n}} of {{total}} stamps collected ({{pct}}%)",
-    "cupones": "My coupons",
-    "cuponesDisponibles_one": "{{count}} available",
-    "cuponesDisponibles_other": "{{count}} available",
-    "cuponesDescuentos": "Discounts from local businesses",
     "seccion": "PASSPORT",
     "sinSellar": "Not stamped",
     "bloqueado": "{{nombre}} (locked stamp)",
     "verRanking": "View ranking",
     "ciudadSellos": "{{n}} of {{total}} stamps",
-    "ciudadProximamente": "Coming soon"
+    "ciudadProximamente": "Coming soon",
+    "miPasaporte": "My passport",
+    "verPasaporte": "View your traveler passport"
   },
   "nivel": {
     "nivel": "Level {{n}}",
@@ -279,7 +277,8 @@
     "acerca": "About",
     "proximamente": "{{opcion}}: coming soon 🚧",
     "temaClaro": "Light",
-    "temaOscuro": "Dark"
+    "temaOscuro": "Dark",
+    "misCupones": "My coupons"
   },
   "sellosCiudad": {
     "titulo": "{{ciudad}} stamps",
@@ -294,5 +293,13 @@
     "titulo": "Coming soon to WhereGüense",
     "texto": "We're getting the sites of {{ciudad}} ready.",
     "pie": "Complete your León passport first."
+  },
+  "pasaporteVisual": {
+    "cerrar": "Close passport",
+    "aria": "{{nombre}}'s passport",
+    "invitado": "Guest",
+    "sinRuta": "No route yet",
+    "sellado": "Stamped",
+    "masAria": "{{n}} more stamps"
   }
 }

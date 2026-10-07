@@ -160,8 +160,8 @@ for (const [lang, esperados] of [
   await ctx.close();
 }
 for (const [lang, esperados, enLeon] of [
-  ['en', ['My stamps', 'Level 3', '0.5 / 6 points', 'To reach level 4: 5.5 more points', 'View ranking', 'My coupons', 'PASSPORT', '3 of 89 stamps', 'Coming soon'], ['León stamps', 'All', 'My stamps', 'Gold', 'Copper', 'Collected on', 'Not stamped']],
-  ['es', ['Mis sellos', 'Nivel 3', '0.5 / 6 puntos', 'Para el nivel 4: 5.5 puntos más', 'Ver ranking', 'Mis cupones', 'PASAPORTE', '3 de 89 sellos', 'Próximamente'], ['Sellos de León', 'Todos', 'Mis sellos', 'Oro', 'Cobre', 'Obtenido el', 'Sin sellar']],
+  ['en', ['My stamps', 'Level 3', '0.5 / 6 points', 'To reach level 4: 5.5 more points', 'View ranking', 'My passport', 'View your traveler passport', 'PASSPORT', '3 of 89 stamps', 'Coming soon'], ['León stamps', 'All', 'My stamps', 'Gold', 'Copper', 'Collected on', 'Not stamped']],
+  ['es', ['Mis sellos', 'Nivel 3', '0.5 / 6 puntos', 'Para el nivel 4: 5.5 puntos más', 'Ver ranking', 'Mi pasaporte', 'Ver tu pasaporte de viajero', 'PASAPORTE', '3 de 89 sellos', 'Próximamente'], ['Sellos de León', 'Todos', 'Mis sellos', 'Oro', 'Cobre', 'Obtenido el', 'Sin sellar']],
 ]) {
   const { ctx, page } = await abrir(`vista=pasaporte&lang=${lang}`, '.nivel-progreso');
   const t = await texto(page);
