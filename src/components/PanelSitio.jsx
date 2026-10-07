@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { FOTOS_SITIOS } from '../data/fotos';
+import { INSIGNIAS } from '../data/insignias';
+import { usePortadaSitio } from '../hooks/usePortadaSitio';
 import './PanelSitio.css';
 
 function IconoComoLlegar() {
@@ -32,9 +35,14 @@ function IconoHistoria() {
 }
 
 function PanelSitio({ sitio, estaGuardado, onCerrar, onComoLlegar, onGuardar, onVerDetalle }) {
+  const portada = usePortadaSitio(sitio?.id);
+  const [fotoRota, setFotoRota] = useState(null);
   if (!sitio) return null;
 
-  const foto = FOTOS_SITIOS[String(sitio.id)];
+  // portada de sitio_foto > imagen_url del sitio > foto local de assets (las que ya había) > fondo azul con el ícono.
+  const foto = portada || FOTOS_SITIOS[String(sitio.id)];
+  const fotoVisible = foto && fotoRota !== foto ? foto : null;
+  const insignia = INSIGNIAS[sitio.badge];
 
   return (
     <div className="panel-sitio">
@@ -47,11 +55,15 @@ function PanelSitio({ sitio, estaGuardado, onCerrar, onComoLlegar, onGuardar, on
         ×
       </button>
 
-      <h2 className="panel-sitio-nombre">{sitio.name}</h2>
-
-      {foto && (
-        <img className="panel-sitio-foto" src={foto} alt={sitio.name} />
+      {fotoVisible ? (
+        <img className="panel-sitio-foto" src={fotoVisible} alt={sitio.name} onError={() => setFotoRota(fotoVisible)} />
+      ) : (
+        <div className="panel-sitio-foto panel-sitio-foto--vacia" aria-hidden="true">
+          {insignia && <img src={insignia} alt="" />}
+        </div>
       )}
+
+      <h2 className="panel-sitio-nombre">{sitio.name}</h2>
 
       <div className="panel-sitio-texto">
         <span className="panel-sitio-etiqueta">Resumen histórico</span>

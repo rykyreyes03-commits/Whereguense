@@ -130,6 +130,47 @@ for (const ancho of [360, 412]) {
   await s3.ctx.close();
 }
 
+// Panel del mapa: portada de sitio_foto > imagen_url > (foto local) > fondo azul con el ícono
+for (const ancho of [360, 412]) {
+  const t = `[${ancho}px panel]`;
+  const abrirPanel = async (db, sitioId = 1) => {
+    const ctx = await browser.newContext({ viewport: { width: ancho, height: 800 }, deviceScaleFactor: 2 });
+    const page = await ctx.newPage();
+    await page.addInitScript((d) => { window.__db = d; }, db);
+    await page.goto(`${base}?vista=panel&sitio=${sitioId}`);
+    await page.waitForSelector('.panel-sitio');
+    await page.waitForTimeout(500);
+    return { ctx, page };
+  };
+  const medidas = (page) => page.evaluate(() => {
+    const f = document.querySelector('.panel-sitio-foto').getBoundingClientRect();
+    const p = document.querySelector('.panel-sitio').getBoundingClientRect();
+    const e = getComputedStyle(document.querySelector('.panel-sitio-foto'));
+    return { alto: Math.round(f.height), izq: Math.round(f.left - p.left), ancho: Math.round(f.width), panel: Math.round(p.width), arriba: Math.round(f.top - p.top), ajuste: e.objectFit, esq: e.borderTopLeftRadius };
+  });
+
+  // 1. con portada en sitio_foto
+  const a = await abrirPanel(estado({ portada: [{ url: foto('#c9a227') }], sitioFila: [{ imagen_url: foto('#ff0000') }] }));
+  ok((await a.page.locator('img.panel-sitio-foto').getAttribute('src')) === foto('#c9a227'), `${t} usa la portada de sitio_foto`);
+  const m = await medidas(a.page);
+  ok(m.alto === 160 && m.ajuste === 'cover' && m.arriba === 0 && m.izq === 0 && m.ancho === m.panel, `${t} foto de 160 px, cover, a ras arriba (${JSON.stringify(m)})`);
+  ok(parseInt(m.esq, 10) > 0, `${t} esquinas de arriba redondeadas (${m.esq})`);
+  await a.page.screenshot({ path: path.join(capturas, `panel_sitio_${ancho}_foto.png`) });
+  await a.ctx.close();
+
+  // 2. sin portada: imagen_url del sitio
+  const b = await abrirPanel(estado({ portada: [], sitioFila: [{ imagen_url: foto('#ff0000') }] }));
+  ok((await b.page.locator('img.panel-sitio-foto').getAttribute('src')) === foto('#ff0000'), `${t} sin portada usa imagen_url`);
+  await b.ctx.close();
+
+  // 3. sin nada (sitio 3 no tiene foto local): fondo azul con el ícono
+  const c = await abrirPanel(estado({ portada: [], sitioFila: [{ imagen_url: null }] }), 3);
+  const vacia = await c.page.evaluate(() => { const e = document.querySelector('.panel-sitio-foto--vacia'); return e ? { fondo: getComputedStyle(e).backgroundColor, icono: !!e.querySelector('img'), alto: Math.round(e.getBoundingClientRect().height) } : null; });
+  ok(vacia && vacia.alto === 160 && vacia.icono && vacia.fondo === 'rgb(26, 26, 46)', `${t} sin foto: fondo azul marino con el ícono (${JSON.stringify(vacia)})`);
+  await c.page.screenshot({ path: path.join(capturas, `panel_sitio_${ancho}_vacio.png`) });
+  await c.ctx.close();
+}
+
 await browser.close();
 await servidor.close();
 console.log(`\n${total - fallas.length}/${total} comprobaciones`);

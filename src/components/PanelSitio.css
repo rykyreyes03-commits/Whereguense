@@ -50,11 +50,23 @@
 
 .panel-sitio-foto {
   display: block;
-  width: 100%;
+  /* a ras de los bordes del panel, arriba, con sus esquinas redondeadas (el panel recorta con overflow) */
+  width: calc(100% + 36px);
   height: 160px;
+  margin: -22px -18px 14px;
   object-fit: cover;
-  border-radius: var(--radius-md);
-  margin-bottom: 14px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.panel-sitio-foto--vacia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-navy);
+}
+.panel-sitio-foto--vacia img {
+  height: 96px;
+  width: auto;
+  object-fit: contain;
 }
 
 .panel-sitio-texto {

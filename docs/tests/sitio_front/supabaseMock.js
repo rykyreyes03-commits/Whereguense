@@ -33,12 +33,13 @@ const funciones = {
 
 function resultado(datos) {
   const r = { data: datos, error: null };
-  const cadena = { eq: () => cadena, order: () => cadena, select: () => cadena, then: (ok, mal) => Promise.resolve(r).then(ok, mal) };
+  const cadena = { eq: () => cadena, order: () => cadena, select: () => cadena, limit: () => cadena, then: (ok, mal) => Promise.resolve(r).then(ok, mal) };
   return cadena;
 }
 
 export const supabase = {
-  from: (tabla) => resultado(tabla === 'sitio_foto' ? db().fotos : []),
+  // sitio_foto: el mock no filtra por es_portada; para el panel se pasa db().portada ya resuelta.
+  from: (tabla) => resultado(tabla === 'sitio_foto' ? (db().portada !== undefined ? db().portada : db().fotos) : tabla === 'sitio' ? (db().sitioFila || []) : []),
   rpc: (nombre, args) => resultado(funciones[nombre] ? funciones[nombre](args || {}) : []),
   auth: { getSession: async () => ({ data: { session: db().sesion ? { user: { id: db().uid } } : null } }) },
 };
