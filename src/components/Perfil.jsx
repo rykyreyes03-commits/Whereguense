@@ -315,7 +315,8 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
         </button>
       </div>
 
-      <BottomNav activo="perfil" onNavigate={onNavigate} />
+      {/* Perfil no es un ítem de la barra: aquí ningún ítem queda resaltado */}
+      <BottomNav activo={null} onNavigate={onNavigate} />
     </div>
   );
 }

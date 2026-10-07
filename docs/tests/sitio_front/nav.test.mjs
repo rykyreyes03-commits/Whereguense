@@ -52,7 +52,7 @@ for (const ancho of [360, 412]) {
   await g.ctx.close();
 
   // ítem resaltado por pantalla: [activo recibido, aria-label esperado resaltado o null]
-  for (const [activo, esperado] of [['inicio', 'INICIO'], ['pasaporte', 'PASAPORTE'], ['eventos', 'EVENTOS'], ['personalizacion', 'AVATAR'], ['perfil', null], ['mapa', null]]) {
+  for (const [activo, esperado] of [['inicio', 'INICIO'], ['pasaporte', 'PASAPORTE'], ['eventos', 'EVENTOS'], ['personalizacion', 'AVATAR'], ['perfil', null], ['mapa', null], ['', null]]) {
     const r = await abrir(ancho, `vista=nav&activo=${activo}`);
     const resaltados = await r.page.locator('.bottom-nav-item.activo').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')));
     ok(esperado === null ? resaltados.length === 0 : resaltados.length === 1 && resaltados[0] === esperado, `${t} pantalla '${activo}': resalta ${esperado ?? 'ningún ítem'} (resaltó: ${resaltados.join(',') || 'ninguno'})`);
@@ -62,6 +62,10 @@ for (const ancho of [360, 412]) {
   // la pantalla de personalización muestra la barra con Avatar resaltado, sin taparle el contenido
   const p = await abrir(ancho, 'vista=personalizacion');
   ok((await p.page.locator('.bottom-nav-item.activo').getAttribute('aria-label')) === 'AVATAR', `${t} Personalización: Avatar resaltado`);
+  ok((await p.page.locator('.topbar-volver').count()) === 0 && (await p.page.locator('text=Volver').count()) === 0, `${t} Personalización: ya no hay botón Volver`);
+  ok((await p.page.locator('.topbar-menu').count()) === 1, `${t} Personalización: en su lugar va el menú de siempre`);
+  await p.page.locator('.topbar-menu').click();
+  ok((await p.page.evaluate(() => window.__eventos.map((e) => e[1]).join(','))) === 'menu', `${t} el menú abre 'menu'`);
   await p.page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   const libre = await p.page.evaluate(() => {
     const ultimo = document.querySelector('.personalizacion-tienda').getBoundingClientRect().bottom;

@@ -69,7 +69,7 @@ function Personalizacion({ onNavigate, desbloqueados, seleccion, elegir, nivel, 
 
   return (
     <div className="personalizacion-wrapper">
-      <TopBar onBack={() => onNavigate?.('perfil')} title="Personaliza tu avatar" />
+      <TopBar onMenuClick={() => onNavigate?.('menu')} title="Personaliza tu avatar" />
 
       <div className="personalizacion-contenido">
         <Avatar tipo={tipoAvatar} seleccion={seleccion} tamano="grande" />
