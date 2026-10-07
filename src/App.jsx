@@ -104,6 +104,7 @@ function App() {
     subirLogo,
     subirFoto,
     eliminarFoto,
+    ordenarFotos,
     agregarProducto,
     eliminarProducto,
     actividades,
@@ -842,6 +843,7 @@ function App() {
         onSubirLogo={(file) => subirLogo(usuarioActual?.id, file)}
         onSubirFoto={(file) => subirFoto(usuarioActual?.id, file)}
         onEliminarFoto={eliminarFoto}
+        onOrdenarFotos={ordenarFotos}
         onAgregarProducto={agregarProducto}
         onEliminarProducto={eliminarProducto}
         actividades={actividades}

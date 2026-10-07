@@ -1,6 +1,8 @@
 // Pruebas de las reglas puras del diseño (src/utils/diseno.js) y de "Abierto ahora" (src/utils/horarios.js).
 // Correr: node docs/tests/diseno_front/utils.test.mjs   (TZ da igual: todo se calcula en UTC-6 fijo)
 import { PALETAS, contraste, textoSobre, disenoDesdeConfig, configDesdeDiseno, enlaceWhatsapp, variablesFicha, DISENO_POR_DEFECTO } from '../../../src/utils/diseno.js';
+import { MAX_FOTOS, motivoDeRechazo, rutaDeFoto, moverElemento, ACEPTA_FOTOS } from '../../../src/utils/fotos.js';
+import { rutaFotoDeUrl } from '../../../src/utils/eventos.js';
 import { estadoAbierto, resumenHorarios, ahoraEnManagua } from '../../../src/utils/horarios.js';
 
 let ok = 0, mal = 0;
@@ -67,6 +69,26 @@ eq('Lun a Sáb igual, Dom cerrado', resumenHorarios([fila(0, null, null, true), 
 eq('siete días iguales', resumenHorarios(semana('08:00', '18:00')), [{ dias: 'Lun a Dom', horas: '8:00 AM - 6:00 PM' }]);
 eq('sábado distinto', resumenHorarios([1, 2, 3, 4, 5].map((d) => fila(d, '08:00', '18:00')).concat([fila(6, '09:00', '13:00'), fila(0, null, null, true)])),
   [{ dias: 'Lun a Vie', horas: '8:00 AM - 6:00 PM' }, { dias: 'Sáb', horas: '9:00 AM - 1:00 PM' }, { dias: 'Dom', horas: 'Cerrado' }]);
+
+// --- fotos del negocio (utils/fotos.js)
+const f = (name, type, size = 1000) => ({ name, type, size });
+eq('límite de fotos = 10', MAX_FOTOS, 10);
+eq('acepta solo jpg, png y webp', ACEPTA_FOTOS, 'image/jpeg,image/png,image/webp');
+eq('jpg normal pasa', motivoDeRechazo(f('a.jpg', 'image/jpeg'), 0), null);
+eq('png pasa', motivoDeRechazo(f('a.png', 'image/png'), 5), null);
+eq('webp pasa', motivoDeRechazo(f('a.webp', 'image/webp'), 9), null);
+eq('exactamente 10 MB pasa', motivoDeRechazo(f('a.jpg', 'image/jpeg', 10 * 1024 * 1024), 0), null);
+eq('10 MB + 1 byte se rechaza', motivoDeRechazo(f('a.jpg', 'image/jpeg', 10 * 1024 * 1024 + 1), 0), '"a.jpg" pesa más de 10 MB. Prueba con una foto más liviana.');
+eq('GIF se rechaza', motivoDeRechazo(f('a.gif', 'image/gif'), 0), '"a.gif" no es JPG, PNG ni WebP.');
+eq('HEIC se rechaza', motivoDeRechazo(f('a.heic', 'image/heic'), 0), '"a.heic" no es JPG, PNG ni WebP.');
+eq('con 10 fotos ya no entra otra', motivoDeRechazo(f('a.jpg', 'image/jpeg'), 10), 'Ya tienes 10 fotos. Quita alguna para subir otra.');
+eq('ruta: usuario/fotos/negocio_timestamp.ext', rutaDeFoto('u-1', 7, f('x.png', 'image/png'), 1791329876738), 'u-1/fotos/7_1791329876738.png');
+eq('ruta usa la extensión del tipo, no del nombre', rutaDeFoto('u-1', 7, f('x.exe', 'image/jpeg'), 5), 'u-1/fotos/7_5.jpg');
+eq('ruta desde la URL pública', rutaFotoDeUrl('https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/u-1/fotos/7_5.jpg?t=1'), 'u-1/fotos/7_5.jpg');
+eq('mover 0 -> 2', moverElemento([1, 2, 3, 4], 0, 2), [2, 3, 1, 4]);
+eq('mover 3 -> 0', moverElemento([1, 2, 3, 4], 3, 0), [4, 1, 2, 3]);
+eq('mover al mismo lugar no cambia', moverElemento([1, 2, 3], 1, 1), [1, 2, 3]);
+eq('mover fuera de rango no cambia', moverElemento([1, 2, 3], 0, 9), [1, 2, 3]);
 
 console.log(`${ok} de ${ok + mal} comprobaciones correctas${mal ? ` (${mal} FALLAN)` : ''}`);
 process.exit(mal ? 1 : 0);

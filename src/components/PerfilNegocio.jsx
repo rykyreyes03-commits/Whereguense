@@ -10,14 +10,12 @@ import BottomNavNegocio from './BottomNavNegocio';
 import CampoOtro from './CampoOtro';
 import PanelResenasNegocio from './PanelResenasNegocio';
 import EditorDiseno from './EditorDiseno';
+import { ACEPTA_FOTOS, MAX_FOTOS, motivoDeRechazo } from '../utils/fotos';
 import LineaResenas from './LineaResenas';
 import { OPCIONES_CATEGORIA_NEGOCIO, OTRO_NEGOCIO, separarCategoriaNegocio, unirCategoriaNegocio } from '../utils/categoriasNegocio';
 
 const NOMBRES_DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-
-const MAX_FOTOS = 6;
-const TAMANO_MAX_MB = 5;
 
 // Días que faltan hasta el vencimiento real de la suscripción (null si no hay fecha).
 function diasRestantesSuscripcion(vencimiento) {
@@ -51,6 +49,7 @@ function PerfilNegocio({
   onSubirLogo,
   onSubirFoto,
   onEliminarFoto,
+  onOrdenarFotos,
   onAgregarProducto,
   onEliminarProducto,
   actividades,
@@ -191,9 +190,9 @@ function PerfilNegocio({
     if (espacio <= 0) return;
 
     const archivosValidos = archivos.slice(0, espacio).filter((f) => {
-      const tamanoMB = f.size / (1024 * 1024);
-      if (tamanoMB > TAMANO_MAX_MB) {
-        window.alert(`"${f.name}" pesa demasiado (máximo ${TAMANO_MAX_MB} MB). Prueba con una foto más liviana.`);
+      const motivo = motivoDeRechazo(f, fotos.length);
+      if (motivo) {
+        window.alert(motivo);
         return false;
       }
       return true;
@@ -552,7 +551,7 @@ function PerfilNegocio({
               <input
                 ref={fotosInputRef}
                 type="file"
-                accept="image/*"
+                accept={ACEPTA_FOTOS}
                 multiple
                 onChange={handleFotos}
                 className="perfilnegocio-file-oculto"
@@ -625,7 +624,16 @@ function PerfilNegocio({
         {pestana === 'resenas' && <PanelResenasNegocio negocioId={negocio?.id} />}
 
         {pestana === 'diseno' && (
-          <EditorDiseno negocio={negocio} onGuardar={onGuardarDiseno} onSubirPortada={onSubirPortada} onSubirLogo={onSubirLogoDiseno} />
+          <EditorDiseno
+            negocio={negocio}
+            onGuardar={onGuardarDiseno}
+            onSubirPortada={onSubirPortada}
+            onSubirLogo={onSubirLogoDiseno}
+            fotos={fotos}
+            onSubirFoto={onSubirFoto}
+            onEliminarFoto={onEliminarFoto}
+            onOrdenarFotos={onOrdenarFotos}
+          />
         )}
       </div>
 

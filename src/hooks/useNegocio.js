@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { rutaFotoDeUrl } from '../utils/eventos';
+import { MAX_FOTOS, motivoDeRechazo, rutaDeFoto } from '../utils/fotos';
 
 function mapearNegocio(fila) {
   if (!fila) return null;
@@ -120,6 +121,7 @@ export function useNegocio(usuarioId) {
       .select('id, url, tipo, orden')
       .eq('negocio_id', negocio.id)
       .order('orden')
+      .order('id')
       .then(({ data, error }) => {
         if (!activo) return;
         if (error) {
@@ -372,12 +374,15 @@ export function useNegocio(usuarioId) {
   const subirFoto = useCallback(async (usuarioId, file) => {
     if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
 
-    const extension = file.name.split('.').pop();
-    const ruta = `${usuarioId}/fotos/${Date.now()}.${extension}`;
+    // Mismas reglas que la base y el bucket (036/035): hasta 10 fotos, jpg/png/webp, 10 MB.
+    const motivo = motivoDeRechazo(file, fotos.length);
+    if (motivo) return { exito: false, mensaje: motivo };
+
+    const ruta = rutaDeFoto(usuarioId, negocio.id, file);
 
     const { error: errorSubida } = await supabase.storage
       .from('negocios')
-      .upload(ruta, file);
+      .upload(ruta, file, { contentType: file.type });
 
     if (errorSubida) {
       console.error('Error subiendo foto:', errorSubida);
@@ -391,13 +396,18 @@ export function useNegocio(usuarioId) {
       .insert({
         negocio_id: negocio.id,
         url: urlPublica.publicUrl,
-        orden: fotos.length,
+        orden: fotos.reduce((m, f) => Math.max(m, f.orden + 1), 0),
       })
-      .select()
+      .select('id, url, tipo, orden')
       .single();
 
     if (error) {
       console.error('Error guardando foto:', error);
+      // El archivo quedó huérfano en el bucket: se intenta quitar.
+      supabase.storage.from('negocios').remove([ruta]).catch(() => {});
+      if (error.code === '23514' && /10 fotos/.test(error.message || '')) {
+        return { exito: false, mensaje: `Un negocio puede tener hasta ${MAX_FOTOS} fotos.` };
+      }
       return { exito: false, mensaje: 'La foto se subió pero no se pudo guardar. Intenta de nuevo.' };
     }
 
@@ -406,6 +416,7 @@ export function useNegocio(usuarioId) {
   }, [negocio, fotos]);
 
   const eliminarFoto = useCallback(async (fotoId) => {
+    const foto = fotos.find((f) => f.id === fotoId);
     const { error } = await supabase
       .from('negocio_foto')
       .delete()
@@ -416,9 +427,28 @@ export function useNegocio(usuarioId) {
       return { exito: false, mensaje: 'No se pudo quitar la foto. Intenta de nuevo.' };
     }
 
+    // También se borra el archivo del bucket (mejor esfuerzo: si falla, la foto ya no aparece de todos modos).
+    const ruta = rutaFotoDeUrl(foto?.url);
+    if (ruta) supabase.storage.from('negocios').remove([ruta]).catch(() => {});
+
     setFotos((prev) => prev.filter((f) => f.id !== fotoId));
     return { exito: true };
-  }, []);
+  }, [fotos]);
+
+  // Guarda el orden de las fotos de una vez (ordenar_fotos_negocio, 036). `ids` = todas las fotos, en el orden nuevo.
+  const ordenarFotos = useCallback(async (ids) => {
+    if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
+    const anterior = fotos;
+    setFotos((prev) => ids.map((id, i) => ({ ...prev.find((f) => f.id === id), orden: i })).filter((f) => f.url));
+
+    const { data, error } = await supabase.rpc('ordenar_fotos_negocio', { p_negocio_id: negocio.id, p_ids: ids });
+    if (error || !data?.exito) {
+      if (error) console.error('Error ordenando fotos:', error);
+      setFotos(anterior);
+      return { exito: false, mensaje: data?.mensaje || 'No se pudo guardar el orden. Intenta de nuevo.' };
+    }
+    return { exito: true };
+  }, [negocio, fotos]);
 
   // Pendientes de migrar en pasos siguientes (horarios, fotos, productos, QR):
   const actualizarHorarios = useCallback(async (nuevosHorarios) => {
@@ -741,6 +771,7 @@ export function useNegocio(usuarioId) {
     subirLogo,
     subirFoto,
     eliminarFoto,
+    ordenarFotos,
     agregarProducto,
     eliminarProducto,
     actividades,

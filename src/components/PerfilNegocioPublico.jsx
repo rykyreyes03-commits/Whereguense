@@ -83,6 +83,7 @@ function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false }) {
       .select('url')
       .eq('negocio_id', negocio.id)
       .order('orden')
+      .order('id')
       .then(({ data, error }) => {
         if (!activo) return;
         if (error) {
@@ -187,7 +188,7 @@ function PerfilNegocioPublico({ negocio, onCerrar, vistaPrevia = false }) {
         <h3 className="perfilpublico-seccion-titulo">Fotos</h3>
         <div className={clase('perfilpublico-fotos')}>
           {fotos.map((f, i) => (
-            <img key={i} src={f.url} alt={`Foto ${i + 1} de ${negocio.name}`} />
+            <img key={i} src={f.url} alt={`Foto ${i + 1} de ${negocio.name}`} loading="lazy" />
           ))}
         </div>
       </div>

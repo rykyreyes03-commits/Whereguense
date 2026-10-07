@@ -128,6 +128,23 @@ for (const ancho of [360, 412]) {
     await ctx.close();
   }
 
+  // 3d. Sin fotos: no hay sección Fotos en la ficha; con fotos pero sección oculta, tampoco
+  {
+    const d = datos({});
+    d.fotos = [];
+    const { ctx, page } = await abrir(ancho, 'ficha', d);
+    await page.waitForSelector('.perfilpublico-nombre');
+    await page.waitForSelector('.resenas-seccion');
+    ok(!(await titulos(page)).includes('Fotos'), `${t} sin fotos: la ficha no dibuja la sección Fotos`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await abrir(ancho, 'ficha', datos({ secciones_visibles: ['horarios', 'productos'] }));
+    await page.waitForSelector('.perfilpublico-nombre');
+    ok(!(await titulos(page)).includes('Fotos'), `${t} con fotos pero la sección oculta: tampoco aparece`);
+    await ctx.close();
+  }
+
   // 4. Negocio sin horarios: no hay "Abierto ahora" ni sección
   {
     const d = datos({});
@@ -177,6 +194,60 @@ for (const ancho of [360, 412]) {
     ok(await page.locator('#ed-descripcion-contador').innerText() === '10/300' && await page.getByRole('button', { name: 'Guardar' }).isEnabled(), `${t} descripción: contador 10/300 y Guardar activo`);
     await page.getByRole('button', { name: 'Deshacer' }).click();
     ok(await desc.inputValue() === 'Café de altura en el centro de León.' && await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} descripción: Deshacer la devuelve`);
+
+    // Fotos del negocio: subir, límite, quitar, reordenar (se guardan al instante, no con Guardar)
+    ok(await page.getByRole('heading', { name: 'Fotos del negocio' }).count() === 1 && await page.locator('#ed-fotos-contador').innerText() === '0/10', `${t} fotos: sección "Fotos del negocio" con contador 0/10`);
+    ok(await page.locator('input[data-campo=fotos]').getAttribute('accept') === 'image/jpeg,image/png,image/webp' && await page.locator('input[data-campo=fotos]').getAttribute('multiple') !== null, `${t} fotos: el selector solo acepta jpg, png y webp y permite varias`);
+    const archivo = (nombre, tipo = 'image/jpeg', tam = 10) => ({ name: nombre, mimeType: tipo, buffer: Buffer.alloc(tam, 1) });
+    const orden = () => page.$$eval('.editor-diseno-foto', (els) => els.map((e) => Number(e.getAttribute('data-id'))));
+    await page.setInputFiles('input[data-campo=fotos]', [archivo('a.jpg'), archivo('b.png', 'image/png'), archivo('c.webp', 'image/webp')]);
+    await page.waitForFunction(() => document.querySelectorAll('.editor-diseno-foto').length === 3);
+    ok(await page.locator('#ed-fotos-contador').innerText() === '3/10', `${t} fotos: se subieron tres (3/10)`);
+    ok((await orden()).join(',') === '1,2,3', `${t} fotos: en el orden en que se subieron`);
+    ok(await page.getByRole('button', { name: 'Mover foto 1 antes' }).count() === 0 && await page.getByRole('button', { name: 'Mover foto 3 después' }).count() === 0, `${t} fotos: la primera no se mueve atrás ni la última adelante`);
+    ok(await page.getByRole('button', { name: 'Guardar' }).isDisabled(), `${t} fotos: no cuentan como cambio del diseño (Guardar sigue desactivado)`);
+
+    await page.getByRole('button', { name: 'Mover foto 1 después' }).click();
+    await page.waitForFunction(() => document.querySelector('.editor-diseno-foto').getAttribute('data-id') === '2');
+    ok((await orden()).join(',') === '2,1,3', `${t} fotos: el botón "después" mueve la primera -> ${(await orden()).join(',')}`);
+    ok(JSON.stringify((await page.evaluate(() => window.__llamadas)).filter((l) => l[0] === 'ordenar').pop()[1]) === '[2,1,3]', `${t} fotos: se guardó el orden completo [2,1,3]`);
+
+    // arrastrar la tercera hasta el primer lugar
+    const asaFoto = await page.getByRole('button', { name: 'Arrastrar foto 3' }).boundingBox();
+    const primeraFoto = await page.locator('.editor-diseno-foto').first().boundingBox();
+    await page.mouse.move(asaFoto.x + asaFoto.width / 2, asaFoto.y + asaFoto.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(primeraFoto.x + 20, primeraFoto.y + 20, { steps: 14 });
+    await page.mouse.up();
+    await page.waitForFunction(() => document.querySelector('.editor-diseno-foto').getAttribute('data-id') === '3');
+    ok((await orden()).join(',') === '3,2,1', `${t} fotos: arrastrar la tercera al primer lugar -> ${(await orden()).join(',')}`);
+    ok(JSON.stringify((await page.evaluate(() => window.__llamadas)).filter((l) => l[0] === 'ordenar').pop()[1]) === '[3,2,1]', `${t} fotos: al soltar se guardó [3,2,1]`);
+
+    // quitar
+    await page.getByRole('button', { name: 'Quitar foto 2', exact: true }).click();
+    await page.waitForFunction(() => document.querySelectorAll('.editor-diseno-foto').length === 2);
+    ok((await orden()).join(',') === '3,1' && await page.locator('#ed-fotos-contador').innerText() === '2/10', `${t} fotos: la X quita la foto (quedan 3,1 y 2/10)`);
+
+    // rechazos del lado del cliente (las mismas reglas que la base y el bucket)
+    await page.setInputFiles('input[data-campo=fotos]', archivo('animada.gif', 'image/gif'));
+    ok(await page.getByRole('alert').filter({ hasText: 'no es JPG, PNG ni WebP' }).isVisible(), `${t} fotos: un GIF se rechaza con mensaje`);
+    await page.setInputFiles('input[data-campo=fotos]', archivo('enorme.jpg', 'image/jpeg', 10 * 1024 * 1024 + 1));
+    ok(await page.getByRole('alert').filter({ hasText: 'pesa más de 10 MB' }).isVisible(), `${t} fotos: más de 10 MB se rechaza con mensaje`);
+    ok(await page.locator('.editor-diseno-foto').count() === 2, `${t} fotos: los rechazos no agregan nada`);
+
+    // llegar a 10: el botón se desactiva
+    await page.setInputFiles('input[data-campo=fotos]', Array.from({ length: 8 }, (_, i) => archivo(`f${i}.jpg`)));
+    await page.waitForFunction(() => document.querySelectorAll('.editor-diseno-foto').length === 10);
+    ok(await page.locator('#ed-fotos-contador').innerText() === '10/10', `${t} fotos: 10/10`);
+    ok(await page.getByRole('button', { name: 'Llegaste al máximo de fotos' }).isDisabled(), `${t} fotos: con 10 el botón de subir se desactiva`);
+    await page.setInputFiles('input[data-campo=fotos]', archivo('once.jpg'));
+    ok(await page.locator('.editor-diseno-foto').count() === 10, `${t} fotos: una undécima no entra`);
+    ok(await sinDesborde(page), `${t} fotos: 10 miniaturas sin desborde horizontal`);
+    await page.screenshot({ path: path.join(capturas, `diseno_editor_fotos_${ancho}.png`), fullPage: true });
+    // dejar el editor como estaba para el resto de la prueba
+    for (let k = 0; k < 10; k += 1) await page.getByRole('button', { name: 'Quitar foto 1', exact: true }).click();
+    await page.waitForFunction(() => document.querySelectorAll('.editor-diseno-foto').length === 0);
+    ok(await page.locator('#ed-fotos-contador').innerText() === '0/10', `${t} fotos: se pueden quitar todas (0/10)`);
 
     // Secciones: orden, flechas de las puntas, asas
     ok((await nombres()).join('|') === 'Horarios|Productos|Fotos|Actividades|Reseñas', `${t} secciones: las cinco, en el orden guardado`);

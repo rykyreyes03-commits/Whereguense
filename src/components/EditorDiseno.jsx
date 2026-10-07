@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
-import { Camera, Check, ChevronDown, ChevronUp, GripVertical, ImagePlus, Trash2 } from 'lucide-react';
+import { Camera, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, GripVertical, ImagePlus, Trash2, X } from 'lucide-react';
+import { ACEPTA_FOTOS, MAX_FOTOS, TAMANO_MAX_MB, moverElemento } from '../utils/fotos';
 import {
   LAYOUTS,
   LETRAS,
@@ -27,7 +28,7 @@ function digitosValidos(w) {
 
 // Pestaña "Diseño" del panel del emprendedor. El borrador solo vive aquí hasta pulsar Guardar; "Deshacer" vuelve al último
 // diseño guardado. La ficha que ve el turista se abre con "Ver como te ven los turistas" del panel.
-function EditorDiseno({ negocio, onGuardar, onSubirPortada, onSubirLogo }) {
+function EditorDiseno({ negocio, onGuardar, onSubirPortada, onSubirLogo, fotos = [], onSubirFoto, onEliminarFoto, onOrdenarFotos }) {
   // Un negocio que aún no guardó descripción en el diseño parte de la que ya tenía en su perfil (no cuenta como cambio).
   const guardado = useMemo(() => {
     const d = disenoDesdeConfig(negocio?.configDiseno);
@@ -45,6 +46,21 @@ function EditorDiseno({ negocio, onGuardar, onSubirPortada, onSubirLogo }) {
   const logoRef = useRef(null);
   const listaRef = useRef(null);
   const arrastreRef = useRef(null);
+
+  // Galería de fotos: se guarda al instante (cada foto es una fila de negocio_foto), no con el botón Guardar del diseño.
+  const fotosRef = useRef(null);
+  const cuadriculaRef = useRef(null);
+  const ordenFotosRef = useRef(null);
+  const [subiendoFotos, setSubiendoFotos] = useState(null); // { actual, total } | null
+  const [avisoFotos, setAvisoFotos] = useState(null);
+  const [ordenIds, setOrdenIds] = useState(null); // orden provisional mientras se arrastra
+  const [arrastrandoFoto, setArrastrandoFoto] = useState(null);
+  const listaFotos = useMemo(() => {
+    if (!ordenIds || ordenIds.length !== fotos.length) return fotos;
+    const porId = new Map(fotos.map((f) => [f.id, f]));
+    const lista = ordenIds.map((id) => porId.get(id)).filter(Boolean);
+    return lista.length === fotos.length ? lista : fotos;
+  }, [fotos, ordenIds]);
 
   const diseno = useMemo(
     () => ({ ...borrador, secciones: filas.filter((f) => f.visible).map((f) => f.id) }),
@@ -131,6 +147,69 @@ function EditorDiseno({ negocio, onGuardar, onSubirPortada, onSubirLogo }) {
     } else {
       setAviso({ tipo: 'error', texto: resultado?.mensaje || 'No se pudo subir la imagen.' });
     }
+  };
+
+  const subirFotos = async (archivos) => {
+    const lista = Array.from(archivos || []);
+    if (lista.length === 0) return;
+    setAvisoFotos(null);
+    for (let i = 0; i < lista.length; i += 1) {
+      setSubiendoFotos({ actual: i + 1, total: lista.length });
+      const resultado = await onSubirFoto(lista[i]);
+      if (!resultado?.exito) {
+        setAvisoFotos({ tipo: 'error', texto: resultado?.mensaje || 'No se pudo subir la foto.' });
+        break;
+      }
+    }
+    setSubiendoFotos(null);
+  };
+
+  const quitarFoto = async (id) => {
+    setAvisoFotos(null);
+    const resultado = await onEliminarFoto(id);
+    if (!resultado?.exito) setAvisoFotos({ tipo: 'error', texto: resultado?.mensaje || 'No se pudo quitar la foto.' });
+  };
+
+  const guardarOrdenFotos = async (ids) => {
+    const igual = ids.length === fotos.length && ids.every((id, i) => id === fotos[i].id);
+    if (igual) return;
+    setAvisoFotos(null);
+    const resultado = await onOrdenarFotos(ids);
+    if (!resultado?.exito) setAvisoFotos({ tipo: 'error', texto: resultado?.mensaje || 'No se pudo guardar el orden.' });
+  };
+
+  const moverFoto = async (indice, destino) => {
+    await guardarOrdenFotos(moverElemento(listaFotos.map((f) => f.id), indice, destino));
+  };
+
+  // Arrastre con puntero (ratón y dedo) desde el asa de cada foto: la foto toma el lugar de la que se cruza y el orden se
+  // guarda al soltar.
+  const iniciarArrastreFoto = (e, id) => {
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    ordenFotosRef.current = listaFotos.map((f) => f.id);
+    setOrdenIds(ordenFotosRef.current);
+    setArrastrandoFoto(id);
+  };
+  const arrastrarFoto = (e) => {
+    const ids = ordenFotosRef.current;
+    if (arrastrandoFoto === null || !ids || !cuadriculaRef.current) return;
+    const destino = [...cuadriculaRef.current.children].findIndex((el) => {
+      const r = el.getBoundingClientRect();
+      return e.clientX >= r.left && e.clientX < r.right && e.clientY >= r.top && e.clientY < r.bottom;
+    });
+    const actual = ids.indexOf(arrastrandoFoto);
+    if (destino !== -1 && destino !== actual) {
+      ordenFotosRef.current = moverElemento(ids, actual, destino);
+      setOrdenIds(ordenFotosRef.current);
+    }
+  };
+  const terminarArrastreFoto = async () => {
+    const ids = ordenFotosRef.current;
+    ordenFotosRef.current = null;
+    setArrastrandoFoto(null);
+    if (ids) await guardarOrdenFotos(ids);
+    setOrdenIds(null);
   };
 
   const telefonoDigitos = (negocio?.telefono || '').replace(/\D/g, '');
@@ -264,6 +343,73 @@ function EditorDiseno({ negocio, onGuardar, onSubirPortada, onSubirLogo }) {
               <Trash2 size={15} strokeWidth={2} aria-hidden="true" /> Quitar portada
             </button>
           </>
+        )}
+      </section>
+
+      <section className="editor-diseno-bloque" aria-labelledby="ed-fotos">
+        <h3 id="ed-fotos">Fotos del negocio</h3>
+        <input
+          ref={fotosRef}
+          type="file"
+          accept={ACEPTA_FOTOS}
+          multiple
+          hidden
+          data-campo="fotos"
+          onChange={(e) => {
+            subirFotos(e.target.files);
+            e.target.value = '';
+          }}
+        />
+        <button
+          type="button"
+          className="editor-diseno-soltar"
+          disabled={Boolean(subiendoFotos) || listaFotos.length >= MAX_FOTOS}
+          onClick={() => fotosRef.current?.click()}
+        >
+          <ImagePlus size={20} strokeWidth={1.8} aria-hidden="true" />
+          {subiendoFotos
+            ? `Subiendo ${subiendoFotos.actual} de ${subiendoFotos.total}...`
+            : listaFotos.length >= MAX_FOTOS ? 'Llegaste al máximo de fotos' : 'Agregar fotos'}
+        </button>
+        <p className="editor-diseno-ayuda" id="ed-fotos-ayuda">
+          <strong id="ed-fotos-contador">{listaFotos.length}/{MAX_FOTOS}</strong> fotos · JPG, PNG o WebP, hasta {TAMANO_MAX_MB} MB cada una.
+          Se guardan al instante; arrastra el asa para cambiar el orden.
+        </p>
+        {avisoFotos && <p className="editor-diseno-aviso error" role="alert">{avisoFotos.texto}</p>}
+        {listaFotos.length > 0 && (
+          <ul className="editor-diseno-fotos" ref={cuadriculaRef} aria-label="Fotos del negocio">
+            {listaFotos.map((foto, i) => (
+              <li key={foto.id} data-id={foto.id} className={`editor-diseno-foto${arrastrandoFoto === foto.id ? ' arrastrando' : ''}`}>
+                <img src={foto.url} alt={`Foto ${i + 1} del negocio`} loading="lazy" />
+                <button
+                  type="button"
+                  className="editor-diseno-foto-asa"
+                  aria-label={`Arrastrar foto ${i + 1}`}
+                  onPointerDown={(e) => iniciarArrastreFoto(e, foto.id)}
+                  onPointerMove={arrastrarFoto}
+                  onPointerUp={terminarArrastreFoto}
+                  onPointerCancel={terminarArrastreFoto}
+                >
+                  <GripVertical size={14} strokeWidth={2.2} aria-hidden="true" />
+                </button>
+                <button type="button" className="editor-diseno-foto-quitar" onClick={() => quitarFoto(foto.id)} aria-label={`Quitar foto ${i + 1}`}>
+                  <X size={14} strokeWidth={2.6} aria-hidden="true" />
+                </button>
+                <span className="editor-diseno-foto-mover">
+                  {i > 0 ? (
+                    <button type="button" onClick={() => moverFoto(i, i - 1)} aria-label={`Mover foto ${i + 1} antes`}>
+                      <ChevronLeft size={16} strokeWidth={2.6} aria-hidden="true" />
+                    </button>
+                  ) : <span aria-hidden="true" />}
+                  {i < listaFotos.length - 1 ? (
+                    <button type="button" onClick={() => moverFoto(i, i + 1)} aria-label={`Mover foto ${i + 1} después`}>
+                      <ChevronRight size={16} strokeWidth={2.6} aria-hidden="true" />
+                    </button>
+                  ) : <span aria-hidden="true" />}
+                </span>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 

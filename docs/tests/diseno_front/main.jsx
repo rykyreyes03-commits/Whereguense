@@ -7,6 +7,7 @@ import '/src/index.css';
 import '/src/components/PerfilNegocio.css';
 import PerfilNegocioPublico from '/src/components/PerfilNegocioPublico.jsx';
 import EditorDiseno from '/src/components/EditorDiseno.jsx';
+import { motivoDeRechazo } from '/src/utils/fotos.js';
 
 const vista = new URLSearchParams(window.location.search).get('vista');
 const datos = { id: 1, name: 'Café Colibrí', categoria: 'Cafetería', descripcion: 'Café de altura en el centro de León.', telefono: '87074097' };
@@ -15,11 +16,35 @@ window.__llamadas = [];
 // eslint-disable-next-line react-refresh/only-export-components
 function Editor() {
   const [negocio, setNegocio] = useState({ id: 1, nombre: datos.name, categoria: datos.categoria, descripcion: datos.descripcion, telefono: datos.telefono, logoUrl: null, configDiseno: window.__db.negocio.config_diseno });
+  const [fotos, setFotos] = useState([]);
   return (
     <div className="perfilnegocio-wrapper">
       <div className="perfilnegocio-contenido">
         <EditorDiseno
           negocio={negocio}
+          fotos={fotos}
+          onSubirFoto={async (file) => {
+            // mismas reglas que useNegocio (utils/fotos.js)
+            const motivo = motivoDeRechazo(file, fotos.length);
+            if (motivo) return { exito: false, mensaje: motivo };
+            window.__llamadas.push(['foto', file.name]);
+            const id = Math.max(0, ...fotos.map((f) => f.id), window.__ultimaFoto || 0) + 1;
+            window.__ultimaFoto = id;
+            const nueva = { id, tipo: 'exterior', orden: fotos.length, url: `https://spybqychnydgvidwjrlh.supabase.co/storage/v1/object/public/negocios/u/fotos/1_${id}.svg` };
+            setFotos((prev) => [...prev, nueva]);
+            return { exito: true };
+          }}
+          onEliminarFoto={async (id) => {
+            window.__llamadas.push(['quitar', id]);
+            setFotos((prev) => prev.filter((f) => f.id !== id));
+            return { exito: true };
+          }}
+          onOrdenarFotos={async (ids) => {
+            window.__llamadas.push(['ordenar', ids]);
+            if (window.__db.fallaOrden) return { exito: false, mensaje: 'No se pudo guardar el orden. Intenta de nuevo.' };
+            setFotos((prev) => ids.map((id, i) => ({ ...prev.find((f) => f.id === id), orden: i })));
+            return { exito: true };
+          }}
           onGuardar={async (config) => {
             window.__llamadas.push(['guardar', config]);
             if (window.__db.falla) return { exito: false, mensaje: 'No se pudo guardar el diseño. Intenta de nuevo.' };
