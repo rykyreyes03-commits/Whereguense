@@ -760,6 +760,7 @@ function App() {
         total={sitios.length}
         onNavigate={cambiarPantalla}
         onVolver={() => setPantalla(perfilOrigen)}
+        modoNegocio={perfilOrigen === 'perfilNegocio'}
         onCerrarSesion={handleCerrarSesionGlobal}
         usuarioActual={usuarioActual}
         onActualizarPerfil={handleActualizarPerfilUsuario}

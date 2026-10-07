@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
-import { User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './Inicio.css';
 import TopBar from './TopBar';
+import BotonPerfil from './BotonPerfil';
 import BottomNav from './BottomNav';
 import { useGuardados } from '../hooks/useGuardados';
 import { INSIGNIAS } from '../data/insignias';
@@ -91,15 +91,7 @@ function Inicio({
     <div className="inicio-wrapper">
       <TopBar
         onMenuClick={() => onNavigate?.('menu')}
-        rightSlot={
-          <button
-            className="inicio-avatar-btn"
-            onClick={() => onNavigate?.('perfil')}
-            aria-label={t('inicio.perfil')}
-          >
-            <User size={22} strokeWidth={2.2} aria-hidden="true" />
-          </button>
-        }
+        rightSlot={<BotonPerfil onClick={() => onNavigate?.('perfil')} />}
       />
 
       <header className="inicio-hero">

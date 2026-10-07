@@ -78,7 +78,7 @@ function redimensionarImagen(file) {
   });
 }
 
-function Perfil({ sellos, total, onNavigate, onVolver, onCerrarSesion, usuarioActual, onActualizarPerfil }) {
+function Perfil({ sellos, total, onNavigate, onVolver, onCerrarSesion, usuarioActual, onActualizarPerfil, modoNegocio = false }) {
   const { t } = useTranslation();
   const [perfil, setPerfil] = useState(() =>
     usuarioActual ? perfilDesdeUsuario(usuarioActual) : cargarPerfil()
@@ -190,7 +190,7 @@ function Perfil({ sellos, total, onNavigate, onVolver, onCerrarSesion, usuarioAc
           className="perfil-foto-input"
         />
         <h1 className="perfil-nombre">{perfil.nombre}</h1>
-        <span className="perfil-rango">{t(`rangosUsuario.${nivel.clave}`)}</span>
+        {!modoNegocio && <span className="perfil-rango">{t(`rangosUsuario.${nivel.clave}`)}</span>}
         <div className="perfil-foto-acciones">
           <button
             type="button"
@@ -209,7 +209,7 @@ function Perfil({ sellos, total, onNavigate, onVolver, onCerrarSesion, usuarioAc
             </button>
           )}
         </div>
-        <span className="perfil-danzante">{t('perfil.danzante', { nombre: avatarNombre })}</span>
+        {!modoNegocio && <span className="perfil-danzante">{t('perfil.danzante', { nombre: avatarNombre })}</span>}
       </TopBar>
 
       <div className="perfil-contenido">
@@ -283,31 +283,36 @@ function Perfil({ sellos, total, onNavigate, onVolver, onCerrarSesion, usuarioAc
           )}
         </div>
 
-        <div className="perfil-card perfil-sellos-resumen">
-          <div>
-            <h2 className="perfil-seccion">{t('perfil.sellos')}</h2>
-            <p>{t('perfil.coleccion')}</p>
-          </div>
-          <div className="perfil-sellos-cifra">
-            <strong>{sellos.length}</strong>
-            <span>{t('perfil.de', { total })}</span>
-          </div>
-        </div>
+        {/* Sellos y ranking son del turista: el emprendedor que abre su perfil desde el panel no los ve */}
+        {!modoNegocio && (
+          <>
+            <div className="perfil-card perfil-sellos-resumen">
+              <div>
+                <h2 className="perfil-seccion">{t('perfil.sellos')}</h2>
+                <p>{t('perfil.coleccion')}</p>
+              </div>
+              <div className="perfil-sellos-cifra">
+                <strong>{sellos.length}</strong>
+                <span>{t('perfil.de', { total })}</span>
+              </div>
+            </div>
 
-        <div className="perfil-acciones">
-          <button
-            className="perfil-btn perfil-btn-primario"
-            onClick={() => onNavigate?.('pasaporte')}
-          >
-            {t('perfil.verSellos')}
-          </button>
-          <button
-            className="perfil-btn perfil-btn-secundario"
-            onClick={() => onNavigate?.('ranking')}
-          >
-            {t('perfil.ranking')}
-          </button>
-        </div>
+            <div className="perfil-acciones">
+              <button
+                className="perfil-btn perfil-btn-primario"
+                onClick={() => onNavigate?.('pasaporte')}
+              >
+                {t('perfil.verSellos')}
+              </button>
+              <button
+                className="perfil-btn perfil-btn-secundario"
+                onClick={() => onNavigate?.('ranking')}
+              >
+                {t('perfil.ranking')}
+              </button>
+            </div>
+          </>
+        )}
 
         <button
           className="perfil-btn perfil-btn-danger"

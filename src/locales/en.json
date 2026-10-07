@@ -276,9 +276,5 @@
     "ayuda": "Help and support",
     "acerca": "About",
     "proximamente": "{{opcion}}: coming soon 🚧"
-  },
-  "negocio": {
-    "verPerfil": "View my profile",
-    "verPerfilSub": "Your photo, your account details and language"
   }
 }

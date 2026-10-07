@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Check, X, Camera, Eye, ArrowLeft, Store, QrCode, Star, ChevronRight, User } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { Check, X, Camera, Eye, ArrowLeft, Store, QrCode, Star, ChevronRight } from 'lucide-react';
 import './PerfilNegocio.css';
 import TopBar from './TopBar';
+import BotonPerfil from './BotonPerfil';
 import SeleccionUbicacion from './SeleccionUbicacion';
 import PerfilNegocioPublico from './PerfilNegocioPublico';
 import EstadoNegocio from './EstadoNegocio';
@@ -64,7 +64,6 @@ function PerfilNegocio({
   onReenviarSello,
   onEliminarActividad,
 }) {
-  const { t } = useTranslation();
   // Pestaña activa: estado local (no es una pantalla de App.jsx). Se cambia desde la
   // barra inferior (BottomNavNegocio) y desde los accesos rápidos del Resumen.
   const [pestana, setPestana] = useState('resumen');
@@ -91,7 +90,7 @@ function PerfilNegocio({
   if (suscripcionVencida(negocio)) {
     return (
       <div className="perfilnegocio-wrapper perfilnegocio-vencido">
-        <TopBar align="center" onMenuClick={() => onNavigate('menu')} />
+        <TopBar align="center" onMenuClick={() => onNavigate('menu')} rightSlot={<BotonPerfil onClick={() => onNavigate('perfil')} />} />
         <EstadoNegocio vista="vencido" nombreNegocio={negocio?.nombre} />
       </div>
     );
@@ -243,7 +242,7 @@ function PerfilNegocio({
 
   return (
     <div className="perfilnegocio-wrapper perfilnegocio-wrapper--con-barra">
-      <TopBar align="center" onMenuClick={() => onNavigate('menu')}>
+      <TopBar align="center" onMenuClick={() => onNavigate('menu')} rightSlot={<BotonPerfil onClick={() => onNavigate('perfil')} />}>
         <button
           type="button"
           className={`perfilnegocio-logo ${negocio?.logoUrl ? 'perfilnegocio-logo--img' : ''}`}
@@ -343,14 +342,6 @@ function PerfilNegocio({
                 <span className="perfilnegocio-acceso-texto">
                   <strong>Crear una actividad</strong>
                   <span>Publícala en Eventos y, si quieres, pide un sello</span>
-                </span>
-                <ChevronRight size={18} strokeWidth={2} aria-hidden="true" className="perfilnegocio-acceso-chevron" />
-              </button>
-              <button type="button" className="perfilnegocio-acceso" onClick={() => onNavigate('perfil')}>
-                <span className="perfilnegocio-acceso-icono" aria-hidden="true"><User size={22} strokeWidth={1.8} /></span>
-                <span className="perfilnegocio-acceso-texto">
-                  <strong>{t('negocio.verPerfil')}</strong>
-                  <span>{t('negocio.verPerfilSub')}</span>
                 </span>
                 <ChevronRight size={18} strokeWidth={2} aria-hidden="true" className="perfilnegocio-acceso-chevron" />
               </button>

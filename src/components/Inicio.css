@@ -21,23 +21,6 @@
   min-height: 100vh;
 }
 
-/* ===== Avatar (en TopBar rightSlot) ===== */
-.inicio-avatar-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding: 0;
-  transition: transform 0.15s ease, background 0.15s ease;
-}
-.inicio-avatar-btn:hover { background: rgba(255, 255, 255, 0.22); transform: scale(1.04); }
-.inicio-avatar-btn svg { color: #fff; }
-
 /* ===== Hero ===== */
 .inicio-hero {
   background: linear-gradient(140deg, var(--color-navy) 0%, var(--color-primary) 100%);

@@ -85,20 +85,46 @@ for (const ancho of [360, 412]) {
   await ctx.close();
 }
 
-// ---- Resumen del emprendedor: tarjeta "Ver mi perfil"
+// ---- Panel del emprendedor: sin tarjeta "Ver mi perfil"; botón de perfil en la cabecera
 for (const ancho of [360, 412]) {
   const t = `[${ancho}px]`;
   const { ctx, page, errores } = await abrir('vista=negocio', '.perfilnegocio-accesos', ancho);
   const tarjetas = await page.locator('.perfilnegocio-acceso strong').allTextContents();
-  ok(tarjetas.includes('Ver mi perfil'), `${t} el Resumen tiene la tarjeta "Ver mi perfil" (${tarjetas.join(' | ')})`);
-  ok((await page.locator('.perfilnegocio-acceso:has-text("Ver mi perfil") .perfilnegocio-acceso-texto span').textContent()).length > 5, `${t} la tarjeta lleva su descripción`);
-  const caja = await page.locator('.perfilnegocio-acceso:has-text("Ver mi perfil")').boundingBox();
-  ok(caja.height >= 44, `${t} la tarjeta mide al menos 44 px de alto`);
-  await page.locator('.perfilnegocio-acceso:has-text("Ver mi perfil")').scrollIntoViewIfNeeded();
-  await page.screenshot({ path: path.join(capturas, `resumen_ver_perfil_${ancho}.png`) });
-  await page.click('.perfilnegocio-acceso:has-text("Ver mi perfil")');
-  ok((await page.evaluate(() => window.__eventos.map((x) => x[1]).join(','))) === 'perfil', `${t} la tarjeta abre 'perfil'`);
-  ok(errores.length === 0, `${t} Resumen sin errores de página (${errores.join('; ')})`);
+  ok(!tarjetas.includes('Ver mi perfil') && tarjetas.length === 3, `${t} el Resumen vuelve a tener solo sus 3 tarjetas (${tarjetas.join(' | ')})`);
+  const boton = page.locator('.topbar-perfil-btn');
+  ok((await boton.count()) === 1, `${t} hay un solo botón de perfil en la cabecera`);
+  ok((await boton.getAttribute('aria-label')) === 'Perfil', `${t} el botón se llama "Perfil"`);
+  ok((await boton.locator('svg').count()) === 1 && (await boton.locator('img').count()) === 0, `${t} lleva el ícono User (un svg, sin imágenes sueltas)`);
+  const caja = await boton.boundingBox();
+  ok(caja.width >= 44 && caja.height >= 44, `${t} mide al menos 44 px (${Math.round(caja.width)}x${Math.round(caja.height)})`);
+  ok(caja.x + caja.width > ancho - 40 && caja.y < 120, `${t} está arriba a la derecha (x ${Math.round(caja.x)}, y ${Math.round(caja.y)})`);
+  const menu = await page.locator('.topbar-menu').boundingBox();
+  ok(menu.x < 60, `${t} el menú sigue arriba a la izquierda`);
+  await page.screenshot({ path: path.join(capturas, `emprendedor_cabecera_${ancho}.png`) });
+  await boton.click();
+  ok((await page.evaluate(() => window.__eventos.map((x) => x[1]).join(','))) === 'perfil', `${t} el botón abre 'perfil'`);
+  ok(errores.length === 0, `${t} sin errores de página (${errores.join('; ')})`);
+  await ctx.close();
+}
+
+// ---- Perfil abierto desde el panel del emprendedor: foto, datos, idioma y cerrar sesión
+for (const ancho of [360, 412]) {
+  const t = `[${ancho}px perfil emprendedor]`;
+  const { ctx, page, errores } = await abrir('vista=perfil&negocio=1', '.perfil-wrapper', ancho);
+  const texto = await page.evaluate(() => document.body.innerText);
+  ok(texto.includes('Datos de usuario') && texto.includes('Idioma preferido') && texto.includes('Cerrar sesión'), `${t} muestra datos, idioma y cerrar sesión`);
+  ok((await page.locator('.perfil-avatar').count()) === 1 && texto.includes('Subir foto'), `${t} muestra la foto y su botón`);
+  ok((await page.locator('.perfil-sellos-resumen').count()) === 0 && !texto.includes('Ver mis sellos') && !texto.includes('Ranking'), `${t} sin sellos ni ranking (son del turista)`);
+  ok((await page.locator('.perfil-rango').count()) === 0 && (await page.locator('.perfil-danzante').count()) === 0, `${t} sin el rango de turista ni "Danzante"`);
+  ok((await page.locator('.topbar-volver').count()) === 1, `${t} tiene ← Volver`);
+  await page.screenshot({ path: path.join(capturas, `perfil_emprendedor_${ancho}.png`) });
+  ok(errores.length === 0, `${t} sin errores de página (${errores.join('; ')})`);
+  await ctx.close();
+}
+{
+  const { ctx, page } = await abrir('vista=perfil', '.perfil-wrapper');
+  const texto = await page.evaluate(() => document.body.innerText);
+  ok((await page.locator('.perfil-sellos-resumen').count()) === 1 && texto.includes('Ver mis sellos') && texto.includes('Ranking') && texto.includes('Danzante'), 'el Perfil del turista conserva sellos, ranking y danzante');
   await ctx.close();
 }
 
