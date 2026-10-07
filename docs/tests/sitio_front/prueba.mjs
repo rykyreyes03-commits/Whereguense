@@ -130,6 +130,81 @@ for (const ancho of [360, 412]) {
   await s3.ctx.close();
 }
 
+// Lightbox de la galería
+const fotoGrande = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="3000" height="2000"><rect width="3000" height="2000" fill="#335"/></svg>')}`;
+for (const ancho of [360, 412]) {
+  const t = `[${ancho}px lightbox]`;
+  const db = estado();
+  db.fotos[3].url = fotoGrande;
+  const { ctx, page, errores } = await abrir(ancho, db);
+  const caja = (sel) => page.evaluate((s) => { const r = document.querySelector(s).getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; }, sel);
+
+  const antes = await caja('.sitio-detalle-galeria li:nth-child(1) img');
+  ok(antes.w === 170 && antes.h === 120, `${t} la miniatura mantiene su tamaño (${antes.w}x${antes.h})`);
+
+  await page.click('.sitio-detalle-galeria li:nth-child(1) button');
+  await page.waitForSelector('.lightbox');
+  const ov = await caja('.lightbox');
+  ok(ov.x === 0 && ov.y === 0 && ov.w === ancho && ov.h === 800, `${t} el fondo cubre toda la pantalla`);
+  ok((await page.evaluate(() => getComputedStyle(document.querySelector('.lightbox')).backgroundColor)).startsWith('rgba(0, 0, 0'), `${t} fondo negro semitransparente`);
+  const z = await page.evaluate(() => {
+    const zs = [...document.querySelectorAll('body *')].map((e) => parseInt(getComputedStyle(e).zIndex, 10)).filter(Number.isFinite);
+    return { lb: parseInt(getComputedStyle(document.querySelector('.lightbox')).zIndex, 10), max: Math.max(...zs) };
+  });
+  ok(z.lb === z.max, `${t} z-index por encima de todo (${z.lb})`);
+  let f = await caja('.lightbox-foto');
+  // Foto de 400x280: a su tamaño original si cabe; en pantallas más angostas que 421 px, al 95 % del ancho (sin deformar)
+  const anchoEsperado = Math.min(400, ancho * 0.95);
+  ok(Math.abs(f.w - anchoEsperado) < 1 && Math.abs(f.w / f.h - 400 / 280) < 0.01, `${t} foto pequeña a su tamaño original o 95 % del ancho (${Math.round(f.w)}x${Math.round(f.h)})`);
+  ok(Math.abs(f.x + f.w / 2 - ancho / 2) < 1 && Math.abs(f.y + f.h / 2 - 400) < 1, `${t} foto centrada`);
+  ok((await page.locator('.lightbox-contador').textContent()) === '1 / 4', `${t} contador 1 / 4`);
+
+  await page.click('[aria-label="Foto siguiente"]');
+  ok((await page.locator('.lightbox-contador').textContent()) === '2 / 4', `${t} flecha → pasa a la 2`);
+  await page.click('[aria-label="Foto anterior"]');
+  await page.click('[aria-label="Foto anterior"]');
+  ok((await page.locator('.lightbox-contador').textContent()) === '4 / 4', `${t} flecha ← desde la 1 da la vuelta a la última`);
+  f = await caja('.lightbox-foto');
+  ok(f.w <= ancho * 0.95 + 1 && f.h <= 800 * 0.95 + 1 && Math.abs(f.w / f.h - 1.5) < 0.01, `${t} foto enorme: máximo 95 % de la pantalla y sin deformar (${Math.round(f.w)}x${Math.round(f.h)})`);
+
+  // swipe con el dedo (eventos táctiles reales)
+  const deslizar = (dx) => page.evaluate((d) => {
+    const el = document.querySelector('.lightbox');
+    const mk = (tipo, x) => new TouchEvent(tipo, { bubbles: true, cancelable: true,
+      touches: tipo === 'touchend' ? [] : [new Touch({ identifier: 1, target: el, clientX: x, clientY: 300 })],
+      changedTouches: [new Touch({ identifier: 1, target: el, clientX: x, clientY: 300 })] });
+    el.dispatchEvent(mk('touchstart', 200)); el.dispatchEvent(mk('touchmove', 200 + d / 2)); el.dispatchEvent(mk('touchend', 200 + d));
+  }, dx);
+  await deslizar(-120);
+  ok((await page.locator('.lightbox-contador').textContent()) === '1 / 4', `${t} swipe a la izquierda -> siguiente`);
+  await deslizar(120);
+  ok((await page.locator('.lightbox-contador').textContent()) === '4 / 4', `${t} swipe a la derecha -> anterior`);
+  await deslizar(-20);
+  ok((await page.locator('.lightbox-contador').textContent()) === '4 / 4', `${t} un roce corto no cambia de foto`);
+
+  await page.keyboard.press('ArrowLeft');
+  ok((await page.locator('.lightbox-contador').textContent()) === '3 / 4', `${t} teclado: flecha izquierda`);
+
+  // cerrar: tocar la foto no cierra; tocar fuera, X y Escape sí
+  await page.click('.lightbox-foto');
+  ok((await page.locator('.lightbox').count()) === 1, `${t} tocar la foto no cierra`);
+  await page.mouse.click(ancho - 3, 790);
+  ok((await page.locator('.lightbox').count()) === 0, `${t} tocar fuera cierra`);
+  await page.click('.sitio-detalle-galeria li:nth-child(2) button');
+  ok((await page.locator('.lightbox-contador').textContent()) === '2 / 4', `${t} abre en la foto tocada (2)`);
+  await page.click('[aria-label="Cerrar foto"]');
+  ok((await page.locator('.lightbox').count()) === 0, `${t} la X cierra`);
+  await page.click('.sitio-detalle-galeria li:nth-child(1) button');
+  await page.keyboard.press('Escape');
+  ok((await page.locator('.lightbox').count()) === 0, `${t} Escape cierra`);
+  ok((await page.locator('.sitio-detalle-nombre').count()) === 1, `${t} la ficha sigue abierta debajo`);
+  ok(errores.length === 0, `${t} sin errores de página (${errores.join('; ')})`);
+
+  await page.click('.sitio-detalle-galeria li:nth-child(1) button');
+  await page.screenshot({ path: path.join(capturas, `lightbox_${ancho}.png`) });
+  await ctx.close();
+}
+
 // Panel del mapa: portada de sitio_foto > imagen_url > (foto local) > fondo azul con el ícono
 for (const ancho of [360, 412]) {
   const t = `[${ancho}px panel]`;

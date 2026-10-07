@@ -1,9 +1,10 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { ArrowLeft, X, Heart, MapPin, Clock, Ticket, Sparkles, Lightbulb, Landmark, ChevronRight, Coins, Navigation, Route } from 'lucide-react';
 import { FOTOS_SITIOS } from '../data/fotos';
 import { INSIGNIAS } from '../data/insignias';
 import { useSitioGaleria } from '../hooks/useSitioGaleria';
 import SeccionResenasSitio from './SeccionResenasSitio';
+import LightboxGaleria from './LightboxGaleria';
 import guiaCabezon from '../assets/personajes/guiacabezon_dariana.png';
 import guiaGigantona from '../assets/personajes/guiagigantona_dariana.png';
 import './DetalleSitio.css';
@@ -36,6 +37,7 @@ function DetalleSitio({
 }) {
   const { fotos, portadaUrl } = useSitioGaleria(sitio?.id);
   const galeriaRef = useRef(null);
+  const [fotoAbierta, setFotoAbierta] = useState(null); // índice de la foto en el lightbox
   if (!sitio) return null;
 
   const avatarElegido = localStorage.getItem('avatarElegido');
@@ -143,7 +145,9 @@ function DetalleSitio({
               <ul className="sitio-detalle-galeria" ref={galeriaRef}>
                 {fotos.map((f, i) => (
                   <li key={f.id}>
-                    <img src={f.url} alt={`${sitio.name}, foto ${i + 1} de ${fotos.length}`} loading="lazy" />
+                    <button type="button" className="sitio-detalle-galeria-foto" onClick={() => setFotoAbierta(i)} aria-label={`Ver foto ${i + 1} de ${fotos.length} en grande`}>
+                      <img src={f.url} alt={`${sitio.name}, foto ${i + 1} de ${fotos.length}`} loading="lazy" />
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -169,6 +173,16 @@ function DetalleSitio({
 
         <SeccionResenasSitio sitioId={sitio.id} nombreSitio={sitio.name} />
       </div>
+
+      {fotoAbierta != null && fotos[fotoAbierta] && (
+        <LightboxGaleria
+          fotos={fotos}
+          indice={fotoAbierta}
+          nombre={sitio.name}
+          onCambiar={setFotoAbierta}
+          onCerrar={() => setFotoAbierta(null)}
+        />
+      )}
 
       <div className="sitio-detalle-pie">
         <button type="button" className="sitio-detalle-btn sitio-detalle-btn--sec" onClick={() => onVerRuta(sitio)}>

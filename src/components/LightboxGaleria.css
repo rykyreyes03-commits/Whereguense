@@ -1,0 +1,68 @@
+/* Lightbox de la galería del sitio: por encima de todo (formularios 1010, diálogos 1020) */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.88);
+  touch-action: pan-y;
+  animation: lightboxEntrada 0.18s ease-out;
+}
+@keyframes lightboxEntrada {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lightbox { animation: none; }
+}
+
+/* A su tamaño original; si es más grande, como máximo el 95 % de la pantalla, sin recortar */
+.lightbox-foto {
+  display: block;
+  max-width: 95vw;
+  max-height: 95vh;
+  max-height: 95dvh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.lightbox-boton {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.lightbox-boton:hover { background: rgba(255, 255, 255, 0.3); }
+.lightbox-boton:focus-visible { outline: 3px solid var(--color-turquoise, #54C8C0); outline-offset: 2px; }
+.lightbox-cerrar { top: calc(14px + env(safe-area-inset-top)); right: 14px; }
+.lightbox-flecha { top: 50%; margin-top: -22px; }
+.lightbox-flecha--izq { left: 10px; }
+.lightbox-flecha--der { right: 10px; }
+
+.lightbox-contador {
+  position: absolute;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.85rem;
+  font-weight: 700;
+}

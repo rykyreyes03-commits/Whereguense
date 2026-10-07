@@ -246,6 +246,9 @@
 }
 .sitio-detalle-galeria::-webkit-scrollbar { display: none; }
 .sitio-detalle-galeria li { flex: none; scroll-snap-align: start; }
+/* El botón que abre el lightbox no altera la miniatura */
+.sitio-detalle-galeria-foto { display: block; padding: 0; border: none; background: none; border-radius: var(--radius-md); cursor: zoom-in; }
+.sitio-detalle-galeria-foto:focus-visible { outline: 3px solid var(--color-turquoise); outline-offset: 2px; }
 .sitio-detalle-galeria img {
   display: block;
   width: 170px;
