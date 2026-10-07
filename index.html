@@ -2,6 +2,10 @@
 <html lang="es-NI">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Tema oscuro guardado: se aplica antes de que se dibuje nada, para que no haya un parpadeo claro (ver src/tema.js).
+      try { if (localStorage.getItem('tema') === 'oscuro') document.documentElement.classList.add('dark'); } catch (e) { /* sin almacenamiento */ }
+    </script>
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes">

@@ -10,7 +10,7 @@
   max-width: 480px;
   margin: 0 auto;
   min-height: 100vh;
-  background: var(--color-white);
+  background: var(--color-card);
   color: var(--color-text);
   font-family: var(--font-body);
   transition: max-width 0.2s ease;
@@ -74,7 +74,7 @@
   padding: 14px 16px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: var(--color-white);
+  background: var(--color-card);
   box-shadow: var(--shadow-sm);
   font-family: var(--font-body);
   text-align: left;
@@ -99,7 +99,7 @@
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   background: rgba(30, 42, 120, 0.08);
   padding: 4px 10px;
   border-radius: var(--radius-pill);

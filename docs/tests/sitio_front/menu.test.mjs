@@ -58,21 +58,21 @@ for (const ancho of [360, 412]) {
   // Cambiar idioma: abre un selector real (no el aviso "próximamente")
   await page.click('.menu-item:has-text("Cambiar idioma")');
   ok(dialogos.length === 0, `${t} Cambiar idioma no lanza el aviso "próximamente"`);
-  ok((await page.locator('.menu-idioma').allTextContents()).join(',') === 'Español,English', `${t} el selector ofrece Español y English`);
-  ok((await page.locator('.menu-idioma[aria-checked="true"]').textContent()) === 'Español', `${t} está marcado el idioma actual (Español)`);
-  const alto = await page.locator('.menu-idioma').first().boundingBox();
+  ok((await page.locator('.menu-selector-opcion').allTextContents()).join(',') === 'Español,English', `${t} el selector ofrece Español y English`);
+  ok((await page.locator('.menu-selector-opcion[aria-checked="true"]').textContent()) === 'Español', `${t} está marcado el idioma actual (Español)`);
+  const alto = await page.locator('.menu-selector-opcion').first().boundingBox();
   ok(alto.height >= 44, `${t} los botones de idioma miden al menos 44 px (${Math.round(alto.height)})`);
   await page.screenshot({ path: path.join(capturas, `menu_emprendedor_${ancho}.png`) });
-  await page.click('.menu-idioma:has-text("English")');
+  await page.click('.menu-selector-opcion:has-text("English")');
   await page.waitForTimeout(200);
   const en = await etiquetas(page);
   ok(en.join(' | ') === 'Change language | Notifications | Theme | Privacy | Help and support | About', `${t} la pantalla pasa a inglés: ${en.join(' | ')}`);
   ok((await page.locator('.topbar-titulo').textContent()) === 'Settings', `${t} el título pasa a "Settings"`);
   ok((await page.evaluate(() => localStorage.getItem('idioma'))) === 'en', `${t} el idioma queda guardado`);
-  ok((await page.locator('.menu-idioma[aria-checked="true"]').textContent()) === 'English', `${t} ahora está marcado English`);
+  ok((await page.locator('.menu-selector-opcion[aria-checked="true"]').textContent()) === 'English', `${t} ahora está marcado English`);
   await page.click('.menu-item:has-text("Notifications")');
   ok(dialogos.length === 1 && dialogos[0] === 'Notifications: coming soon 🚧', `${t} las demás opciones siguen con su aviso, ya en inglés (${dialogos[0]})`);
-  await page.click('.menu-idioma:has-text("Español")');
+  await page.click('.menu-selector-opcion:has-text("Español")');
   await page.waitForTimeout(200);
   ok((await etiquetas(page))[0] === 'Cambiar idioma', `${t} se puede volver al español`);
   ok(errores.length === 0, `${t} sin errores de página (${errores.join('; ')})`);

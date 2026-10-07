@@ -2,7 +2,7 @@
 .nivel-progreso {
   margin-bottom: 16px;
   padding: 14px 16px;
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
@@ -18,12 +18,12 @@
 .nivel-progreso-nivel {
   font-family: var(--font-display);
   font-size: 1.15rem;
-  color: var(--color-navy);
+  color: var(--color-heading);
 }
 .nivel-progreso-puntos {
   font-size: 0.9rem;
   font-weight: 800;
-  color: var(--color-primary);
+  color: var(--color-accent-text);
 }
 .nivel-progreso-barra {
   height: 10px;

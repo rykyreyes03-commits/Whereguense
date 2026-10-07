@@ -58,14 +58,14 @@
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 2px;
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   margin-bottom: 8px;
 }
 .danzante-titulo {
   font-family: var(--font-display);
   font-size: 1.6rem;
   line-height: 1.22;
-  color: var(--color-navy);
+  color: var(--color-heading);
   margin-bottom: 8px;
 }
 .danzante-sub {
@@ -83,7 +83,7 @@
 .danzante-opcion {
   position: relative;
   flex: 1;
-  background: var(--color-white);
+  background: var(--color-card);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 16px 12px 18px;
@@ -130,7 +130,7 @@
   font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 700;
-  color: var(--color-navy);
+  color: var(--color-heading);
 }
 .danzante-texto {
   font-size: 0.78rem;

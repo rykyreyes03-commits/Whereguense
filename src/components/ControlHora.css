@@ -9,7 +9,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 0 10px;
-  background: var(--color-white);
+  background: var(--color-card);
   color: var(--color-text);
   font-family: var(--font-body);
   font-size: 1.05rem;
@@ -24,7 +24,7 @@
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-pill);
   padding: 3px;
-  background: var(--color-white);
+  background: var(--color-card);
 }
 .controlhora-periodo-btn {
   min-width: 46px;
@@ -41,5 +41,5 @@
 .controlhora-periodo-btn.activo { background: var(--color-navy); color: var(--color-white); }
 .controlhora-periodo-btn:focus-visible { outline: 2px solid var(--color-turquoise); outline-offset: 2px; }
 .controlhora-resumen { margin: 6px 0 0; font-size: 0.82rem; color: var(--color-text-muted); }
-.controlhora-resumen--lista { color: var(--color-navy); font-weight: 700; }
+.controlhora-resumen--lista { color: var(--color-heading); font-weight: 700; }
 .controlhora-periodo-btn--error { color: var(--color-coral); }

@@ -1,6 +1,8 @@
 import { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Sun, Moon } from 'lucide-react';
 import { cambiarIdioma } from '../i18n';
+import { cambiarTema, temaGuardado } from '../tema';
 import './Menu.css';
 import TopBar from './TopBar';
 
@@ -91,7 +93,7 @@ function opcionesMenu(esAdmin, modoNegocio) {
   const comunes = [
     { clave: 'idioma', Icono: IconoIdioma, accion: 'idioma' },
     { clave: 'notificaciones', Icono: IconoNotificaciones },
-    { clave: 'tema', Icono: IconoTema },
+    { clave: 'tema', Icono: IconoTema, accion: 'tema' },
     { clave: 'privacidad', Icono: IconoPrivacidad },
     { clave: 'ayuda', Icono: IconoAyuda },
     { clave: 'acerca', Icono: IconoAcerca },
@@ -106,9 +108,15 @@ const IDIOMAS = [
   { id: 'en', nombre: 'English' },
 ];
 
+const TEMAS_MENU = [
+  { id: 'claro', Icono: Sun, clave: 'temaClaro' },
+  { id: 'oscuro', Icono: Moon, clave: 'temaOscuro' },
+];
+
 function Menu({ onNavigate, onVolver, onCerrarSesion, onMiNegocio, onCambiarIdioma, esAdmin, modoNegocio = false }) {
   const { t, i18n } = useTranslation();
-  const [idiomaAbierto, setIdiomaAbierto] = useState(false);
+  const [abierto, setAbierto] = useState(null); // selector desplegado: 'idioma', 'tema' o ninguno
+  const [temaActual, setTemaActual] = useState(temaGuardado);
   const idiomaActual = String(i18n.language || 'es').slice(0, 2) === 'en' ? 'en' : 'es';
   const OPCIONES = opcionesMenu(esAdmin, modoNegocio);
 
@@ -119,6 +127,11 @@ function Menu({ onNavigate, onVolver, onCerrarSesion, onMiNegocio, onCambiarIdio
   const elegirIdioma = (id) => {
     // La app guarda la preferencia en la cuenta; sin ese manejador (pruebas) solo cambia en este dispositivo.
     (onCambiarIdioma || cambiarIdioma)(id);
+  };
+
+  const elegirTema = (id) => {
+    cambiarTema(id); // se aplica ya (clase "dark" en <html>) y queda guardado en localStorage
+    setTemaActual(id);
   };
 
   const handleCerrarSesion = () => {
@@ -134,45 +147,65 @@ function Menu({ onNavigate, onVolver, onCerrarSesion, onMiNegocio, onCambiarIdio
 
       <div className="menu-contenido">
         <nav className="menu-lista">
-          {OPCIONES.map(({ clave, Icono, pantalla, accion }) => (
-            <Fragment key={clave}>
-              <button
-                className="menu-item"
-                aria-expanded={accion === 'idioma' ? idiomaAbierto : undefined}
-                onClick={() => {
-                  if (accion === 'idioma') {
-                    setIdiomaAbierto((abierto) => !abierto);
-                  } else if (accion === 'miNegocio') {
-                    onMiNegocio?.();
-                  } else if (pantalla) {
-                    onNavigate?.(pantalla);
-                  } else {
-                    handleOpcion(clave);
-                  }
-                }}
-              >
-                <span className="menu-item-icono"><Icono /></span>
-                <span className="menu-item-texto">{t(`menu.${clave}`)}</span>
-                <Chevron />
-              </button>
-              {accion === 'idioma' && idiomaAbierto && (
-                <div className="menu-idiomas" role="radiogroup" aria-label={t('menu.idioma')}>
-                  {IDIOMAS.map(({ id, nombre }) => (
-                    <button
-                      key={id}
-                      type="button"
-                      role="radio"
-                      aria-checked={idiomaActual === id}
-                      className="menu-idioma"
-                      onClick={() => elegirIdioma(id)}
-                    >
-                      {nombre}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </Fragment>
-          ))}
+          {OPCIONES.map(({ clave, Icono, pantalla, accion }) => {
+            const desplegable = accion === 'idioma' || accion === 'tema';
+            return (
+              <Fragment key={clave}>
+                <button
+                  className="menu-item"
+                  aria-expanded={desplegable ? abierto === accion : undefined}
+                  onClick={() => {
+                    if (desplegable) {
+                      setAbierto((actual) => (actual === accion ? null : accion));
+                    } else if (accion === 'miNegocio') {
+                      onMiNegocio?.();
+                    } else if (pantalla) {
+                      onNavigate?.(pantalla);
+                    } else {
+                      handleOpcion(clave);
+                    }
+                  }}
+                >
+                  <span className="menu-item-icono"><Icono /></span>
+                  <span className="menu-item-texto">{t(`menu.${clave}`)}</span>
+                  <Chevron />
+                </button>
+                {accion === 'idioma' && abierto === 'idioma' && (
+                  <div className="menu-selector" role="radiogroup" aria-label={t('menu.idioma')}>
+                    {IDIOMAS.map(({ id, nombre }) => (
+                      <button
+                        key={id}
+                        type="button"
+                        role="radio"
+                        aria-checked={idiomaActual === id}
+                        className="menu-selector-opcion"
+                        onClick={() => elegirIdioma(id)}
+                      >
+                        {nombre}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {accion === 'tema' && abierto === 'tema' && (
+                  <div className="menu-selector" role="radiogroup" aria-label={t('menu.tema')}>
+                    {TEMAS_MENU.map(({ id, Icono: IconoTemaOpcion, clave: claveTema }) => (
+                      <button
+                        key={id}
+                        type="button"
+                        role="radio"
+                        aria-checked={temaActual === id}
+                        className="menu-selector-opcion"
+                        onClick={() => elegirTema(id)}
+                      >
+                        <IconoTemaOpcion size={18} strokeWidth={2} aria-hidden="true" />
+                        {t(`menu.${claveTema}`)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </Fragment>
+            );
+          })}
         </nav>
 
         <div className="menu-sesion">

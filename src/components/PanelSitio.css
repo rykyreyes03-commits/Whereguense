@@ -13,7 +13,7 @@
   max-height: 65%;
   overflow-y: auto;
   padding: 22px 18px calc(18px + env(safe-area-inset-bottom));
-  background: var(--color-white);
+  background: var(--color-card);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0; /* redondeado solo arriba */
   box-shadow: 0 -8px 28px rgba(26, 26, 46, 0.16); /* misma tinta que --shadow-lg, hacia arriba */
   font-family: var(--font-body);
@@ -45,7 +45,7 @@
   font-family: var(--font-display);
   font-size: 1.2rem;
   line-height: 1.2;
-  color: var(--color-navy);
+  color: var(--color-heading);
 }
 
 .panel-sitio-foto {
@@ -119,17 +119,17 @@
 .panel-sitio-btn-primario:hover { background: #25338c; }
 .panel-sitio-btn-secundario {
   border: 1.5px solid var(--color-border-strong);
-  background: var(--color-white);
+  background: var(--color-card);
   color: var(--color-text-muted);
 }
 .panel-sitio-btn-secundario:hover {
   border-color: var(--color-primary);
-  color: var(--color-primary);
+  color: var(--color-accent-text);
 }
 .panel-sitio-btn-secundario.activo {
   border-color: var(--color-primary);
   background: rgba(30, 42, 120, 0.08); /* mismo valor que .mapa-popup-btn-ghost.activo */
-  color: var(--color-primary);
+  color: var(--color-accent-text);
 }
 .panel-sitio-btn-ancho {
   grid-column: span 2;

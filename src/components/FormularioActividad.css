@@ -3,10 +3,10 @@
   font-family: var(--font-display);
   font-size: 1.35rem;
   line-height: 1.2;
-  color: var(--color-navy);
+  color: var(--color-heading);
   margin: 0 0 18px;
 }
-.generarqr-campo small.formact-escrita { font-weight: 700; color: var(--color-navy); margin: 0 0 16px; }
+.generarqr-campo small.formact-escrita { font-weight: 700; color: var(--color-heading); margin: 0 0 16px; }
 .formact-aviso {
   margin: 0;
   padding: 8px 12px;

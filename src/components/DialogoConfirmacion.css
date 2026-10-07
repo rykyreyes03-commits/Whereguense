@@ -15,7 +15,7 @@
   max-width: 400px;
   padding: 22px 22px 20px;
   border-radius: var(--radius-lg);
-  background: var(--color-white);
+  background: var(--color-card);
   box-shadow: var(--shadow-lg);
 }
 .dialogo-titulo {
@@ -23,7 +23,7 @@
   font-family: var(--font-display);
   font-size: 1.3rem;
   line-height: 1.2;
-  color: var(--color-navy);
+  color: var(--color-heading);
 }
 .dialogo-texto { margin: 0; font-size: 1rem; line-height: 1.45; color: var(--color-text-muted); }
 .dialogo-error {
@@ -43,7 +43,7 @@
   padding: 0 12px;
   border: 1.5px solid var(--color-border-strong);
   border-radius: var(--radius-pill);
-  background: var(--color-white);
+  background: var(--color-card);
   color: var(--color-text);
   font-family: var(--font-body);
   font-size: 1rem;

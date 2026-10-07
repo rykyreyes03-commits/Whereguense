@@ -5,7 +5,7 @@
    ========================================================= */
 
 .perfilpublico-card {
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
@@ -17,7 +17,7 @@
   font-family: var(--ficha-titulo, var(--font-display));
   font-weight: 700;
   font-size: 1rem;
-  color: var(--color-navy);
+  color: var(--color-heading);
   margin: 0 0 8px;
 }
 
@@ -89,7 +89,7 @@
   padding: 12px 14px;
   font-size: 0.9rem;
   font-weight: 700;
-  color: var(--color-navy);
+  color: var(--color-heading);
   overflow-wrap: anywhere;
 }
 .perfilpublico-productos.perfilpublico-cuadricula .perfilpublico-producto-chip {
@@ -124,7 +124,7 @@
 }
 .perfilpublico-actividades strong {
   font-size: 0.95rem;
-  color: var(--color-navy);
+  color: var(--color-heading);
 }
 .perfilpublico-actividades p {
   margin: 2px 0 0;
@@ -207,7 +207,7 @@
   overflow: hidden;
   border-radius: var(--radius-md);
   border: 3px solid var(--ficha-color, var(--color-primary));
-  background: #fff;
+  background: var(--color-card);
   color: var(--ficha-color, var(--color-primary));
   font-family: var(--ficha-titulo, var(--font-display));
   font-size: 1.9rem;
@@ -223,7 +223,7 @@
   font-family: var(--ficha-titulo, var(--font-display));
   font-size: 1.4rem;
   line-height: 1.2;
-  color: var(--color-navy);
+  color: var(--color-heading);
   overflow-wrap: anywhere;
 }
 
@@ -238,7 +238,7 @@
   align-items: center;
   padding: 5px 12px;
   border-radius: var(--radius-pill);
-  background: #EEF0F6;
+  background: var(--bg-eef0f6);
   color: #3A3A4E;
   font-size: 0.85rem;
   font-weight: 700;
@@ -247,7 +247,7 @@
   display: none;
 }
 .perfilpublico-pastilla--abierto {
-  background: #DDF5E4;
+  background: var(--bg-ddf5e4);
   color: #14633A;
 }
 

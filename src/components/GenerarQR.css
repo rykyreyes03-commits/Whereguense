@@ -1,4 +1,4 @@
-.generarqr-wrapper { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #ffffff; }
+.generarqr-wrapper { max-width: 480px; margin: 0 auto; min-height: 100vh; background: var(--color-card); }
 /* ===== Bloques: Sellos y Cupones se sienten como secciones separadas ===== */
 .generarqr-bloques { padding: 8px 18px 40px; }
 .generarqr-bloque {
@@ -6,7 +6,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-top: 5px solid var(--color-primary);
   border-radius: var(--radius-lg);
@@ -38,7 +38,7 @@
   justify-content: center;
   border-radius: 13px;
   background: color-mix(in srgb, var(--color-primary) 12%, var(--color-white));
-  color: var(--color-primary);
+  color: var(--color-accent-text);
 }
 .generarqr-bloque--cupones .generarqr-bloque-icono {
   background: color-mix(in srgb, var(--color-turquoise) 30%, var(--color-white));
@@ -48,7 +48,7 @@
   font-family: var(--font-display);
   font-size: 1.4rem;
   line-height: 1.15;
-  color: var(--color-navy);
+  color: var(--color-heading);
   margin: 0;
 }
 .generarqr-bloque-sub {
@@ -61,7 +61,7 @@
   width: 100%; min-height: 260px; display: flex; align-items: center; justify-content: center;
   background: var(--color-surface-soft); border-radius: var(--radius-lg); margin-bottom: 20px; padding: 20px;
 }
-.generarqr-vacio { color: #888; font-size: 0.9rem; max-width: 220px; }
+.generarqr-vacio { color: var(--color-text-muted); font-size: 0.9rem; max-width: 220px; }
 .generarqr-generar-btn {
   width: 100%; border: none; border-radius: var(--radius-pill);
   background: linear-gradient(90deg, var(--color-indigo), var(--color-ultramarine));
@@ -70,8 +70,8 @@
 }
 .generarqr-acciones { display: flex; gap: 12px; width: 100%; margin-top: 12px; }
 .generarqr-accion {
-  flex: 1; border: 2px solid var(--color-ultramarine); border-radius: var(--radius-pill); background: #fff;
-  color: var(--color-ultramarine); padding: 10px; font-family: var(--font-body); font-weight: 700;
+  flex: 1; border: 2px solid var(--color-ultramarine); border-radius: var(--radius-pill); background: var(--color-card);
+  color: var(--color-accent-text); padding: 10px; font-family: var(--font-body); font-weight: 700;
   font-size: 0.9rem; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
 }
@@ -79,7 +79,7 @@
 @media print {
   .generarqr-wrapper * { visibility: hidden; }
   .generarqr-qr-area, .generarqr-qr-area * { visibility: visible; }
-  .generarqr-qr-area { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); background: #fff; }
+  .generarqr-qr-area { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); background: var(--color-card); }
 }
 
 .generarqr-subtitulo {
@@ -108,7 +108,7 @@
 }
 .generarqr-item-info span {
   font-size: 0.8rem;
-  color: #666;
+  color: var(--color-text-muted);
 }
 .generarqr-item-acciones {
   display: flex;
@@ -232,7 +232,7 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--color-card);
   box-shadow: var(--shadow-sm);
   transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -278,7 +278,7 @@
   border: 1.5px dashed var(--color-border-strong);
   border-radius: var(--radius-md);
   background: var(--color-surface-soft);
-  color: var(--color-ultramarine);
+  color: var(--color-accent-text);
   font-family: var(--font-body);
   font-size: 0.9rem;
   font-weight: 700;
@@ -334,7 +334,7 @@
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-pill);
   padding: 8px 14px;
-  background: var(--color-white);
+  background: var(--color-card);
   color: var(--color-text-soft);
   font-family: var(--font-body);
   font-size: 0.84rem;
@@ -360,7 +360,7 @@
   padding: 6px 8px 6px 12px;
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--color-primary) 10%, var(--color-white));
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   font-size: 0.82rem;
   font-weight: 700;
 }

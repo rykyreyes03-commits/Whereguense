@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import './idiomaPrueba.js';
 import '/src/i18n.js';
 import '/src/index.css';
+import '/src/tema.css';
+import { aplicarTema, temaGuardado } from '/src/tema.js';
 import DetalleSitio from '/src/components/DetalleSitio.jsx';
 import PanelSitio from '/src/components/PanelSitio.jsx';
 import MisSellos from '/src/components/MisSellos.jsx';
@@ -11,6 +13,14 @@ import Personalizacion from '/src/components/Personalizacion.jsx';
 import Perfil from '/src/components/Perfil.jsx';
 import Inicio from '/src/components/Inicio.jsx';
 import Menu from '/src/components/Menu.jsx';
+import Login from '/src/components/Login.jsx';
+import Landing from '/src/components/Landing.jsx';
+import Ranking from '/src/components/Ranking.jsx';
+import MisGuardados from '/src/components/MisGuardados.jsx';
+import RegistroNegocio from '/src/components/RegistroNegocio.jsx';
+import Onboarding from '/src/components/Onboarding.jsx';
+import PanelAdmin from '/src/components/PanelAdmin.jsx';
+import DetalleEvento from '/src/components/DetalleEvento.jsx';
 import PerfilNegocio from '/src/components/PerfilNegocio.jsx';
 import Eventos from '/src/components/Eventos.jsx';
 import { useNivel } from '/src/hooks/useNivel.js';
@@ -19,6 +29,7 @@ import { sitios } from '/src/data/sitios.js';
 const params = new URLSearchParams(window.location.search);
 const sitio = sitios.find((s) => s.id === Number(params.get('sitio') || 1));
 window.__eventos = [];
+aplicarTema(temaGuardado());
 const registrar = (n) => (...a) => { window.__eventos.push([n, a[0]?.id ?? null]); };
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -31,6 +42,19 @@ function Pasaporte() {
 // eslint-disable-next-line react-refresh/only-export-components
 function Pantalla() {
   if (params.get('vista') === 'pasaporte') return <Pasaporte />;
+  const ir = (p) => window.__eventos.push(['ir', p]);
+  const vistaExtra = params.get('vista');
+  if (vistaExtra === 'login') return <Login onIniciarComoInvitado={() => {}} onVolverALanding={() => {}} sesionExpirada={false} />;
+  if (vistaExtra === 'landing') return <Landing onComenzar={() => {}} onNavigate={ir} />;
+  if (vistaExtra === 'ranking') return <Ranking sellos={[{ id: 1, sitioId: 1, fecha: '1/10/2026' }]} onNavigate={ir} />;
+  if (vistaExtra === 'guardados') return <MisGuardados usuarioId="yo" eventos={[]} onVerSitio={() => {}} onVerEvento={() => {}} onVolver={() => {}} />;
+  if (vistaExtra === 'registro') return <RegistroNegocio onRegistrar={async () => ({ exito: true })} onVolver={() => {}} />;
+  if (vistaExtra === 'onboarding') return <Onboarding onTerminar={() => {}} />;
+  if (vistaExtra === 'admin') return <PanelAdmin onVolver={() => {}} usuarioId="admin-1" />;
+  if (vistaExtra === 'detalleEvento') {
+    const evento = { id: 'e1', nombre: 'Feria del maíz', fechaInicio: '2026-10-16', fechaFin: '2026-10-27', categoria: 'gastronomia', lugar: 'Parque Central', descripcion: 'Una feria con comida típica.', eslogan: 'Sabores de León', etiquetas: ['comida', 'feria'], organizador: { nombre: 'Café Colibrí' } };
+    return <DetalleEvento evento={evento} onNavigate={ir} usuarioId="yo" />;
+  }
   if (params.get('vista') === 'menu') {
     return (
       <Menu onNavigate={(p) => window.__eventos.push(['ir', p])} onVolver={() => window.__eventos.push(['ir', 'volver'])} onCerrarSesion={() => {}}

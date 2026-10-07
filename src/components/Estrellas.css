@@ -24,7 +24,7 @@
 .estrellas-input-etiqueta {
   font-weight: 700;
   font-size: 0.9rem;
-  color: var(--color-navy);
+  color: var(--color-heading);
 }
 .estrellas-input {
   display: inline-flex;

@@ -8,7 +8,7 @@
   position: fixed;
   inset: 0;
   z-index: 1003;
-  background: var(--color-white);
+  background: var(--color-card);
   overflow-y: auto;
   animation: historiaSitioEntrada 0.32s ease-out;
 }

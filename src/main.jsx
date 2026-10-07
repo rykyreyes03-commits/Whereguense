@@ -4,8 +4,12 @@ import { StatusBar, Style } from '@capacitor/status-bar'
 import { Capacitor } from '@capacitor/core'
 import './i18n'
 import './index.css'
+import './tema.css'
+import { aplicarTema, temaGuardado } from './tema'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
+
+aplicarTema(temaGuardado())
 
 // Barra de estado navy con íconos blancos (solo en la app nativa, no en la web/PWA).
 // En Android 15+ el color de fondo lo da android:windowBackground de AppTheme.NoActionBar

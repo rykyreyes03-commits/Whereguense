@@ -275,6 +275,8 @@
     "privacidad": "Privacy",
     "ayuda": "Help and support",
     "acerca": "About",
-    "proximamente": "{{opcion}}: coming soon 🚧"
+    "proximamente": "{{opcion}}: coming soon 🚧",
+    "temaClaro": "Light",
+    "temaOscuro": "Dark"
   }
 }

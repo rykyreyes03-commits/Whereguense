@@ -129,7 +129,7 @@
 .perfilnegocio-contenido > *:nth-child(6) { animation-delay: 360ms; }
 
 .perfilnegocio-card {
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
@@ -141,7 +141,7 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1rem;
-  color: var(--color-navy);
+  color: var(--color-heading);
   margin: 0;
 }
 .perfilnegocio-seccion-header {
@@ -154,7 +154,7 @@
 .perfilnegocio-editar-chip {
   border: none;
   background: rgba(30, 42, 120, 0.08);
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   border-radius: var(--radius-pill);
   padding: 6px 14px;
   font-family: var(--font-body);
@@ -262,7 +262,7 @@
 }
 .perfilnegocio-chip {
   border: 1.5px solid var(--color-border-strong);
-  background: var(--color-white);
+  background: var(--color-card);
   color: var(--color-text-muted);
   border-radius: var(--radius-pill);
   padding: 8px 14px;
@@ -272,7 +272,7 @@
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
-.perfilnegocio-chip:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.perfilnegocio-chip:hover { border-color: var(--color-primary); color: var(--color-accent-text); }
 .perfilnegocio-chip.activo {
   border-color: var(--color-primary);
   background: var(--color-primary);
@@ -302,8 +302,8 @@
 
 .perfilnegocio-btn-secundario {
   border: 1.5px solid var(--color-primary);
-  background: var(--color-white);
-  color: var(--color-primary);
+  background: var(--color-card);
+  color: var(--color-accent-text);
   border-radius: var(--radius-pill);
   padding: 11px 20px;
   font-family: var(--font-body);
@@ -407,7 +407,7 @@
   gap: 6px;
   border: 1.5px solid var(--color-primary);
   background: rgba(30, 42, 120, 0.06);
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   border-radius: var(--radius-pill);
   padding: 6px 8px 6px 14px;
   font-size: 0.82rem;
@@ -416,7 +416,7 @@
 .perfilnegocio-producto-quitar {
   border: none;
   background: none;
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -513,7 +513,7 @@
 .perfilnegocio-wrapper .historia-sitio-contenido { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
 
 /* ===== Suscripción vencida ===== */
-.perfilnegocio-vencido { background: var(--color-white); }
+.perfilnegocio-vencido { background: var(--color-card); }
 .perfilnegocio-vencido .topbar { padding-bottom: 20px; }
 .perfilnegocio-vencido .estado-wrapper { min-height: auto; padding-top: 48px; }
 
@@ -525,7 +525,7 @@
 .perfilnegocio-saludo-titulo {
   font-family: var(--font-display);
   font-size: 1.2rem;
-  color: var(--color-navy);
+  color: var(--color-heading);
   margin: 0 0 4px;
 }
 .perfilnegocio-saludo-texto {
@@ -545,7 +545,7 @@
   gap: 14px;
   width: 100%;
   text-align: left;
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
@@ -562,7 +562,7 @@
   height: 44px;
   border-radius: 50%;
   background: rgba(30, 42, 120, 0.08);
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -573,7 +573,7 @@
   flex-direction: column;
   gap: 2px;
 }
-.perfilnegocio-acceso-texto strong { font-size: 0.95rem; color: var(--color-navy); }
+.perfilnegocio-acceso-texto strong { font-size: 0.95rem; color: var(--color-heading); }
 .perfilnegocio-acceso-texto span { font-size: 0.8rem; color: var(--color-text-muted); }
 .perfilnegocio-acceso-chevron { color: var(--color-text-soft); flex-shrink: 0; }
 
@@ -589,7 +589,7 @@
   margin: 0 0 12px;
   padding: 12px 14px;
   border-radius: var(--radius-md);
-  background: #FFF4D6;
+  background: var(--bg-fff4d6);
   border: 1px solid #E3B341;
   color: #5A3A00;
 }

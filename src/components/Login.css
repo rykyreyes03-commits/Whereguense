@@ -104,7 +104,7 @@
   position: relative;
   z-index: 2;
   margin: -56px 18px 0;
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -145,7 +145,7 @@
 
 /* Botones secundarios */
 .login-btn-secundario {
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   color: var(--color-text);
   font-size: 0.95rem;
@@ -198,7 +198,7 @@
   padding: 14px 16px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: var(--color-white);
+  background: var(--color-card);
   font-family: var(--font-body);
   font-size: 0.98rem;
   color: var(--color-text);
@@ -235,7 +235,7 @@
   font-family: var(--font-body);
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   cursor: pointer;
 }
 .login-otp-link:hover { text-decoration: underline; }
@@ -264,7 +264,7 @@
   color: var(--color-text-muted);
 }
 .login-crear-cuenta span {
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   font-weight: 800;
   cursor: pointer;
 }

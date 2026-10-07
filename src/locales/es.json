@@ -275,6 +275,8 @@
     "privacidad": "Privacidad",
     "ayuda": "Ayuda y soporte",
     "acerca": "Acerca de",
-    "proximamente": "{{opcion}}: próximamente 🚧"
+    "proximamente": "{{opcion}}: próximamente 🚧",
+    "temaClaro": "Claro",
+    "temaOscuro": "Oscuro"
   }
 }

@@ -1,7 +1,7 @@
 .detalle-wrapper{
   font-family: 'Segoe UI', Arial, sans-serif;
-  background:#ffffff;
-  color:#111;
+  background:var(--color-card);
+  color:var(--color-text);
   width:100%;
   max-width:480px;
   margin:0 auto;
@@ -50,7 +50,7 @@
 
 .detalle-progreso{ margin-bottom:28px; }
 .detalle-progreso-barra{
-  background:#eee;
+  background:var(--bg-eeeeee);
   height:10px;
   border-radius:5px;
   overflow:hidden;
@@ -63,7 +63,7 @@
 }
 .detalle-progreso p{
   font-size:0.9rem;
-  color:#333;
+  color:var(--color-text);
 }
 
 .detalle-lista{
@@ -85,13 +85,13 @@
   transition: background 0.15s ease, box-shadow 0.15s ease;
 }
 .detalle-sitio.resaltado{
-  background:#eef0ff;
+  background:var(--bg-eef0ff);
   box-shadow:0 0 0 3px #b9cdec;
 }
 .detalle-check{
   width:26px; height:26px;
   border-radius:50%;
-  border:2px solid #ccc;
+  border:2px solid var(--color-border);
   flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
   font-size:0.9rem;
@@ -111,7 +111,7 @@
 }
 .detalle-sitio-info span{
   font-size:0.8rem;
-  color:#555;
+  color:var(--color-text-muted);
 }
 
 .detalle-accion-btn{

@@ -92,8 +92,8 @@
   border-radius: 50%;
 }
 .detalle-evento-circulo--favorito {
-  background: var(--color-white);
-  color: var(--color-navy);
+  background: var(--color-card);
+  color: var(--color-heading);
 }
 .detalle-evento-circulo--favorito.activo { color: var(--color-coral); }
 .detalle-evento-volver:focus-visible,
@@ -109,7 +109,7 @@
   margin: 0 8px 12px 0;
   padding: 7px 14px;
   border-radius: var(--radius-pill);
-  background: var(--color-white);
+  background: var(--color-card);
   color: #8F1A1D;
   font-size: 0.72rem;
   font-weight: 800;
@@ -172,7 +172,7 @@
   align-items: flex-start;
   gap: 4px;
   padding: 14px 12px;
-  background: var(--color-white);
+  background: var(--color-card);
   border-radius: 18px;
   box-shadow: var(--shadow-sm);
   min-width: 0;
@@ -188,7 +188,7 @@
 }
 .detalle-evento-dato-icono--azul {
   background: color-mix(in srgb, var(--color-primary) 12%, var(--color-white));
-  color: var(--color-primary);
+  color: var(--color-accent-text);
 }
 .detalle-evento-dato-icono--rosa {
   background: color-mix(in srgb, var(--color-coral) 14%, var(--color-white));
@@ -204,12 +204,12 @@
 .detalle-evento-dato-valor {
   font-size: 0.95rem;
   line-height: 1.2;
-  color: var(--color-navy);
+  color: var(--color-heading);
   overflow-wrap: anywhere;
 }
 
 .detalle-evento-tarjeta {
-  background: var(--color-white);
+  background: var(--color-card);
   border-radius: 20px;
   box-shadow: var(--shadow-sm);
   padding: 18px 18px 20px;
@@ -221,12 +221,12 @@
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--color-primary);
+  color: var(--color-accent-text);
 }
 
 .detalle-evento-organizador { display: flex; align-items: center; gap: 12px; }
 .detalle-evento-organizador-texto { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.detalle-evento-organizador-texto strong { font-size: 1.02rem; color: var(--color-navy); overflow-wrap: anywhere; }
+.detalle-evento-organizador-texto strong { font-size: 1.02rem; color: var(--color-heading); overflow-wrap: anywhere; }
 .detalle-evento-verificado {
   display: inline-flex;
   align-items: center;
@@ -249,7 +249,7 @@
   font-family: var(--font-body);
   font-size: 0.9rem;
   font-weight: 800;
-  color: var(--color-navy);
+  color: var(--color-heading);
   text-decoration: underline;
   text-underline-offset: 4px;
   cursor: pointer;
@@ -285,7 +285,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  color: var(--color-primary);
+  color: var(--color-accent-text);
 }
 .detalle-evento-sello p { margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--color-text-soft); }
 
@@ -293,8 +293,8 @@
 .detalle-evento-btn {
   border: 2px solid var(--color-primary);
   border-radius: var(--radius-pill);
-  background: var(--color-white);
-  color: var(--color-primary);
+  background: var(--color-card);
+  color: var(--color-accent-text);
   padding: 10px 22px;
   font-family: var(--font-body);
   font-weight: 800;

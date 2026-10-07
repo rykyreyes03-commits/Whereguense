@@ -10,7 +10,7 @@
   --l-blue-light: color-mix(in srgb, var(--color-primary), white 12%);
   font-family: var(--font-body);
   color: var(--color-text);
-  background: var(--color-white);
+  background: var(--color-card);
   width: 100%;
   overflow-x: hidden;
 }
@@ -239,8 +239,8 @@
   gap: 8px;
   border: none;
   border-radius: var(--radius-pill);
-  background: var(--color-white);
-  color: var(--color-primary);
+  background: var(--color-card);
+  color: var(--color-accent-text);
   padding: 12px 24px;
   font-family: var(--font-body);
   font-size: 0.95rem;
@@ -342,9 +342,9 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
-  color: var(--color-navy);
+  color: var(--color-heading);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -360,13 +360,13 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.98rem;
-  color: var(--color-navy);
+  color: var(--color-heading);
   white-space: nowrap;
 }
 
 .landing-perso-derecha h2 {
   font-size: 1.7rem;
-  color: var(--color-navy);
+  color: var(--color-heading);
   margin-bottom: 10px;
 }
 .landing-perso-derecha > p {
@@ -383,7 +383,7 @@
   max-width: 440px;
 }
 .landing-traje {
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   aspect-ratio: 1;
@@ -447,8 +447,8 @@
   letter-spacing: 0.2px;
 }
 .landing-btn-registro--cta:hover {
-  background: var(--color-white);
-  color: var(--color-navy);
+  background: var(--color-card);
+  color: var(--color-heading);
 }
 
 /* ===== Responsive: tablet+ ===== */

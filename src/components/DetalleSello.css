@@ -1,7 +1,7 @@
 .detalle-sello-wrapper{
   font-family: 'Segoe UI', Arial, sans-serif;
-  background:#ffffff;
-  color:#111;
+  background:var(--color-card);
+  color:var(--color-text);
   width:100%;
   max-width:480px;
   margin:0 auto;
@@ -33,7 +33,7 @@
   height: 110px;
   object-fit: contain;
   margin-bottom: 12px;
-  background: #fff;
+  background: var(--color-card);
   border-radius: 50%;
   padding: 14px;
 }
@@ -69,7 +69,7 @@
 }
 .detalle-sello-dato p{
   font-size:0.95rem;
-  color:#111;
+  color:var(--color-text);
   line-height:1.4;
 }
 
@@ -89,15 +89,15 @@
   width:100%;
   border:2px solid #1a1a1a;
   border-radius:30px;
-  background:#fff;
-  color:#111;
+  background:var(--color-card);
+  color:var(--color-text);
   padding:14px;
   font-size:0.95rem;
   font-weight:600;
   cursor:pointer;
   margin-bottom:12px;
 }
-.detalle-sello-secundario-btn:hover{ background:#f0f0ff; }
+.detalle-sello-secundario-btn:hover{ background:var(--bg-f0f0ff); }
 
 /* ===== TABLET: 640px+ ===== */
 @media (min-width: 640px){
