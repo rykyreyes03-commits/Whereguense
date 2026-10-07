@@ -1,4 +1,5 @@
 // Datos y formato compartidos por la agenda de eventos (lista, detalle, formulario de actividad).
+import { esIngles, localeFechas, traducir } from './idioma.js';
 
 // Mismas categorías que el CHECK de actividad_negocio y evento (028).
 export const CATEGORIAS = [
@@ -13,7 +14,8 @@ export const CATEGORIAS = [
 ];
 
 export function etiquetaCategoria(id) {
-  return CATEGORIAS.find((c) => c.id === id)?.etiqueta || null;
+  const c = CATEGORIAS.find((cat) => cat.id === id);
+  return c ? traducir(`categorias.${c.id}`, c.etiqueta) : null;
 }
 
 // "Otro" lleva su propio texto ("¿Cuál?", 029): máximo 40 caracteres.
@@ -59,20 +61,23 @@ export function sumarDias(iso, dias) {
   return hoyISO(f);
 }
 
-const MES_CORTO = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
-const mesLargo = (d) => d.toLocaleDateString('es-NI', { month: 'long' });
-const diaMesLargo = (d) => d.toLocaleDateString('es-NI', { day: 'numeric', month: 'long' });
+const MES_CORTO_ES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+const MES_CORTO_EN = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const mesCorto = (d) => (esIngles() ? MES_CORTO_EN : MES_CORTO_ES)[d.getMonth()];
+const mesLargo = (d) => d.toLocaleDateString(localeFechas(), { month: 'long' });
+const diaMesLargo = (d) => d.toLocaleDateString(localeFechas(), { day: 'numeric', month: 'long' });
+const mismoMes = (a, b) => a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
 
-// "16-27 OCT", "16 OCT" o "30 OCT-2 NOV"
+// "16-27 OCT", "16 OCT" o "30 OCT-2 NOV" (en inglés: "OCT 16-27", "OCT 16" o "OCT 30-NOV 2")
 export function rangoCorto(inicio, fin) {
   if (!inicio) return '';
   const a = aFecha(inicio);
   const b = fin ? aFecha(fin) : a;
-  if (a.getTime() === b.getTime()) return `${a.getDate()} ${MES_CORTO[a.getMonth()]}`;
-  if (a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear()) {
-    return `${a.getDate()}-${b.getDate()} ${MES_CORTO[a.getMonth()]}`;
-  }
-  return `${a.getDate()} ${MES_CORTO[a.getMonth()]}-${b.getDate()} ${MES_CORTO[b.getMonth()]}`;
+  const en = esIngles();
+  const dia = (d) => (en ? `${mesCorto(d)} ${d.getDate()}` : `${d.getDate()} ${mesCorto(d)}`);
+  if (a.getTime() === b.getTime()) return dia(a);
+  if (mismoMes(a, b)) return en ? `${mesCorto(a)} ${a.getDate()}-${b.getDate()}` : `${a.getDate()}-${b.getDate()} ${mesCorto(a)}`;
+  return `${dia(a)}-${dia(b)}`;
 }
 
 // "16 de octubre - 27 de octubre" (o un solo día)
@@ -84,33 +89,42 @@ export function rangoLargo(inicio, fin) {
   return `${diaMesLargo(a)} - ${diaMesLargo(b)}`;
 }
 
-// Para listas compactas: "12 de noviembre", "5 al 6 de octubre" o "30 de octubre al 2 de noviembre".
-// El año solo aparece si no es el actual.
+// Para listas compactas: "12 de noviembre", "5 al 6 de octubre" o "30 de octubre al 2 de noviembre"
+// (en inglés: "November 12", "October 5-6" o "October 30 - November 2"). El año solo aparece si no es el actual.
 export function rangoEscrito(inicio, fin) {
   if (!inicio) return '';
   const a = aFecha(inicio);
   const b = fin ? aFecha(fin) : a;
-  const anio = b.getFullYear() !== new Date().getFullYear() ? ` de ${b.getFullYear()}` : '';
+  const en = esIngles();
+  const distinto = b.getFullYear() !== new Date().getFullYear();
+  const anio = distinto ? (en ? `, ${b.getFullYear()}` : ` de ${b.getFullYear()}`) : '';
   if (a.getTime() === b.getTime()) return `${diaMesLargo(a)}${anio}`;
-  if (a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear()) {
-    return `${a.getDate()} al ${diaMesLargo(b)}${anio}`;
+  if (mismoMes(a, b)) {
+    return en ? `${mesLargo(a)} ${a.getDate()}-${b.getDate()}${anio}` : `${a.getDate()} al ${diaMesLargo(b)}${anio}`;
   }
-  return `${diaMesLargo(a)} al ${diaMesLargo(b)}${anio}`;
+  return en ? `${diaMesLargo(a)} - ${diaMesLargo(b)}${anio}` : `${diaMesLargo(a)} al ${diaMesLargo(b)}${anio}`;
 }
 
-// "16 — 27 de octubre de 2026"
+// "16 — 27 de octubre de 2026" (en inglés: "October 16 — 27, 2026")
 export function rangoConAnio(inicio, fin) {
   if (!inicio) return '';
   const a = aFecha(inicio);
   const b = fin ? aFecha(fin) : a;
-  if (a.getTime() === b.getTime()) return `${diaMesLargo(a)} de ${a.getFullYear()}`;
-  if (a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear()) {
-    return `${a.getDate()} — ${b.getDate()} de ${mesLargo(a)} de ${a.getFullYear()}`;
+  const en = esIngles();
+  if (a.getTime() === b.getTime()) return en ? `${diaMesLargo(a)}, ${a.getFullYear()}` : `${diaMesLargo(a)} de ${a.getFullYear()}`;
+  if (mismoMes(a, b)) {
+    return en
+      ? `${mesLargo(a)} ${a.getDate()} — ${b.getDate()}, ${a.getFullYear()}`
+      : `${a.getDate()} — ${b.getDate()} de ${mesLargo(a)} de ${a.getFullYear()}`;
   }
   if (a.getFullYear() === b.getFullYear()) {
-    return `${diaMesLargo(a)} — ${diaMesLargo(b)} de ${a.getFullYear()}`;
+    return en
+      ? `${diaMesLargo(a)} — ${diaMesLargo(b)}, ${a.getFullYear()}`
+      : `${diaMesLargo(a)} — ${diaMesLargo(b)} de ${a.getFullYear()}`;
   }
-  return `${diaMesLargo(a)} de ${a.getFullYear()} — ${diaMesLargo(b)} de ${b.getFullYear()}`;
+  return en
+    ? `${diaMesLargo(a)}, ${a.getFullYear()} — ${diaMesLargo(b)}, ${b.getFullYear()}`
+    : `${diaMesLargo(a)} de ${a.getFullYear()} — ${diaMesLargo(b)} de ${b.getFullYear()}`;
 }
 
 // Las horas se guardan en 24 h ('19:00:00') y se muestran siempre igual: '7:00 PM', '12:30 AM'.
@@ -146,13 +160,15 @@ export function terminaAlDiaSiguiente(inicio, fin) {
 
 // 'Termina a las 2:00 AM del día siguiente' (vacío si no cruza la medianoche).
 export function notaDiaSiguiente(inicio, fin) {
-  return terminaAlDiaSiguiente(inicio, fin) ? `Termina a las ${horaCorta(fin)} del día siguiente` : '';
+  if (!terminaAlDiaSiguiente(inicio, fin)) return '';
+  return esIngles() ? `Ends at ${horaCorta(fin)} the next day` : `Termina a las ${horaCorta(fin)} del día siguiente`;
 }
 
 // 'sábado 5 de octubre'
 export function fechaEscrita(iso) {
   if (!iso) return '';
-  // es-NI separa con coma ('lunes, 5 de octubre'); se escribe sin ella.
+  // es-NI separa con coma ('lunes, 5 de octubre'); en español se escribe sin ella. En inglés va con coma ('Monday, October 5').
+  if (esIngles()) return aFecha(iso).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   return aFecha(iso).toLocaleDateString('es-NI', { weekday: 'long', day: 'numeric', month: 'long' }).replace(',', '');
 }
 

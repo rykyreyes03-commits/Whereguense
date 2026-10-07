@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { Star } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import ListaResenas from './ListaResenas';
 import DialogoConfirmacion from './DialogoConfirmacion';
 import { FormularioResena } from './SeccionResenas';
 import { EstrellasValor } from './Estrellas';
-import { textoCantidad, textoPromedio } from '../utils/resenas';
+import { textoPromedio } from '../utils/resenas';
 import { useResenasSitio } from '../hooks/useResenasSitio';
 import './ListaResenas.css';
 
 // Reseñas de un sitio turístico: a diferencia de los negocios, basta con tener sesión (no se pide sello).
 function SeccionResenasSitio({ sitioId, nombreSitio }) {
+  const { t } = useTranslation();
   const { resumen, resenas, haySesion, cargando, error, guardar, eliminarMia } = useResenasSitio(sitioId);
   const [escribiendo, setEscribiendo] = useState(false);
   const [confirmandoBorrado, setConfirmandoBorrado] = useState(false);
@@ -26,12 +28,12 @@ function SeccionResenasSitio({ sitioId, nombreSitio }) {
     const r = await eliminarMia();
     setBorrando(false);
     if (r?.exito) setConfirmandoBorrado(false);
-    else setErrorBorrado(r?.mensaje || 'No se pudo eliminar tu reseña.');
+    else setErrorBorrado(r?.mensaje || t('resenas.errorBorrado'));
   };
 
   return (
     <section className="sitio-detalle-card resenas-seccion" aria-labelledby="sitio-resenas-titulo">
-      <h3 id="sitio-resenas-titulo" className="sitio-detalle-titulo">Reseñas</h3>
+      <h3 id="sitio-resenas-titulo" className="sitio-detalle-titulo">{t('resenas.titulo')}</h3>
       {error ? (
         <p className="resenas-error" role="alert">{error}</p>
       ) : (
@@ -41,12 +43,12 @@ function SeccionResenasSitio({ sitioId, nombreSitio }) {
               <>
                 <EstrellasValor valor={resumen.promedio} />
                 <strong>{textoPromedio(resumen.promedio)}</strong>
-                <span>· {textoCantidad(total)}</span>
+                <span>· {t('resenas.cantidad', { count: total })}</span>
               </>
             ) : (
               <>
                 <Star size={16} strokeWidth={2} aria-hidden="true" className="estrella" />
-                <span>Aún sin reseñas</span>
+                <span>{t('resenas.aunSin')}</span>
               </>
             )}
           </p>
@@ -54,16 +56,16 @@ function SeccionResenasSitio({ sitioId, nombreSitio }) {
           {haySesion ? (
             <>
               <button type="button" className="resenas-boton-principal resenas-boton-ancho" onClick={() => setEscribiendo(true)}>
-                {miResena ? 'Editar mi reseña' : 'Escribir reseña'}
+                {miResena ? t('resenas.editar') : t('resenas.escribir')}
               </button>
               {miResena && (
                 <button type="button" className="resenas-boton-secundario" onClick={() => setConfirmandoBorrado(true)}>
-                  Eliminar mi reseña
+                  {t('resenas.eliminar')}
                 </button>
               )}
             </>
           ) : (
-            <p className="resenas-aviso">Inicia sesión para dejar tu reseña.</p>
+            <p className="resenas-aviso">{t('resenas.iniciaSesion')}</p>
           )}
 
           {total > 0 && <ListaResenas resenas={resenas} />}
@@ -75,17 +77,17 @@ function SeccionResenasSitio({ sitioId, nombreSitio }) {
           miResena={miResena}
           nombreNegocio={nombreSitio}
           max={1000}
-          placeholder="Cuenta cómo fue tu visita: lo que viste, lo que te sorprendió, qué recomiendas."
+          placeholder={t('resenas.placeholderSitio')}
           onGuardar={guardar}
           onCerrar={() => setEscribiendo(false)}
         />
       )}
       {confirmandoBorrado && (
         <DialogoConfirmacion
-          titulo="¿Eliminar tu reseña?"
-          texto="Tu reseña dejará de verse en este sitio. Podrás escribir otra cuando quieras."
-          etiquetaConfirmar="Eliminar"
-          etiquetaCargando="Eliminando…"
+          titulo={t('resenas.dialogoTitulo')}
+          texto={t('resenas.dialogoTexto')}
+          etiquetaConfirmar={t('resenas.dialogoConfirmar')}
+          etiquetaCargando={t('resenas.dialogoCargando')}
           tono="peligro"
           cargando={borrando}
           error={errorBorrado}

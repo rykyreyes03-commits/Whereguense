@@ -1,5 +1,7 @@
 // Página de prueba: monta DetalleSitio con el Supabase simulado.
 import { createRoot } from 'react-dom/client';
+import './idiomaPrueba.js';
+import '/src/i18n.js';
 import '/src/index.css';
 import DetalleSitio from '/src/components/DetalleSitio.jsx';
 import PanelSitio from '/src/components/PanelSitio.jsx';
@@ -7,6 +9,8 @@ import MisSellos from '/src/components/MisSellos.jsx';
 import BottomNav from '/src/components/BottomNav.jsx';
 import Personalizacion from '/src/components/Personalizacion.jsx';
 import Perfil from '/src/components/Perfil.jsx';
+import Inicio from '/src/components/Inicio.jsx';
+import Eventos from '/src/components/Eventos.jsx';
 import { useNivel } from '/src/hooks/useNivel.js';
 import { sitios } from '/src/data/sitios.js';
 
@@ -25,6 +29,21 @@ function Pasaporte() {
 // eslint-disable-next-line react-refresh/only-export-components
 function Pantalla() {
   if (params.get('vista') === 'pasaporte') return <Pasaporte />;
+  if (params.get('vista') === 'inicio') {
+    const evento = { id: 'e1', nombre: 'Feria del maíz', ubicacion: 'Parque Central', fechaInicio: '2026-10-16', fechaFin: '2026-10-27', categoria: 'gastronomia', imagenUrl: null };
+    return (
+      <Inicio sitios={sitios.slice(0, 5)} rutas={[{ id: 1, nombre: 'Ruta Dariana', ciudad: 'León, Nicaragua', sitios: sitios.slice(0, 5) }]} sellos={[]} eventos={[evento]}
+        usuarioId="yo" onNavigate={(p) => window.__eventos.push(['ir', p])} onSeleccionarRuta={() => {}} onSeleccionarSitio={() => {}} onVerSitioEnMapa={() => {}}
+        onSeleccionarEvento={() => {}} eventoDestacadoId="e1" />
+    );
+  }
+  if (params.get('vista') === 'eventos') {
+    const evs = [
+      { id: 'e1', nombre: 'Feria del maíz', fechaInicio: '2026-10-16', fechaFin: '2026-10-27', categoria: 'gastronomia', lugar: 'Parque Central' },
+      { id: 'e2', nombre: 'Noche de poesía', fechaInicio: '2026-11-05', fechaFin: '2026-11-06', categoria: 'cultura', lugar: 'Casa Museo' },
+    ];
+    return <Eventos eventos={evs} cargando={false} onRecargar={() => {}} onNavigate={(p) => window.__eventos.push(['ir', p])} onSeleccionarEvento={() => {}} />;
+  }
   if (params.get('vista') === 'perfil') {
     return (
       <Perfil sellos={[{ id: 1, sitioId: 1, fecha: '1/10/2026' }]} total={89} onNavigate={(p) => window.__eventos.push(['ir', p])} onCerrarSesion={() => {}}

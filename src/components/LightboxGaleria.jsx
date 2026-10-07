@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import './LightboxGaleria.css';
 
@@ -8,6 +9,7 @@ const UMBRAL_SWIPE = 50; // px de desplazamiento horizontal para pasar a otra fo
 // Foto de la galería a pantalla completa: fondo negro, la foto sin recortar, X, flechas, swipe y Escape.
 //   fotos: [{ id, url }], indice: foto abierta, onCambiar(i) y onCerrar().
 function LightboxGaleria({ fotos, indice, nombre, onCambiar, onCerrar }) {
+  const { t } = useTranslation();
   const cerrarRef = useRef(null);
   const toque = useRef(null);
   const total = fotos.length;
@@ -55,7 +57,7 @@ function LightboxGaleria({ fotos, indice, nombre, onCambiar, onCerrar }) {
       className="lightbox"
       role="dialog"
       aria-modal="true"
-      aria-label={`Foto ${indice + 1} de ${total}${nombre ? `, ${nombre}` : ''}`}
+      aria-label={nombre ? t('lightbox.fotoNombre', { i: indice + 1, n: total, nombre }) : t('lightbox.foto', { i: indice + 1, n: total })}
       onClick={(e) => { if (e.target === e.currentTarget) onCerrar(); }}
       onTouchStart={alTocar}
       onTouchEnd={alSoltar}
@@ -63,18 +65,18 @@ function LightboxGaleria({ fotos, indice, nombre, onCambiar, onCerrar }) {
       <img
         className="lightbox-foto"
         src={foto.url}
-        alt={`${nombre || 'Foto'}, foto ${indice + 1} de ${total}`}
+        alt={nombre ? t('lightbox.fotoNombre', { i: indice + 1, n: total, nombre }) : t('lightbox.foto', { i: indice + 1, n: total })}
         draggable={false}
       />
-      <button ref={cerrarRef} type="button" className="lightbox-boton lightbox-cerrar" onClick={onCerrar} aria-label="Cerrar foto">
+      <button ref={cerrarRef} type="button" className="lightbox-boton lightbox-cerrar" onClick={onCerrar} aria-label={t('lightbox.cerrar')}>
         <X size={24} strokeWidth={2.4} aria-hidden="true" />
       </button>
       {total > 1 && (
         <>
-          <button type="button" className="lightbox-boton lightbox-flecha lightbox-flecha--izq" onClick={() => ir(-1)} aria-label="Foto anterior">
+          <button type="button" className="lightbox-boton lightbox-flecha lightbox-flecha--izq" onClick={() => ir(-1)} aria-label={t('lightbox.anterior')}>
             <ChevronLeft size={28} strokeWidth={2.4} aria-hidden="true" />
           </button>
-          <button type="button" className="lightbox-boton lightbox-flecha lightbox-flecha--der" onClick={() => ir(1)} aria-label="Foto siguiente">
+          <button type="button" className="lightbox-boton lightbox-flecha lightbox-flecha--der" onClick={() => ir(1)} aria-label={t('lightbox.siguiente')}>
             <ChevronRight size={28} strokeWidth={2.4} aria-hidden="true" />
           </button>
           <span className="lightbox-contador" aria-hidden="true">{indice + 1} / {total}</span>

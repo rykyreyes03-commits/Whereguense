@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Star } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import PantallaFormulario from './PantallaFormulario';
 import ListaResenas from './ListaResenas';
 import { EstrellasInput, EstrellasValor } from './Estrellas';
@@ -13,8 +14,9 @@ const MAX = 2000;
 // max y placeholder cambian para los sitios turísticos (1000 caracteres, otro texto de ayuda); por defecto, como negocios.
 export function FormularioResena({
   miResena, nombreNegocio, onGuardar, onCerrar, max = MAX,
-  placeholder = 'Cuenta cómo fue tu visita: la atención, el lugar, lo que probaste.',
+  placeholder = null,
 }) {
+  const { t } = useTranslation();
   const [calificacion, setCalificacion] = useState(miResena?.calificacion || 0);
   const [comentario, setComentario] = useState(miResena?.comentario || '');
   const [enviando, setEnviando] = useState(false);
@@ -25,23 +27,23 @@ export function FormularioResena({
 
   const enviar = async () => {
     if (enviando) return;
-    if (calificacion < 1) { setError('Elige de 1 a 5 estrellas.'); return; }
-    if (largo < MIN) { setError(`Escribe un comentario de al menos ${MIN} caracteres.`); return; }
+    if (calificacion < 1) { setError(t('resenas.elegirEstrellas')); return; }
+    if (largo < MIN) { setError(t('resenas.minimo', { min: MIN })); return; }
     setEnviando(true);
     setError('');
     const r = await onGuardar(calificacion, comentario);
     setEnviando(false);
     if (r?.exito) onCerrar();
-    else setError(r?.mensaje || 'No se pudo guardar tu reseña. Intenta de nuevo.');
+    else setError(r?.mensaje || t('resenas.errorGuardar'));
   };
 
   return (
     <PantallaFormulario
-      titulo={miResena ? 'Editar mi reseña' : 'Escribir reseña'}
+      titulo={miResena ? t('resenas.formEditar') : t('resenas.formEscribir')}
       onVolver={onCerrar}
       pie={(
         <button type="button" className="resenas-boton-principal" onClick={enviar} aria-disabled={!completa || enviando}>
-          {enviando ? 'Guardando…' : miResena ? 'Guardar cambios' : 'Publicar reseña'}
+          {enviando ? t('comun.guardando') : miResena ? t('resenas.formGuardarCambios') : t('resenas.formPublicar')}
         </button>
       )}
     >
@@ -49,17 +51,17 @@ export function FormularioResena({
         <p className="resenas-form-negocio">{nombreNegocio}</p>
         <EstrellasInput valor={calificacion} onCambiar={setCalificacion} />
         <label className="resenas-campo">
-          <span>Tu comentario</span>
+          <span>{t('resenas.tuComentario')}</span>
           <textarea
             value={comentario}
             maxLength={max}
             rows={7}
             onChange={(e) => setComentario(e.target.value)}
-            placeholder={placeholder}
+            placeholder={placeholder ?? t('resenas.placeholderNegocio')}
             aria-describedby="resenas-comentario-ayuda"
           />
           <small id="resenas-comentario-ayuda">
-            {largo < MIN ? `Escribe al menos ${MIN} caracteres (${largo} de ${MIN}).` : `${[...comentario].length} de ${max}.`}
+            {largo < MIN ? t('resenas.ayudaMinimo', { min: MIN, n: largo }) : t('resenas.ayudaConteo', { n: [...comentario].length, max })}
           </small>
         </label>
         {error && <p className="resenas-error" role="alert">{error}</p>}

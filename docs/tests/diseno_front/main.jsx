@@ -5,6 +5,8 @@
 //   ?vista=editor  la pestaña Diseño del emprendedor (guardar y subir logo/portada quedan registrados en window.__llamadas)
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import '../sitio_front/idiomaPrueba.js';
+import '/src/i18n.js';
 import '/src/index.css';
 import '/src/App.css';
 import '/src/components/PerfilNegocio.css';

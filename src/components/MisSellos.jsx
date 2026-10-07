@@ -1,4 +1,5 @@
 import { Ticket, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './MisSellos.css';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
@@ -7,8 +8,10 @@ import { INSIGNIAS } from '../data/insignias';
 import { useRangosSitios } from '../hooks/useRangosSitios';
 import NivelProgreso from './NivelProgreso';
 import RangoSello from './RangoSello';
+import { localeFechas } from '../utils/idioma';
 
 function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResaltadoId, cuponesDisponibles = 0, nivelInfo = null }) {
+  const { t } = useTranslation();
   const nivel = obtenerRango(sellos.length);
   const rangos = useRangosSitios();
   const total = sitios.length;
@@ -21,9 +24,9 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResalt
 
   return (
     <div className="mis-sellos-wrapper">
-      <TopBar title="Mis sellos" onMenuClick={() => onNavigate?.('menu')}>
+      <TopBar title={t('pasaporte.titulo')} onMenuClick={() => onNavigate?.('menu')}>
         <span className="mis-sellos-rango" style={{ color: nivel.color, borderColor: nivel.color }}>
-          {nivel.nombre}
+          {t(`rangosUsuario.${nivel.clave}`)}
         </span>
       </TopBar>
 
@@ -37,23 +40,23 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResalt
               style={{ width: `${progreso}%` }}
             ></div>
           </div>
-          <p>{sellos.length} de {total} sellos obtenidos ({progreso}%)</p>
+          <p>{t('pasaporte.progreso', { n: sellos.length, total, pct: progreso })}</p>
         </div>
 
         <button className="mis-sellos-cupones" type="button" onClick={() => onNavigate?.('misCupones')}>
           <span className="mis-sellos-cupones-icono" aria-hidden="true"><Ticket size={22} strokeWidth={1.8} /></span>
           <span className="mis-sellos-cupones-texto">
-            <strong>Mis cupones</strong>
+            <strong>{t('pasaporte.cupones')}</strong>
             <small>
               {cuponesDisponibles > 0
-                ? `${cuponesDisponibles} disponible${cuponesDisponibles === 1 ? '' : 's'}`
-                : 'Descuentos de los negocios'}
+                ? t('pasaporte.cuponesDisponibles', { count: cuponesDisponibles })
+                : t('pasaporte.cuponesDescuentos')}
             </small>
           </span>
           <ChevronRight size={18} strokeWidth={2} aria-hidden="true" />
         </button>
 
-        <h2 className="seccion">PASAPORTE</h2>
+        <h2 className="seccion">{t('pasaporte.seccion')}</h2>
         <div className="mis-sellos-grid">
           {sitios.map((sitio) => {
             const sello = sellos.find((s) => s.sitioId === sitio.id);
@@ -69,7 +72,7 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResalt
                 >
                   <img className="sello-icono" src={INSIGNIAS[sitio.badge]} alt={sitio.name} />
                   <strong>{sitio.name}</strong>
-                  <span className="sello-fecha">{sello.fecha}</span>
+                  <span className="sello-fecha">{sello.fechaIso ? new Date(sello.fechaIso).toLocaleDateString(localeFechas()) : sello.fecha}</span>
                   <RangoSello rango={rangos[sitio.id]} conNombre />
                 </div>
               );
@@ -80,10 +83,10 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResalt
                 <img
                   className="sello-icono"
                   src={INSIGNIAS[sitio.badge]}
-                  alt={`${sitio.name} (sello bloqueado)`}
+                  alt={t('pasaporte.bloqueado', { nombre: sitio.name })}
                 />
                 <strong>{sitio.name}</strong>
-                <span className="sello-fecha">Sin sellar</span>
+                <span className="sello-fecha">{t('pasaporte.sinSellar')}</span>
                 <RangoSello rango={rangos[sitio.id]} conNombre />
               </div>
             );
@@ -91,7 +94,7 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResalt
         </div>
 
         <button className="mis-sellos-accion-btn" onClick={() => onNavigate?.('ranking')}>
-          Ver ranking
+          {t('pasaporte.verRanking')}
         </button>
       </div>
 

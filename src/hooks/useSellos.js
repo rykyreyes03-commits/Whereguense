@@ -11,6 +11,7 @@ function mapearSello(row) {
     sitioId: row.sitio_id,
     nombre: sitio?.name || row.qr_sello?.nombre_actividad || 'Actividad',
     fecha: new Date(row.fecha_sello).toLocaleDateString('es-NI'),
+    fechaIso: row.fecha_sello, // para escribir la fecha en el idioma activo al dibujarla
   };
 }
 

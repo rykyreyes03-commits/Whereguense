@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './Eventos.css';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
@@ -27,20 +28,19 @@ function coincideBusqueda(evento, consulta) {
 }
 
 // Mensaje de la lista vacía: nombra el mismo filtro que marca la píldora activa.
-function mensajeSinResultados(filtro, busqueda) {
+function mensajeSinResultados(t, filtro, busqueda) {
   const consulta = busqueda.trim();
-  const donde = filtro === 'hoy' ? ' hoy'
-    : filtro === 'semana' ? ' esta semana'
-      : filtro === 'todos' ? ''
-        : ` de ${etiquetaCategoria(filtro)}`;
+  const variante = filtro === 'hoy' ? 'Hoy' : filtro === 'semana' ? 'Semana' : filtro === 'todos' ? 'Todos' : 'Categoria';
+  const categoria = variante === 'Categoria' ? etiquetaCategoria(filtro) : '';
   return consulta
-    ? `No encontramos eventos${donde} para “${consulta}”.`
-    : `No hay eventos${donde}.`;
+    ? t(`eventos.hallazgo${variante}`, { q: consulta, categoria })
+    : t(`eventos.vacio${variante}`, { categoria });
 }
 
 // Agenda: cabecera con la cantidad, buscador, filtros (Todos / Hoy / Esta semana / categorías)
 // y las tarjetas. Los eventos que ya terminaron no se muestran.
 function Eventos({ eventos, cargando, onRecargar, onNavigate, onSeleccionarEvento }) {
+  const { t } = useTranslation();
   const [busqueda, setBusqueda] = useState('');
   const [filtro, setFiltro] = useState('todos'); // 'todos' | 'hoy' | 'semana' | id de categoría
 
@@ -82,10 +82,10 @@ function Eventos({ eventos, cargando, onRecargar, onNavigate, onSeleccionarEvent
   };
 
   const filtros = [
-    { id: 'todos', etiqueta: 'Todos' },
-    { id: 'hoy', etiqueta: 'Hoy' },
-    { id: 'semana', etiqueta: 'Esta semana' },
-    ...categoriasPresentes.map((c) => ({ id: c.id, etiqueta: c.etiqueta })),
+    { id: 'todos', etiqueta: t('eventos.todos') },
+    { id: 'hoy', etiqueta: t('eventos.hoy') },
+    { id: 'semana', etiqueta: t('eventos.semana') },
+    ...categoriasPresentes.map((c) => ({ id: c.id, etiqueta: etiquetaCategoria(c.id) })),
   ];
   const hayFiltros = filtroActivo !== 'todos' || busqueda.trim() !== '';
 
@@ -93,29 +93,29 @@ function Eventos({ eventos, cargando, onRecargar, onNavigate, onSeleccionarEvent
     <div className="eventos-wrapper">
       <TopBar onMenuClick={() => onNavigate?.('menu')}>
         <p className="eventos-eyebrow">NICARAGUA · {new Date().getFullYear()}</p>
-        <h1 className="eventos-titulo">Agenda de eventos</h1>
+        <h1 className="eventos-titulo">{t('eventos.titulo')}</h1>
         <p className="eventos-sub">
-          {agenda.length === 1 ? '1 evento en la agenda' : `${agenda.length} eventos en la agenda`}
+          {t('eventos.enAgenda', { count: agenda.length })}
         </p>
 
         <div className="eventos-buscador">
           <Search size={18} strokeWidth={2} aria-hidden="true" />
           <input
             type="search"
-            placeholder="Buscar folklore, comida, música..."
-            aria-label="Buscar eventos"
+            placeholder={t('eventos.buscarPlaceholder')}
+            aria-label={t('eventos.buscarAria')}
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
           {busqueda && (
-            <button type="button" className="eventos-buscador-limpiar" onClick={() => setBusqueda('')} aria-label="Borrar la búsqueda">
+            <button type="button" className="eventos-buscador-limpiar" onClick={() => setBusqueda('')} aria-label={t('eventos.borrarBusqueda')}>
               <X size={16} strokeWidth={2.4} aria-hidden="true" />
             </button>
           )}
         </div>
       </TopBar>
 
-      <div className="eventos-filtros" role="group" aria-label="Filtrar eventos">
+      <div className="eventos-filtros" role="group" aria-label={t('eventos.filtrarAria')}>
         {filtros.map((f) => (
           <button
             key={f.id}
@@ -135,19 +135,19 @@ function Eventos({ eventos, cargando, onRecargar, onNavigate, onSeleccionarEvent
 
       <div className="eventos-contenido">
         {cargando && agenda.length === 0 ? (
-          <p className="eventos-vacio">Cargando eventos…</p>
+          <p className="eventos-vacio">{t('eventos.cargando')}</p>
         ) : agenda.length === 0 ? (
-          <p className="eventos-vacio">No hay eventos próximos por ahora.</p>
+          <p className="eventos-vacio">{t('eventos.sinProximos')}</p>
         ) : visibles.length === 0 ? (
           <div className="eventos-vacio">
-            <p>{mensajeSinResultados(filtroActivo, busqueda)}</p>
+            <p>{mensajeSinResultados(t, filtroActivo, busqueda)}</p>
             {hayFiltros && (
               <button
                 type="button"
                 className="eventos-vacio-btn"
                 onClick={() => { setFiltro('todos'); setBusqueda(''); }}
               >
-                Quitar filtros
+                {t('eventos.quitarFiltros')}
               </button>
             )}
           </div>

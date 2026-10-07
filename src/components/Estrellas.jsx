@@ -1,4 +1,5 @@
 import { useId, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Star } from 'lucide-react';
 import { textoPromedio } from '../utils/resenas';
 import './Estrellas.css';
@@ -6,9 +7,10 @@ import './Estrellas.css';
 // Solo lectura: cinco estrellas con el valor. Para lectores de pantalla es una sola imagen con el valor completo
 // ("4.6 de 5 estrellas"); las estrellas sueltas quedan ocultas.
 export function EstrellasValor({ valor, tamano = 16 }) {
+  const { t } = useTranslation();
   const lleno = Math.round(Number(valor) || 0);
   return (
-    <span className="estrellas" role="img" aria-label={`${textoPromedio(valor)} de 5 estrellas`}>
+    <span className="estrellas" role="img" aria-label={t('resenas.estrellasValor', { valor: textoPromedio(valor) })}>
       {[1, 2, 3, 4, 5].map((n) => (
         <Star key={n} size={tamano} strokeWidth={2} aria-hidden="true" className={n <= lleno ? 'estrella estrella--llena' : 'estrella'} />
       ))}
@@ -18,7 +20,8 @@ export function EstrellasValor({ valor, tamano = 16 }) {
 
 // Para elegir de 1 a 5: un grupo de botones de opción con teclado propio (flechas mueven y eligen; Tab entra y sale del
 // grupo en una sola parada). Cada estrella mide 44 px de alto para el dedo.
-export function EstrellasInput({ valor, onCambiar, etiqueta = 'Tu calificación', describedBy }) {
+export function EstrellasInput({ valor, onCambiar, etiqueta = null, describedBy }) {
+  const { t } = useTranslation();
   const idEtiqueta = useId();
   const refs = useRef([]);
   const elegir = (n) => {
@@ -42,7 +45,7 @@ export function EstrellasInput({ valor, onCambiar, etiqueta = 'Tu calificación'
   const parada = valor || 1;
   return (
     <div className="estrellas-input-bloque">
-      <span className="estrellas-input-etiqueta" id={idEtiqueta}>{etiqueta}</span>
+      <span className="estrellas-input-etiqueta" id={idEtiqueta}>{etiqueta ?? t('resenas.calificacion')}</span>
       <div className="estrellas-input" role="radiogroup" aria-labelledby={idEtiqueta} aria-describedby={describedBy} onKeyDown={alTeclear}>
         {[1, 2, 3, 4, 5].map((n) => (
           <button
@@ -50,7 +53,7 @@ export function EstrellasInput({ valor, onCambiar, etiqueta = 'Tu calificación'
             type="button"
             role="radio"
             aria-checked={valor === n}
-            aria-label={n === 1 ? '1 estrella' : `${n} estrellas`}
+            aria-label={t('resenas.estrella', { count: n })}
             tabIndex={n === parada ? 0 : -1}
             ref={(el) => { refs.current[n - 1] = el; }}
             className="estrellas-input-boton"

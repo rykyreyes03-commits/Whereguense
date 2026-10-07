@@ -1,4 +1,5 @@
 // Textos de reseñas, una sola forma en toda la app.
+import { localeFechas } from './idioma.js';
 
 // "4.6", "5"; vacío si no hay promedio.
 export function textoPromedio(valor) {
@@ -12,5 +13,5 @@ export function textoCantidad(total) {
 }
 
 export function fechaCorta(iso) {
-  return new Date(iso).toLocaleDateString('es-NI', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(iso).toLocaleDateString(localeFechas(), { day: 'numeric', month: 'short', year: 'numeric' });
 }

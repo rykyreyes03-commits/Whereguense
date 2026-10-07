@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import i18n from '../i18n';
 
 export function useUbicacionActual() {
   const [ubicacion, setUbicacion] = useState(null);
@@ -6,7 +7,7 @@ export function useUbicacionActual() {
 
   useEffect(() => {
     if (!('geolocation' in navigator)) {
-      setError('Tu navegador no soporta geolocalización.');
+      setError(i18n.t('mapa.gpsNoSoporta'));
       return undefined;
     }
 
@@ -21,8 +22,8 @@ export function useUbicacionActual() {
       (err) => {
         setError(
           err.code === err.PERMISSION_DENIED
-            ? 'Necesitas permitir la ubicación para verte en el mapa.'
-            : 'No se pudo obtener tu ubicación.'
+            ? i18n.t('mapa.gpsPermitir')
+            : i18n.t('mapa.gpsFallo')
         );
       },
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }

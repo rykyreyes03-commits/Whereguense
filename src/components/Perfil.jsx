@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { cambiarIdioma } from '../i18n';
 import './Perfil.css';
 import TopBar from './TopBar';
 import cabezonImg from '../assets/flujo-inicial/explorer_transparente_final.png';
@@ -77,6 +79,7 @@ function redimensionarImagen(file) {
 }
 
 function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onActualizarPerfil }) {
+  const { t } = useTranslation();
   const [perfil, setPerfil] = useState(() =>
     usuarioActual ? perfilDesdeUsuario(usuarioActual) : cargarPerfil()
   );
@@ -109,7 +112,7 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
       const resultado = await onActualizarPerfil(borrador);
       setGuardandoPerfil(false);
       if (!resultado?.exito) {
-        window.alert(resultado?.mensaje || 'No se pudo guardar tu perfil. Intenta de nuevo.');
+        window.alert(resultado?.mensaje || t('perfil.errorGuardar'));
         return;
       }
     } else {
@@ -119,6 +122,8 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
         console.error('Error guardando perfil:', error);
       }
     }
+    // El idioma elegido se aplica a toda la app en cuanto el perfil se guarda (y queda en este dispositivo).
+    cambiarIdioma(borrador.idioma);
     setPerfil(borrador);
     setEditando(false);
   };
@@ -137,7 +142,7 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
       }
     } catch (err) {
       console.error(err);
-      window.alert('No se pudo usar esa imagen. Prueba con otra foto.');
+      window.alert(t('perfil.errorImagen'));
     }
   };
 
@@ -151,9 +156,7 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
   };
 
   const handleCerrarSesion = () => {
-    const confirmado = window.confirm(
-      '¿Seguro que quieres cerrar sesión? Se borrarán tus sellos y datos de perfil guardados en este dispositivo.'
-    );
+    const confirmado = window.confirm(t('perfil.confirmarCerrar'));
     if (!confirmado) return;
 
     onCerrarSesion?.();
@@ -166,11 +169,11 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
           type="button"
           className={`perfil-avatar ${fotoPerfil ? 'perfil-avatar--foto' : ''}`}
           onClick={() => inputFotoRef.current?.click()}
-          aria-label="Cambiar foto de perfil"
+          aria-label={t('perfil.fotoAria')}
         >
           <img
             src={fotoPerfil || avatarImg}
-            alt={fotoPerfil ? 'Tu foto de perfil' : `Tu danzante: ${avatarNombre}`}
+            alt={fotoPerfil ? t('perfil.fotoAlt') : t('perfil.danzanteAlt', { nombre: avatarNombre })}
           />
           <span className="perfil-avatar-camara" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
@@ -187,14 +190,14 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
           className="perfil-foto-input"
         />
         <h1 className="perfil-nombre">{perfil.nombre}</h1>
-        <span className="perfil-rango">{nivel.nombre}</span>
+        <span className="perfil-rango">{t(`rangosUsuario.${nivel.clave}`)}</span>
         <div className="perfil-foto-acciones">
           <button
             type="button"
             className="perfil-foto-btn"
             onClick={() => inputFotoRef.current?.click()}
           >
-            {fotoPerfil ? 'Cambiar foto' : 'Subir foto'}
+            {fotoPerfil ? t('perfil.cambiarFoto') : t('perfil.subirFoto')}
           </button>
           {fotoPerfil && (
             <button
@@ -202,24 +205,24 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
               className="perfil-foto-btn perfil-foto-btn--quitar"
               onClick={handleQuitarFoto}
             >
-              Quitar foto
+              {t('perfil.quitarFoto')}
             </button>
           )}
         </div>
-        <span className="perfil-danzante">Danzante · {avatarNombre}</span>
+        <span className="perfil-danzante">{t('perfil.danzante', { nombre: avatarNombre })}</span>
       </TopBar>
 
       <div className="perfil-contenido">
         <div className="perfil-card perfil-datos">
           <div className="perfil-datos-titulo">
-            <h2 className="perfil-seccion">Datos de usuario</h2>
+            <h2 className="perfil-seccion">{t('perfil.datos')}</h2>
             {!editando && (
               <button
                 className="perfil-editar-btn"
                 onClick={handleEditar}
-                aria-label="Editar perfil"
+                aria-label={t('perfil.editarAria')}
               >
-                Editar
+                {t('perfil.editar')}
               </button>
             )}
           </div>
@@ -227,22 +230,22 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
           {!editando ? (
             <ul className="perfil-lista">
               <li>
-                <span>Nombre de usuario</span>
+                <span>{t('perfil.nombreUsuario')}</span>
                 <strong>{perfil.nombre}</strong>
               </li>
               <li>
-                <span>País</span>
-                <strong>{perfil.pais || 'No especificado'}</strong>
+                <span>{t('perfil.pais')}</span>
+                <strong>{perfil.pais || t('perfil.noEspecificado')}</strong>
               </li>
               <li>
-                <span>Idioma preferido</span>
+                <span>{t('perfil.idioma')}</span>
                 <strong>{IDIOMAS[perfil.idioma] || perfil.idioma}</strong>
               </li>
             </ul>
           ) : (
             <div className="perfil-form">
               <label>
-                Nombre de usuario
+                {t('perfil.nombreUsuario')}
                 <input
                   type="text"
                   value={borrador.nombre}
@@ -252,7 +255,7 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
                 />
               </label>
               <label>
-                País
+                {t('perfil.pais')}
                 <input
                   type="text"
                   value={borrador.pais}
@@ -262,7 +265,7 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
                 />
               </label>
               <label>
-                Idioma preferido
+                {t('perfil.idioma')}
                 <select
                   value={borrador.idioma}
                   onChange={(e) =>
@@ -274,7 +277,7 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
                 </select>
               </label>
               <button className="perfil-guardar-btn" onClick={handleGuardar} disabled={guardandoPerfil}>
-                {guardandoPerfil ? 'Guardando…' : 'Guardar'}
+                {guardandoPerfil ? t('comun.guardando') : t('comun.guardar')}
               </button>
             </div>
           )}
@@ -282,12 +285,12 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
 
         <div className="perfil-card perfil-sellos-resumen">
           <div>
-            <h2 className="perfil-seccion">Sellos</h2>
-            <p>Tu colección de la ruta cultural</p>
+            <h2 className="perfil-seccion">{t('perfil.sellos')}</h2>
+            <p>{t('perfil.coleccion')}</p>
           </div>
           <div className="perfil-sellos-cifra">
             <strong>{sellos.length}</strong>
-            <span>de {total}</span>
+            <span>{t('perfil.de', { total })}</span>
           </div>
         </div>
 
@@ -296,13 +299,13 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
             className="perfil-btn perfil-btn-primario"
             onClick={() => onNavigate?.('pasaporte')}
           >
-            Ver mis sellos
+            {t('perfil.verSellos')}
           </button>
           <button
             className="perfil-btn perfil-btn-secundario"
             onClick={() => onNavigate?.('ranking')}
           >
-            Ranking
+            {t('perfil.ranking')}
           </button>
         </div>
 
@@ -310,7 +313,7 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
           className="perfil-btn perfil-btn-danger"
           onClick={handleCerrarSesion}
         >
-          Cerrar sesión
+          {t('perfil.cerrarSesion')}
         </button>
       </div>
     </div>

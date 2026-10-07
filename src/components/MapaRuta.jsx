@@ -9,6 +9,7 @@ import RutaCalculada from './RutaCalculada';
 import PanelSitio from './PanelSitio';
 import HistoriaSitio from './HistoriaSitio';
 import DetalleSitio from './DetalleSitio';
+import { useTranslation } from 'react-i18next';
 import { getCategoriaIcono, svgPinSitio } from '../utils/categoriaSitio';
 import { useGuardados } from '../hooks/useGuardados';
 import { useNegociosActivos } from '../hooks/useNegociosActivos';
@@ -145,6 +146,7 @@ function SeguidorUbicacion({ ubicacion, activo, onSeguirDesactivado }) {
 }
 
 function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocadoId = null, onVolver, onVerRuta, usuarioId }) {
+  const { t } = useTranslation();
   const mapRef = useRef(null);
   const { ubicacion, error } = useUbicacionActual();
   const { estaGuardado: estaGuardadoSupabase, toggleGuardar } = useGuardados(usuarioId);
@@ -194,7 +196,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
     if (!negocioEnfocadoId || cargandoNegocios) return;
     const negocio = negocios.find((n) => n.id === negocioEnfocadoId);
     if (negocio) enfocarNegocio(negocio);
-    else setAvisoMapa('Este negocio no está en el mapa por ahora.');
+    else setAvisoMapa(t('mapa.negocioNoMapa'));
     // Solo reacciona a un negocio nuevo enfocado o a que termine de cargar la lista.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [negocioEnfocadoId, cargandoNegocios]);
@@ -208,7 +210,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
   // Pide la ubicación del navegador (al tocar, no antes). Si acepta: centra el mapa y pone el pin azul claro.
   const irAEstoyAqui = () => {
     if (!('geolocation' in navigator)) {
-      setAvisoMapa('Activa la ubicación en tu navegador');
+      setAvisoMapa(t('mapa.activaUbicacion'));
       return;
     }
     setBuscandoUbicacion(true);
@@ -222,7 +224,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
       },
       (err) => {
         setBuscandoUbicacion(false);
-        setAvisoMapa(err.code === err.PERMISSION_DENIED ? 'Activa la ubicación en tu navegador' : 'No se pudo obtener tu ubicación. Intenta de nuevo.');
+        setAvisoMapa(err.code === err.PERMISSION_DENIED ? t('mapa.activaUbicacion') : t('mapa.noUbicacion'));
       },
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
     );
@@ -270,7 +272,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
 
   const comoLlegar = (sitio) => {
     if (!ubicacion) {
-      setErrorRuta('Necesitas activar tu ubicación para trazar la ruta.');
+      setErrorRuta(t('mapa.rutaNecesitaUbicacion'));
       return;
     }
     setErrorRuta(null);
@@ -295,7 +297,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
         <button
           className="mapa-volver-btn"
           onClick={() => onVolver?.()}
-          aria-label="Volver al inicio"
+          aria-label={t('mapa.volverInicio')}
           type="button"
         >
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
@@ -310,16 +312,16 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
           </svg>
           <input
             type="text"
-            placeholder="Buscar sitios de la ruta"
+            placeholder={t('mapa.buscarPlaceholder')}
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            aria-label="Buscar sitios"
+            aria-label={t('mapa.buscarAria')}
           />
           {busqueda && (
             <button
               className="mapa-buscador-limpiar"
               onClick={() => setBusqueda('')}
-              aria-label="Limpiar búsqueda"
+              aria-label={t('mapa.limpiar')}
               type="button"
             >
               ×
@@ -339,7 +341,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
                   </li>
                 ))
               ) : (
-                <li className="mapa-buscador-sin-resultados">Sin resultados</li>
+                <li className="mapa-buscador-sin-resultados">{t('mapa.sinResultados')}</li>
               )}
             </ul>
           )}
@@ -443,7 +445,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
         <div className="mapa-ruta-resumen">
           <div className="mapa-ruta-resumen-fila">
             <div className="mapa-ruta-resumen-info">
-              <strong>Ruta hacia {destinoRuta.name}</strong>
+              <strong>{t('mapa.rutaHacia', { nombre: destinoRuta.name })}</strong>
               {resumenRuta && (
                 <span>
                   {(resumenRuta.distanciaMetros / 1000).toFixed(1)} km ·{' '}
@@ -451,7 +453,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
                 </span>
               )}
               {destinoRuta && !modoSeguir && (
-                <span className="mapa-ruta-resumen-aviso">Toca el botón de ubicación para seguir la ruta</span>
+                <span className="mapa-ruta-resumen-aviso">{t('mapa.tocaUbicacion')}</span>
               )}
               {errorRuta && <span className="mapa-ruta-resumen-error">{errorRuta}</span>}
             </div>
@@ -460,7 +462,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
               className="mapa-ruta-resumen-cancelar"
               onClick={cancelarRuta}
             >
-              Cancelar
+              {t('mapa.cancelar')}
             </button>
           </div>
           <div className="mapa-ruta-modos">
@@ -474,7 +476,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
                 <path d="M10 22l1-6-3-2 1-5 4-1 3 3v5l2 6" />
                 <path d="M8 10l-3 2" />
               </svg>
-              Caminar
+              {t('mapa.caminar')}
             </button>
             <button
               type="button"
@@ -486,7 +488,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
                 <circle cx="18.5" cy="17.5" r="3.5" />
                 <path d="M5.5 17.5L9 8h6l3 5.5H9M9 8L7 5H5" />
               </svg>
-              Bicicleta
+              {t('mapa.bicicleta')}
             </button>
             <button
               type="button"
@@ -496,7 +498,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 17h14M5 17a2 2 0 104 0M15 17a2 2 0 104 0M5 17v-4l2-5h10l2 5v4" />
               </svg>
-              Vehículo
+              {t('mapa.vehiculo')}
             </button>
           </div>
         </div>
@@ -568,7 +570,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
         onVerEnMapa={(id) => {
           const negocio = negocios.find((n) => n.id === id);
           if (negocio) enfocarNegocio(negocio);
-          else setAvisoMapa('Este negocio no está en el mapa por ahora.');
+          else setAvisoMapa(t('mapa.negocioNoMapa'));
         }}
       />
 
@@ -584,7 +586,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
             <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2" />
             <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
-          {buscandoUbicacion ? 'Buscando…' : 'Estoy aquí'}
+          {buscandoUbicacion ? t('comun.buscando') : t('mapa.estoyAqui')}
         </button>
       )}
 
@@ -592,7 +594,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
         className={`mapa-mi-ubicacion-btn ${modoSeguir ? 'siguiendo' : ''}`}
         onClick={centrarEnMiUbicacion}
         disabled={!ubicacion}
-        aria-label="Centrar en mi ubicación"
+        aria-label={t('mapa.centrar')}
         type="button"
       >
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">

@@ -1,7 +1,7 @@
 export function obtenerRango(cantidadSellos) {
-  if (cantidadSellos >= 8) return { nombre: "Maestro Güegüense", color: "#d32f2f" };
-  if (cantidadSellos >= 5) return { nombre: "Explorador", color: "#ff9800" };
-  return { nombre: "Principiante", color: "#4caf50" };
+  if (cantidadSellos >= 8) return { clave: "maestro", nombre: "Maestro Güegüense", color: "#d32f2f" };
+  if (cantidadSellos >= 5) return { clave: "explorador", nombre: "Explorador", color: "#ff9800" };
+  return { clave: "principiante", nombre: "Principiante", color: "#4caf50" };
 }
 
 function generarUmbrales(maxNivel = 40) {

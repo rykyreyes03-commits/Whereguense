@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CalendarDays, MapPin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './TarjetaEvento.css';
 import AvatarOrganizador from './AvatarOrganizador';
 import { textoCategoria, rangoCorto, rangoLargo } from '../utils/eventos';
@@ -10,6 +11,7 @@ import { textoCategoria, rangoCorto, rangoLargo } from '../utils/eventos';
 //   evento: { nombre, fechaInicio, fechaFin, categoria, categoriaOtro, imagenUrl, lugar, organizador: { nombre, logoUrl } }
 //   vistaPrevia: la misma tarjeta sin acción, para el formulario de actividad.
 function TarjetaEvento({ evento, onAbrir, vistaPrevia = false }) {
+  const { t } = useTranslation();
   const [fotoFallida, setFotoFallida] = useState(null);
   const foto = evento.imagenUrl && fotoFallida !== evento.imagenUrl ? evento.imagenUrl : null;
   const categoria = textoCategoria(evento.categoria, evento.categoriaOtro);
@@ -34,7 +36,7 @@ function TarjetaEvento({ evento, onAbrir, vistaPrevia = false }) {
       </div>
 
       <div className="tev-cuerpo">
-        <h3 className="tev-titulo">{evento.nombre || 'Nombre de tu actividad'}</h3>
+        <h3 className="tev-titulo">{evento.nombre || t('tarjeta.nombreDefecto')}</h3>
 
         {organizador ? (
           <div className="tev-organizador">
@@ -53,16 +55,16 @@ function TarjetaEvento({ evento, onAbrir, vistaPrevia = false }) {
         <div className="tev-pie">
           <span className="tev-fechas">
             <CalendarDays size={15} strokeWidth={2} aria-hidden="true" />
-            {fechas || 'Sin fechas'}
+            {fechas || t('tarjeta.sinFechas')}
           </span>
-          <span className="tev-ver">Ver →</span>
+          <span className="tev-ver">{t('tarjeta.ver')}</span>
         </div>
       </div>
     </>
   );
 
   if (vistaPrevia) {
-    return <article className="tev tev--previa" aria-label="Vista previa de la tarjeta">{cuerpo}</article>;
+    return <article className="tev tev--previa" aria-label={t('tarjeta.previa')}>{cuerpo}</article>;
   }
 
   return (

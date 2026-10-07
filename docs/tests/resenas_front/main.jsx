@@ -1,5 +1,7 @@
 // Página de prueba: monta, según ?vista=, las pantallas de reseñas contra el Supabase simulado.
 import { createRoot } from 'react-dom/client';
+import '../sitio_front/idiomaPrueba.js';
+import '/src/i18n.js';
 import '/src/index.css';
 import '/src/components/PerfilNegocio.css';
 import PerfilNegocioPublico from '/src/components/PerfilNegocioPublico.jsx';

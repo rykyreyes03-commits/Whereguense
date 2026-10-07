@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import i18n from '../i18n';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -49,7 +50,7 @@ function RutaCalculada({ puntos, modo = 'foot', colorLinea = '#1a3c8f', onRutaCa
         });
       })
       .catch(() => {
-        if (!cancelado) onError?.('No se pudo calcular la ruta. Intenta de nuevo.');
+        if (!cancelado) onError?.(i18n.t('mapa.rutaError'));
       });
 
     return () => {

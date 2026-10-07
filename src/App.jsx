@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { cambiarIdioma } from './i18n';
 import './App.css';
 import Landing from './components/Landing';
 import LandingEventos from './components/LandingEventos';
@@ -59,6 +60,11 @@ function App() {
   const [pantallaAnterior, setPantallaAnterior] = useState('inicio');
   const [session, setSession] = useState(null);
   const [usuarioActual, setUsuarioActual] = useState(null);
+
+  // Con sesión, el idioma preferido de la cuenta manda sobre el del navegador.
+  useEffect(() => {
+    if (usuarioActual?.idioma_preferido) cambiarIdioma(usuarioActual.idioma_preferido);
+  }, [usuarioActual?.idioma_preferido]);
   const [authInicializada, setAuthInicializada] = useState(false);
   const [cargandoUsuario, setCargandoUsuario] = useState(false);
   const [guardandoDanzante, setGuardandoDanzante] = useState(false);
@@ -395,6 +401,7 @@ function App() {
       );
     } else {
       setGuardandoDatosPerfil(false);
+      cambiarIdioma(datos.idioma);
       try {
         localStorage.setItem('perfilUsuario', JSON.stringify({
           nombre: datos.nombre,

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MessageSquareReply } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import PantallaFormulario from './PantallaFormulario';
 import { EstrellasValor } from './Estrellas';
 import { fechaCorta } from '../utils/resenas';
@@ -61,6 +62,7 @@ function FormularioRespuesta({ resena, onGuardar, onCerrar }) {
 // Lista de reseñas, más recientes primero. Con onResponder (panel del emprendedor) cada reseña trae el botón
 // "Responder" o "Editar respuesta".
 function ListaResenas({ resenas, onResponder = null, vacio = 'Aún sin reseñas.' }) {
+  const { t } = useTranslation();
   const [respondiendo, setRespondiendo] = useState(null);
 
   if (resenas.length === 0) return <p className="resenas-vacio">{vacio}</p>;
@@ -73,7 +75,7 @@ function ListaResenas({ resenas, onResponder = null, vacio = 'Aún sin reseñas.
             <div className="resenas-item-cabecera">
               <EstrellasValor valor={r.calificacion} />
               <span className="resenas-item-meta">
-                {r.esMia ? 'Tú' : r.autor} · {fechaCorta(r.fecha)}
+                {r.esMia ? t('resenas.tu') : r.autor} · {fechaCorta(r.fecha)}
               </span>
             </div>
             <p className="resenas-item-texto">{r.comentario}</p>

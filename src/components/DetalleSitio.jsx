@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, X, Heart, MapPin, Clock, Ticket, Sparkles, Lightbulb, Landmark, ChevronRight, Coins, Navigation, Route } from 'lucide-react';
 import { FOTOS_SITIOS } from '../data/fotos';
 import { INSIGNIAS } from '../data/insignias';
@@ -7,7 +8,7 @@ import SeccionResenasSitio from './SeccionResenasSitio';
 import LightboxGaleria from './LightboxGaleria';
 import RangoSello from './RangoSello';
 import { useRangosSitios } from '../hooks/useRangosSitios';
-import { rangoDeSello, textoPuntos } from '../utils/rangosSello';
+import { rangoDeSello } from '../utils/rangosSello';
 import guiaCabezon from '../assets/personajes/guiacabezon_dariana.png';
 import guiaGigantona from '../assets/personajes/guiagigantona_dariana.png';
 import './DetalleSitio.css';
@@ -27,17 +28,18 @@ function datoCurioso(historia) {
 }
 
 // Hasta 4 puntos: las frases de la descripción corta y, para completar, lo que siempre es cierto de un sitio de la ruta.
-function puntosClave(desc, nombreRuta) {
+function puntosClave(t, desc, nombreRuta) {
   const puntos = oraciones(desc).slice(0, 2).map((s) => s.replace(/[.]+$/, ''));
-  puntos.push('Entrega un sello para tu pasaporte');
-  puntos.push(`Forma parte de la ${nombreRuta}`);
+  puntos.push(t('sitio.puntoSello'));
+  puntos.push(t('sitio.puntoRuta', { ruta: nombreRuta }));
   return puntos.slice(0, 4);
 }
 
 // Vista completa del sitio turístico (la que se abre desde el panel del mapa).
 function DetalleSitio({
-  sitio, estaGuardado, nombreRuta = 'Ruta Dariana', onVolver, onCerrar, onGuardar, onHistoria, onVerRuta, onLlegar,
+  sitio, estaGuardado, nombreRuta = null, onVolver, onCerrar, onGuardar, onHistoria, onVerRuta, onLlegar,
 }) {
+  const { t } = useTranslation();
   const { fotos, portadaUrl } = useSitioGaleria(sitio?.id);
   const rangos = useRangosSitios();
   const rangoSitio = rangoDeSello(rangos[sitio?.id]);
@@ -51,7 +53,7 @@ function DetalleSitio({
   const insignia = INSIGNIAS[sitio.badge];
   const parrafos = [sitio.desc, oraciones(sitio.historia).slice(0, 2).join(' ')].filter(Boolean);
   const dato = datoCurioso(sitio.historia);
-  const puntos = puntosClave(sitio.desc, nombreRuta);
+  const puntos = puntosClave(t, sitio.desc, nombreRuta || t('sitio.rutaDariana'));
 
   const deslizarGaleria = () => galeriaRef.current?.scrollBy({ left: 220, behavior: 'smooth' });
 
@@ -61,7 +63,7 @@ function DetalleSitio({
         {portada && <img className="sitio-detalle-hero-foto" src={portada} alt="" />}
         <div className="sitio-detalle-hero-velo" />
 
-        <button type="button" className="sitio-detalle-icono sitio-detalle-icono--izq" onClick={onVolver} aria-label="Volver al mapa">
+        <button type="button" className="sitio-detalle-icono sitio-detalle-icono--izq" onClick={onVolver} aria-label={t('sitio.volverMapa')}>
           <ArrowLeft size={22} strokeWidth={2.2} aria-hidden="true" />
         </button>
         <div className="sitio-detalle-hero-acciones">
@@ -70,11 +72,11 @@ function DetalleSitio({
             className={`sitio-detalle-icono ${estaGuardado ? 'sitio-detalle-icono--activo' : ''}`}
             onClick={() => onGuardar(sitio)}
             aria-pressed={estaGuardado}
-            aria-label={estaGuardado ? 'Quitar de guardados' : 'Guardar sitio'}
+            aria-label={estaGuardado ? t('sitio.quitarAria') : t('sitio.guardarAria')}
           >
             <Heart size={21} strokeWidth={2.2} fill={estaGuardado ? 'currentColor' : 'none'} aria-hidden="true" />
           </button>
-          <button type="button" className="sitio-detalle-icono" onClick={onCerrar} aria-label="Cerrar">
+          <button type="button" className="sitio-detalle-icono" onClick={onCerrar} aria-label={t('comun.cerrar')}>
             <X size={22} strokeWidth={2.2} aria-hidden="true" />
           </button>
         </div>
@@ -82,10 +84,10 @@ function DetalleSitio({
         <img className="sitio-detalle-guia" src={guia} alt="" aria-hidden="true" />
 
         <div className="sitio-detalle-hero-texto">
-          <span className="sitio-detalle-chip">Sitio histórico</span>
+          <span className="sitio-detalle-chip">{t('sitio.chip')}</span>
           <h2 className="sitio-detalle-nombre">{sitio.name}</h2>
           <p className="sitio-detalle-ciudad">
-            <MapPin size={15} strokeWidth={2.2} aria-hidden="true" /> León, Nicaragua
+            <MapPin size={15} strokeWidth={2.2} aria-hidden="true" /> {t('sitio.ciudad')}
           </p>
         </div>
       </header>
@@ -94,32 +96,32 @@ function DetalleSitio({
         <dl className="sitio-detalle-datos">
           <div>
             <MapPin size={20} strokeWidth={2} aria-hidden="true" />
-            <dt>Ubicación</dt>
-            <dd>León</dd>
+            <dt>{t('sitio.ubicacion')}</dt>
+            <dd>{t('sitio.ubicacionValor')}</dd>
           </div>
           <div>
             <Clock size={20} strokeWidth={2} aria-hidden="true" />
-            <dt>Visita recomendada</dt>
-            <dd>30 – 60 min</dd>
+            <dt>{t('sitio.visita')}</dt>
+            <dd>{t('sitio.visitaValor')}</dd>
           </div>
           <div>
             <Ticket size={20} strokeWidth={2} aria-hidden="true" />
-            <dt>Entrada</dt>
-            <dd>Entrada libre</dd>
+            <dt>{t('sitio.entrada')}</dt>
+            <dd>{t('sitio.entradaLibre')}</dd>
           </div>
           <div>
             <Sparkles size={20} strokeWidth={2} aria-hidden="true" />
-            <dt>Ideal para</dt>
-            <dd>Turismo</dd>
+            <dt>{t('sitio.idealPara')}</dt>
+            <dd>{t('sitio.turismo')}</dd>
           </div>
         </dl>
 
         <section className="sitio-detalle-card" aria-labelledby="sitio-sobre-titulo">
-          <h3 id="sitio-sobre-titulo" className="sitio-detalle-titulo">Sobre este lugar</h3>
+          <h3 id="sitio-sobre-titulo" className="sitio-detalle-titulo">{t('sitio.sobre')}</h3>
           {parrafos.map((p, i) => <p key={i} className="sitio-detalle-texto">{p}</p>)}
           {sitio.historia && (
             <button type="button" className="sitio-detalle-enlace" onClick={() => onHistoria(sitio)}>
-              Leer historia completa <ChevronRight size={16} strokeWidth={2.4} aria-hidden="true" />
+              {t('sitio.leerHistoria')} <ChevronRight size={16} strokeWidth={2.4} aria-hidden="true" />
             </button>
           )}
         </section>
@@ -128,14 +130,14 @@ function DetalleSitio({
           {dato && (
             <section className="sitio-detalle-card sitio-detalle-card--dato" aria-labelledby="sitio-dato-titulo">
               <h3 id="sitio-dato-titulo" className="sitio-detalle-subtitulo">
-                <Lightbulb size={17} strokeWidth={2.2} aria-hidden="true" /> ¿Sabías que…?
+                <Lightbulb size={17} strokeWidth={2.2} aria-hidden="true" /> {t('sitio.sabias')}
               </h3>
               <p className="sitio-detalle-texto">{dato}</p>
             </section>
           )}
           <section className="sitio-detalle-card sitio-detalle-card--importa" aria-labelledby="sitio-importa-titulo">
             <h3 id="sitio-importa-titulo" className="sitio-detalle-subtitulo">
-              <Landmark size={17} strokeWidth={2.2} aria-hidden="true" /> ¿Por qué es importante?
+              <Landmark size={17} strokeWidth={2.2} aria-hidden="true" /> {t('sitio.importante')}
             </h3>
             <ul className="sitio-detalle-puntos">
               {puntos.map((p) => <li key={p}>{p}</li>)}
@@ -145,19 +147,19 @@ function DetalleSitio({
 
         {fotos.length > 0 && (
           <section className="sitio-detalle-card" aria-labelledby="sitio-galeria-titulo">
-            <h3 id="sitio-galeria-titulo" className="sitio-detalle-titulo">Galería</h3>
+            <h3 id="sitio-galeria-titulo" className="sitio-detalle-titulo">{t('sitio.galeria')}</h3>
             <div className="sitio-detalle-galeria-marco">
               <ul className="sitio-detalle-galeria" ref={galeriaRef}>
                 {fotos.map((f, i) => (
                   <li key={f.id}>
-                    <button type="button" className="sitio-detalle-galeria-foto" onClick={() => setFotoAbierta(i)} aria-label={`Ver foto ${i + 1} de ${fotos.length} en grande`}>
-                      <img src={f.url} alt={`${sitio.name}, foto ${i + 1} de ${fotos.length}`} loading="lazy" />
+                    <button type="button" className="sitio-detalle-galeria-foto" onClick={() => setFotoAbierta(i)} aria-label={t('sitio.verFoto', { i: i + 1, n: fotos.length })}>
+                      <img src={f.url} alt={t('sitio.fotoAlt', { nombre: sitio.name, i: i + 1, n: fotos.length })} loading="lazy" />
                     </button>
                   </li>
                 ))}
               </ul>
               {fotos.length > 2 && (
-                <button type="button" className="sitio-detalle-galeria-flecha" onClick={deslizarGaleria} aria-label="Ver más fotos">
+                <button type="button" className="sitio-detalle-galeria-flecha" onClick={deslizarGaleria} aria-label={t('sitio.verMasFotos')}>
                   <ChevronRight size={22} strokeWidth={2.4} aria-hidden="true" />
                 </button>
               )}
@@ -165,15 +167,15 @@ function DetalleSitio({
           </section>
         )}
 
-        <section className="sitio-detalle-pasaporte" aria-label="Tu pasaporte">
+        <section className="sitio-detalle-pasaporte" aria-label={t('sitio.pasaporteAria')}>
           {insignia && <img src={insignia} alt="" className="sitio-detalle-pasaporte-sello" />}
           <div className="sitio-detalle-pasaporte-texto">
-            <span>TU PASAPORTE</span>
-            <strong>¡Visita este lugar y obtén tu sello!</strong>
+            <span>{t('sitio.pasaporte')}</span>
+            <strong>{t('sitio.visitaTexto')}</strong>
             <span className="sitio-detalle-rango">
               <RangoSello rango={rangoSitio.clave} />
-              <span className="sitio-detalle-rango-nombre">Sello de {rangoSitio.nombre.toUpperCase()}</span>{' '}
-              <span className="sitio-detalle-rango-puntos">· {textoPuntos(rangoSitio.puntos)} {rangoSitio.puntos === 1 ? 'punto' : 'puntos'}</span>
+              <span className="sitio-detalle-rango-nombre">{t('rango.selloMayus', { rango: t(`rango.${rangoSitio.clave}`).toUpperCase() })}</span>{' '}
+              <span className="sitio-detalle-rango-puntos">· {t('rango.puntos', { count: rangoSitio.puntos })}</span>
             </span>
           </div>
           <span className="sitio-detalle-xp">
@@ -196,10 +198,10 @@ function DetalleSitio({
 
       <div className="sitio-detalle-pie">
         <button type="button" className="sitio-detalle-btn sitio-detalle-btn--sec" onClick={() => onVerRuta(sitio)}>
-          <Route size={18} strokeWidth={2.2} aria-hidden="true" /> Ver ruta
+          <Route size={18} strokeWidth={2.2} aria-hidden="true" /> {t('sitio.verRuta')}
         </button>
         <button type="button" className="sitio-detalle-btn sitio-detalle-btn--pri" onClick={() => onLlegar(sitio)}>
-          <Navigation size={18} strokeWidth={2.2} aria-hidden="true" /> Llegar al sitio
+          <Navigation size={18} strokeWidth={2.2} aria-hidden="true" /> {t('sitio.llegar')}
         </button>
       </div>
     </div>
