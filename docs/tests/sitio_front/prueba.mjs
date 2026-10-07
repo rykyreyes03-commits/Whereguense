@@ -42,7 +42,7 @@ async function abrir(ancho, db, query = '') {
   page.on('pageerror', (e) => errores.push(e.message));
   await page.addInitScript((d) => { window.__db = d; }, db);
   await page.goto(`${base}${query}`);
-  await page.waitForSelector('.sitio-detalle-nombre');
+  await page.waitForSelector('.sitio-detalle-nombre, .nivel-progreso');
   await page.waitForTimeout(500);
   return { ctx, page, errores };
 }
@@ -128,6 +128,46 @@ for (const ancho of [360, 412]) {
   const s3 = await abrir(ancho, estado(), '?guardado=1');
   ok((await s3.page.locator('[aria-label="Quitar de guardados"]').count()) === 1, `${t} guardado: el corazón lo indica`);
   await s3.ctx.close();
+}
+
+// Niveles y rangos (038): pasaporte y banner del sitio
+const rangosBase = [{ id: 1, rango: 'oro' }, { id: 6, rango: 'plata' }, { id: 12, rango: 'cobre' }];
+for (const ancho of [360, 412]) {
+  const t = `[${ancho}px nivel]`;
+  const nivel = { nivel_actual: 3, puntos_actuales: 0.5, puntos_para_siguiente: 6, porcentaje: 8, puntos_totales: 6.5 };
+  const pas = await abrir(ancho, estado({ nivel, sitioFila: rangosBase }), '?vista=pasaporte');
+  await pas.page.waitForSelector('.nivel-progreso');
+  await pas.page.waitForTimeout(400);
+  ok((await pas.page.locator('.nivel-progreso-nivel').textContent()) === 'Nivel 3', `${t} el pasaporte muestra el nivel 3`);
+  ok((await pas.page.locator('.nivel-progreso-puntos').textContent()).trim() === '0.5 / 6 puntos', `${t} puntos actuales / necesarios (0.5 / 6)`);
+  ok((await pas.page.locator('.nivel-progreso-relleno').evaluate((e) => e.style.width)) === '8%', `${t} la barra avanza 8 %`);
+  ok((await pas.page.locator('.nivel-progreso-pie').textContent()).includes('Para el nivel 4: 5.5 puntos más'), `${t} faltan 5.5 puntos para el nivel 4`);
+  ok((await pas.page.locator('[role="progressbar"]').getAttribute('aria-valuetext')).includes('0.5 de 6'), `${t} la barra es accesible (aria-valuetext)`);
+  const rangoDe = (nombre) => pas.page.locator('.sello-card', { hasText: nombre }).first().locator('.rango-sello-nombre').textContent();
+  ok((await rangoDe('Catedral de León')) === 'Oro', `${t} Catedral: oro`);
+  ok((await rangoDe('Museo de la Revolución')) === 'Plata', `${t} Museo de la Revolución: plata`);
+  ok((await rangoDe('Parque de los Poetas')) === 'Cobre', `${t} un sitio cobre`);
+  ok((await rangoDe('Puerto Salvador Allende')) === 'Cobre', `${t} un sitio que no está en la base vale cobre`);
+  ok((await pas.page.locator('.sello-card .rango-sello').count()) === (await pas.page.locator('.sello-card').count()), `${t} cada insignia lleva su rango`);
+  const colores = await pas.page.evaluate(() => ['oro', 'plata', 'cobre'].map((r) => getComputedStyle(document.querySelector(`.rango-sello--${r} .rango-sello-punto`)).backgroundColor));
+  ok(new Set(colores).size === 3, `${t} los tres rangos tienen colores distintos (${colores.join(' | ')})`);
+  ok(await pas.page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `${t} el pasaporte no se desborda`);
+  await pas.page.screenshot({ path: path.join(capturas, `pasaporte_nivel_${ancho}.png`) });
+  ok(pas.errores.length === 0, `${t} sin errores de página (${pas.errores.join('; ')})`);
+  await pas.ctx.close();
+
+  for (const [id, esperado] of [[1, 'Sello de ORO · 2 puntos'], [6, 'Sello de PLATA · 0.5 puntos'], [12, 'Sello de COBRE · 1 punto']]) {
+    const d = await abrir(ancho, estado({ sitioFila: rangosBase }), `?sitio=${id}`);
+    await d.page.waitForSelector('.sitio-detalle-rango');
+    const texto = (await d.page.locator('.sitio-detalle-rango').textContent()).replace(/\s+/g, ' ').trim();
+    ok(texto === esperado, `${t} banner del sitio ${id}: "${texto}"`);
+    ok((await d.page.locator('.sitio-detalle-pasaporte').textContent()).includes('+50 XP'), `${t} el banner del sitio ${id} conserva +50 XP`);
+    if (id === 1) {
+      await d.page.evaluate(() => { const s = document.querySelector('.sitio-detalle'); s.scrollTop = s.scrollHeight; });
+      await d.page.screenshot({ path: path.join(capturas, `banner_rango_${ancho}.png`) });
+    }
+    await d.ctx.close();
+  }
 }
 
 // Lightbox de la galería

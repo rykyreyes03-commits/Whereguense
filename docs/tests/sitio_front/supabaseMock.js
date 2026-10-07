@@ -23,6 +23,7 @@ const funciones = {
     db().resenas.push({ id: 'n' + db().resenas.length, usuario_id: db().uid, autor: 'Viajero', estrellas: p_estrellas, texto: t, fecha: '2026-10-06T12:00:00Z' });
     return { exito: true, mensaje: 'Gracias por tu reseña.', editada: false };
   },
+  calcular_nivel: () => [db().nivel || { nivel_actual: 1, puntos_actuales: 0, puntos_para_siguiente: 2, porcentaje: 0, puntos_totales: 0 }],
   eliminar_mi_resena_sitio: () => {
     db().llamadas.push(['eliminar']);
     const antes = db().resenas.length;

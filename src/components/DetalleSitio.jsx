@@ -5,6 +5,9 @@ import { INSIGNIAS } from '../data/insignias';
 import { useSitioGaleria } from '../hooks/useSitioGaleria';
 import SeccionResenasSitio from './SeccionResenasSitio';
 import LightboxGaleria from './LightboxGaleria';
+import RangoSello from './RangoSello';
+import { useRangosSitios } from '../hooks/useRangosSitios';
+import { rangoDeSello, textoPuntos } from '../utils/rangosSello';
 import guiaCabezon from '../assets/personajes/guiacabezon_dariana.png';
 import guiaGigantona from '../assets/personajes/guiagigantona_dariana.png';
 import './DetalleSitio.css';
@@ -36,6 +39,8 @@ function DetalleSitio({
   sitio, estaGuardado, nombreRuta = 'Ruta Dariana', onVolver, onCerrar, onGuardar, onHistoria, onVerRuta, onLlegar,
 }) {
   const { fotos, portadaUrl } = useSitioGaleria(sitio?.id);
+  const rangos = useRangosSitios();
+  const rangoSitio = rangoDeSello(rangos[sitio?.id]);
   const galeriaRef = useRef(null);
   const [fotoAbierta, setFotoAbierta] = useState(null); // índice de la foto en el lightbox
   if (!sitio) return null;
@@ -165,6 +170,11 @@ function DetalleSitio({
           <div className="sitio-detalle-pasaporte-texto">
             <span>TU PASAPORTE</span>
             <strong>¡Visita este lugar y obtén tu sello!</strong>
+            <span className="sitio-detalle-rango">
+              <RangoSello rango={rangoSitio.clave} />
+              <span className="sitio-detalle-rango-nombre">Sello de {rangoSitio.nombre.toUpperCase()}</span>{' '}
+              <span className="sitio-detalle-rango-puntos">· {textoPuntos(rangoSitio.puntos)} {rangoSitio.puntos === 1 ? 'punto' : 'puntos'}</span>
+            </span>
           </div>
           <span className="sitio-detalle-xp">
             <Coins size={16} strokeWidth={2.2} aria-hidden="true" /> +{XP_POR_SELLO} XP

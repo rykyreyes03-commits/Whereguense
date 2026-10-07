@@ -1,0 +1,47 @@
+/* Nivel y barra de progreso del pasaporte */
+.nivel-progreso {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-body);
+}
+.nivel-progreso-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.nivel-progreso-nivel {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--color-navy);
+}
+.nivel-progreso-puntos {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+.nivel-progreso-barra {
+  height: 10px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+}
+.nivel-progreso-relleno {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-turquoise), var(--color-primary));
+  transition: width 0.4s ease;
+}
+.nivel-progreso-pie {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nivel-progreso-relleno { transition: none; }
+}

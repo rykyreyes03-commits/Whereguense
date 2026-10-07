@@ -348,3 +348,24 @@
   background: linear-gradient(90deg, var(--color-indigo), var(--color-ultramarine));
   color: #fff;
 }
+
+/* Rango del sello en el banner del pasaporte */
+.sitio-detalle-pasaporte-texto .sitio-detalle-rango {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 6px;
+  row-gap: 0;
+  margin-top: 2px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff;
+}
+.sitio-detalle-pasaporte-texto .sitio-detalle-rango-nombre,
+.sitio-detalle-pasaporte-texto .sitio-detalle-rango-puntos {
+  white-space: nowrap;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: #fff;
+}

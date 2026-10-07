@@ -2,7 +2,7 @@ import { useState } from 'react';
 import './Personalizacion.css';
 import TopBar from './TopBar';
 import Avatar from './Avatar';
-import { sellosParaSiguienteNivel } from '../utils/rango';
+import { textoPuntos } from '../utils/rangosSello';
 import {
   ROSTROS, ROPAS, SOMBREROS, GIGANTONA,
   ROSTROS_IDS, ROPAS_IDS, SOMBREROS_IDS, GIGANTONA_IDS,
@@ -11,10 +11,10 @@ import {
   TIENDA_CABELLO, TIENDA_SOMBRERO, TIENDA_TRAJE, TIENDA_VESTIDO,
 } from '../data/avatarPiezasTienda';
 
-function Personalizacion({ sellos, onNavigate, desbloqueados, seleccion, elegir, nivel }) {
+function Personalizacion({ onNavigate, desbloqueados, seleccion, elegir, nivel, nivelInfo }) {
   const tipoAvatar = localStorage.getItem('avatarElegido') === 'gigantona' ? 'gigantona' : 'enano';
   const [tab, setTab] = useState('ropa');
-  const faltantes = Math.max(0, sellosParaSiguienteNivel(sellos.length) - sellos.length);
+  const faltantes = Math.max(0, nivelInfo.puntosParaSiguiente - nivelInfo.puntosActuales);
 
   const piezasTienda = tipoAvatar === 'gigantona'
     ? [...TIENDA_CABELLO, ...TIENDA_VESTIDO]
@@ -74,7 +74,7 @@ function Personalizacion({ sellos, onNavigate, desbloqueados, seleccion, elegir,
         <Avatar tipo={tipoAvatar} seleccion={seleccion} tamano="grande" />
 
         <p className="personalizacion-nivel">
-          Nivel {nivel} · te faltan {faltantes} sello{faltantes === 1 ? '' : 's'} para subir de nivel
+          Nivel {nivel} · te faltan {textoPuntos(faltantes)} punto{faltantes === 1 ? '' : 's'} para subir de nivel
         </p>
 
         {tipoAvatar === 'gigantona' ? (

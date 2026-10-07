@@ -4,9 +4,13 @@ import TopBar from './TopBar';
 import BottomNav from './BottomNav';
 import { obtenerRango } from '../utils/rango';
 import { INSIGNIAS } from '../data/insignias';
+import { useRangosSitios } from '../hooks/useRangosSitios';
+import NivelProgreso from './NivelProgreso';
+import RangoSello from './RangoSello';
 
-function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResaltadoId, cuponesDisponibles = 0 }) {
+function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResaltadoId, cuponesDisponibles = 0, nivelInfo = null }) {
   const nivel = obtenerRango(sellos.length);
+  const rangos = useRangosSitios();
   const total = sitios.length;
   const progreso = total > 0 ? Math.round((sellos.length / total) * 100) : 0;
 
@@ -24,6 +28,8 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResalt
       </TopBar>
 
       <div className="mis-sellos-contenido">
+        {nivelInfo && <NivelProgreso info={nivelInfo} />}
+
         <div className="mis-sellos-progreso">
           <div className="mis-sellos-progreso-barra">
             <div
@@ -64,6 +70,7 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResalt
                   <img className="sello-icono" src={INSIGNIAS[sitio.badge]} alt={sitio.name} />
                   <strong>{sitio.name}</strong>
                   <span className="sello-fecha">{sello.fecha}</span>
+                  <RangoSello rango={rangos[sitio.id]} conNombre />
                 </div>
               );
             }
@@ -77,6 +84,7 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResalt
                 />
                 <strong>{sitio.name}</strong>
                 <span className="sello-fecha">Sin sellar</span>
+                <RangoSello rango={rangos[sitio.id]} conNombre />
               </div>
             );
           })}

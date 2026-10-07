@@ -39,6 +39,7 @@ import parejaImg from './assets/flujo-inicial/whereguense_pareja.webp';
 import { sitios } from './data/sitios';
 import { rutas } from './data/rutas';
 import { useSellos } from './hooks/useSellos';
+import { useNivel } from './hooks/useNivel';
 import { useCuponesTurista } from './hooks/useCuponesTurista';
 import { useNegocio } from './hooks/useNegocio';
 import { useEventosPublicos } from './hooks/useEventosPublicos';
@@ -82,6 +83,9 @@ function App() {
   const [sitioEnfocadoId, setSitioEnfocadoId] = useState(null);
   const [negocioEnfocadoId, setNegocioEnfocadoId] = useState(null); // negocio al que se llegó con "Ver en el mapa"
   const { sellos, sellar, canjearQR } = useSellos(usuarioActual?.id);
+  // Nivel por puntos (038): cobre 1, plata 0.5, oro 2; de N a N+1 hacen falta N*2.
+  const nivelInfo = useNivel(usuarioActual?.id, sellos);
+  const nivel = nivelInfo.nivel;
   const {
     cupones,
     cargando: cargandoCupones,
@@ -124,21 +128,25 @@ function App() {
     desbloqueados,
     seleccion,
     elegir,
-    nivel,
     candidatosPendientes,
     elegirDesbloqueo,
-  } = useAvatarPersonalizado(usuarioActual?.id, sellos.length, localStorage.getItem('avatarElegido'));
+  } = useAvatarPersonalizado(usuarioActual?.id, nivelInfo.nivel, localStorage.getItem('avatarElegido'));
   const [toastSitio, setToastSitio] = useState(null);
   const [sitioResaltadoPasaporte, setSitioResaltadoPasaporte] = useState(null);
   const [mostrarSubidaNivel, setMostrarSubidaNivel] = useState(false);
-  const nivelPrevioRef = useRef(nivel);
+  const nivelPrevioRef = useRef(null);
 
+  // Solo cuenta como subida un aumento real del nivel ya cargado, no el salto de "todavía no cargó" a "cargó".
   useEffect(() => {
-    if (nivel > nivelPrevioRef.current) {
+    if (!nivelInfo.listo) {
+      nivelPrevioRef.current = null;
+      return;
+    }
+    if (nivelPrevioRef.current != null && nivel > nivelPrevioRef.current) {
       setMostrarSubidaNivel(true);
     }
     nivelPrevioRef.current = nivel;
-  }, [nivel]);
+  }, [nivelInfo.listo, nivel]);
 
   useEffect(() => {
     delete L.Icon.Default.prototype._getIconUrl;
@@ -703,6 +711,7 @@ function App() {
         onSeleccionarSitio={setSitioSeleccionadoId}
         sitioResaltadoId={sitioResaltadoPasaporte}
         cuponesDisponibles={cupones.filter((c) => c.disponible).length}
+        nivelInfo={nivelInfo}
       />
     );
   }
@@ -781,12 +790,12 @@ function App() {
     return (
       <>
         <Personalizacion
-          sellos={sellos}
           onNavigate={cambiarPantalla}
           desbloqueados={desbloqueados}
           seleccion={seleccion}
           elegir={elegir}
           nivel={nivel}
+          nivelInfo={nivelInfo}
         />
         {mostrarSubidaNivel && (
           <LevelUpModal

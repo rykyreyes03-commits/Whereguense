@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { obtenerNivel } from '../utils/rango';
 import {
   ROSTROS_IDS, ROPAS_IDS, SOMBREROS_IDS, GIGANTONA_IDS,
   ROSTRO_DEFECTO, ROPA_DEFECTO, GIGANTONA_DEFECTO,
@@ -59,13 +58,13 @@ function elegirCandidatosAlAzar(desbloqueados, categorias) {
   return elegidos;
 }
 
-export function useAvatarPersonalizado(usuarioId, cantidadSellos, personaje) {
+// nivel: el que calcula la base por los puntos de los sellos (useNivel, 038).
+export function useAvatarPersonalizado(usuarioId, nivel, personaje) {
   const [catalogo, setCatalogo] = useState(null);
   const [desbloqueados, setDesbloqueados] = useState({ rostro: [], ropa: [], sombrero: [], gigantona: [] });
   const [milestonesResueltos, setMilestonesResueltos] = useState([]);
   const [seleccion, setSeleccion] = useState({ rostro: null, ropa: null, sombrero: null, gigantona: null });
   const [candidatosPendientes, setCandidatosPendientes] = useState(null);
-  const nivel = obtenerNivel(cantidadSellos);
 
   // Catálogo estático (pieza_avatar + categoria_avatar), una sola vez.
   useEffect(() => {
@@ -227,5 +226,5 @@ export function useAvatarPersonalizado(usuarioId, cantidadSellos, personaje) {
     }
   }, [usuarioId, catalogo]);
 
-  return { desbloqueados, seleccion, elegir, nivel, candidatosPendientes, elegirDesbloqueo };
+  return { desbloqueados, seleccion, elegir, candidatosPendientes, elegirDesbloqueo };
 }
