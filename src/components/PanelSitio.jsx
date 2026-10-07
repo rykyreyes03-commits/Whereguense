@@ -31,7 +31,7 @@ function IconoHistoria() {
   );
 }
 
-function PanelSitio({ sitio, estaGuardado, onCerrar, onComoLlegar, onGuardar, onHistoria }) {
+function PanelSitio({ sitio, estaGuardado, onCerrar, onComoLlegar, onGuardar, onHistoria, onVerDetalle }) {
   if (!sitio) return null;
 
   const foto = FOTOS_SITIOS[String(sitio.id)];
@@ -83,6 +83,15 @@ function PanelSitio({ sitio, estaGuardado, onCerrar, onComoLlegar, onGuardar, on
           <IconoHistoria />
           Historia del lugar
         </button>
+        {onVerDetalle && (
+          <button
+            type="button"
+            className="panel-sitio-btn panel-sitio-btn-secundario panel-sitio-btn-ancho"
+            onClick={() => onVerDetalle(sitio)}
+          >
+            Ver ficha completa
+          </button>
+        )}
       </div>
     </div>
   );

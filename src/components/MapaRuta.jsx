@@ -8,6 +8,7 @@ import { calcularDistanciaMetros } from '../utils/geo';
 import RutaCalculada from './RutaCalculada';
 import PanelSitio from './PanelSitio';
 import HistoriaSitio from './HistoriaSitio';
+import DetalleSitio from './DetalleSitio';
 import { useGuardados } from '../hooks/useGuardados';
 import { useNegociosActivos } from '../hooks/useNegociosActivos';
 import PanelNegocio from './PanelNegocio';
@@ -115,7 +116,7 @@ function SeguidorUbicacion({ ubicacion, activo, onSeguirDesactivado }) {
   return null;
 }
 
-function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocadoId = null, onVolver, usuarioId }) {
+function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocadoId = null, onVolver, onVerRuta, usuarioId }) {
   const mapRef = useRef(null);
   const { ubicacion, error } = useUbicacionActual();
   const { estaGuardado: estaGuardadoSupabase, toggleGuardar } = useGuardados(usuarioId);
@@ -138,6 +139,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
   const [negocioSeleccionado, setNegocioSeleccionado] = useState(null);
   const [negocioPerfilPublico, setNegocioPerfilPublico] = useState(null);
   const [sitioHistoria, setSitioHistoria] = useState(null);
+  const [sitioDetalle, setSitioDetalle] = useState(null);
   const [destinoRuta, setDestinoRuta] = useState(null);
   const [origenRuta, setOrigenRuta] = useState(null);
   const [modoSeguir, setModoSeguir] = useState(false);
@@ -474,6 +476,25 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
           }
         }}
         onHistoria={(sitio) => setSitioHistoria(sitio)}
+        onVerDetalle={(sitio) => setSitioDetalle(sitio)}
+      />
+
+      <DetalleSitio
+        sitio={sitioDetalle}
+        estaGuardado={sitioDetalle ? estaGuardadoSupabase('sitio', sitioDetalle.id) : false}
+        onVolver={() => setSitioDetalle(null)}
+        onCerrar={() => { setSitioDetalle(null); setSitioSeleccionado(null); }}
+        onGuardar={async (sitio) => {
+          const resultado = await toggleGuardar('sitio', sitio.id, { nombre: sitio.name });
+          if (!resultado.exito) console.error('Error al guardar sitio:', resultado.mensaje);
+        }}
+        onHistoria={(sitio) => setSitioHistoria(sitio)}
+        onVerRuta={(sitio) => onVerRuta?.(sitio)}
+        onLlegar={(sitio) => {
+          setSitioDetalle(null);
+          setSitioSeleccionado(null);
+          if (mapRef.current) mapRef.current.flyTo(sitio.position, 17);
+        }}
       />
 
       <PanelNegocio

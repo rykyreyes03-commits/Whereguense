@@ -10,7 +10,11 @@ import './ListaResenas.css';
 const MIN = 10;
 const MAX = 2000;
 
-function FormularioResena({ miResena, nombreNegocio, onGuardar, onCerrar }) {
+// max y placeholder cambian para los sitios turísticos (1000 caracteres, otro texto de ayuda); por defecto, como negocios.
+export function FormularioResena({
+  miResena, nombreNegocio, onGuardar, onCerrar, max = MAX,
+  placeholder = 'Cuenta cómo fue tu visita: la atención, el lugar, lo que probaste.',
+}) {
   const [calificacion, setCalificacion] = useState(miResena?.calificacion || 0);
   const [comentario, setComentario] = useState(miResena?.comentario || '');
   const [enviando, setEnviando] = useState(false);
@@ -48,14 +52,14 @@ function FormularioResena({ miResena, nombreNegocio, onGuardar, onCerrar }) {
           <span>Tu comentario</span>
           <textarea
             value={comentario}
-            maxLength={MAX}
+            maxLength={max}
             rows={7}
             onChange={(e) => setComentario(e.target.value)}
-            placeholder="Cuenta cómo fue tu visita: la atención, el lugar, lo que probaste."
+            placeholder={placeholder}
             aria-describedby="resenas-comentario-ayuda"
           />
           <small id="resenas-comentario-ayuda">
-            {largo < MIN ? `Escribe al menos ${MIN} caracteres (${largo} de ${MIN}).` : `${[...comentario].length} de ${MAX}.`}
+            {largo < MIN ? `Escribe al menos ${MIN} caracteres (${largo} de ${MIN}).` : `${[...comentario].length} de ${max}.`}
           </small>
         </label>
         {error && <p className="resenas-error" role="alert">{error}</p>}

@@ -654,6 +654,11 @@ function App() {
           sitioEnfocadoId={sitioEnfocadoId}
           negocioEnfocadoId={negocioEnfocadoId}
           onVolver={() => cambiarPantalla('inicio')}
+          onVerRuta={(sitio) => {
+            // Abre la ruta que incluye el sitio; si ninguna lo incluye, la lista de rutas.
+            const ruta = rutas.find((r) => r.sitios.some((s) => s.id === sitio.id));
+            if (ruta) { setRutaActivaId(ruta.id); cambiarPantalla('detalleRuta'); } else cambiarPantalla('rutas');
+          }}
           usuarioId={usuarioActual?.id}
         />
         <Toast sitio={toastSitio} onClose={handleCerrarToast} onClick={handleClickToast} />
