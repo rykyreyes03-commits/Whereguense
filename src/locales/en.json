@@ -316,6 +316,26 @@
       "masculino": "Male",
       "femenino": "Female",
       "prefiero_no_decir": "Prefers not to say"
+    },
+    "toca": "TAP TO OPEN",
+    "portada": "← Cover",
+    "verSellos": "Stamps →",
+    "verDatos": "← Details",
+    "sellosTitulo": "Your stamps",
+    "datosTitulo": "Traveler details",
+    "estadisticasTitulo": "Stats",
+    "fNacimiento": "Birth date",
+    "fTelefono": "Phone",
+    "fIdioma": "Language",
+    "fGenero": "Gender",
+    "sNivel": "Current level",
+    "sSellos": "Stamps",
+    "sSellosValor": "{{n}} of {{total}}",
+    "sRuta": "Favorite route",
+    "numero": "Passport number {{n}}",
+    "idiomas": {
+      "es": "Español",
+      "en": "English"
     }
   }
 }

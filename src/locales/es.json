@@ -316,6 +316,26 @@
       "masculino": "Masculino",
       "femenino": "Femenino",
       "prefiero_no_decir": "Prefiere no decir"
+    },
+    "toca": "TOCA PARA ABRIR",
+    "portada": "← Portada",
+    "verSellos": "Sellos →",
+    "verDatos": "← Datos",
+    "sellosTitulo": "Tus sellos",
+    "datosTitulo": "Datos del viajero",
+    "estadisticasTitulo": "Estadísticas",
+    "fNacimiento": "Nacimiento",
+    "fTelefono": "Teléfono",
+    "fIdioma": "Idioma",
+    "fGenero": "Género",
+    "sNivel": "Nivel actual",
+    "sSellos": "Sellos",
+    "sSellosValor": "{{n}} de {{total}}",
+    "sRuta": "Ruta favorita",
+    "numero": "Pasaporte número {{n}}",
+    "idiomas": {
+      "es": "Español",
+      "en": "English"
     }
   }
 }

@@ -1,7 +1,6 @@
 /* =========================================================
-   Pasaporte de viajero: la imagen del documento con los datos encima.
-   Todas las posiciones son porcentajes del documento recortado (1504 x 1680 px de la imagen original), medidas sobre
-   la imagen en blanco; los tamaños de letra usan cqw (1 % del ancho del documento) para que todo escale junto.
+   Pasaporte de viajero: un cuaderno con anillas. Comparte el estilo del registro (OnboardingCuaderno.css):
+   portada, hojas de papel, anillas y la tipografía a mano.
    ========================================================= */
 
 .pasaporte-fondo {
@@ -11,9 +10,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 56px 12px 20px;
-  background: rgba(10, 14, 40, 0.74);
+  padding: 64px 14px 24px;
   overflow-y: auto;
+  background-color: #2B2E36;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 6px),
+    repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.18) 0 2px, transparent 2px 6px),
+    radial-gradient(90% 70% at 50% 40%, rgba(255, 255, 255, 0.07), transparent 70%);
   animation: pasaporteFondo 0.2s ease-out;
 }
 @keyframes pasaporteFondo { from { opacity: 0; } to { opacity: 1; } }
@@ -39,198 +42,22 @@
 .pasaporte-cerrar:hover { background: rgba(255, 255, 255, 0.3); }
 .pasaporte-cerrar:focus-visible { outline: 3px solid var(--color-turquoise, #54C8C0); outline-offset: 2px; }
 
-.pasaporte-doc {
-  position: relative;
-  container-type: inline-size;
-  width: min(100%, 440px, calc((100dvh - 100px) * 1504 / 1680));
-  aspect-ratio: 1504 / 1680;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.5));
-  color: #141A33;
-  font-family: var(--font-body, sans-serif);
-  animation: pasaporteDoc 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+.pasaporte-libro {
+  height: min(580px, calc(100dvh - 90px));
+  animation: pasaporteLibro 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
-@keyframes pasaporteDoc {
+@keyframes pasaporteLibro {
   from { opacity: 0; transform: translateY(18px) scale(0.97); }
   to { opacity: 1; transform: none; }
 }
 
-/* Número de pasaporte: un disco del mismo azul tapa el "##" impreso y lleva el código en dos líneas */
-.pasaporte-numero {
-  position: absolute;
-  left: 85%;
-  width: 8.3%;
-  aspect-ratio: 1;
-  top: 3.3%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #3271B8;
-  color: #fff;
-  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
-  font-size: 2.2cqw;
-  font-weight: 800;
-  line-height: 1.1;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-/* Foto: el personaje sin fondo, o la foto de perfil con esquinas redondeadas */
-.pasaporte-foto {
-  position: absolute;
-  left: 19.9%;
-  width: 22%;
-  top: 13.7%;
-  height: 28%;
-}
-.pasaporte-foto-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center bottom;
-}
-.pasaporte-foto-img--perfil { object-fit: cover; object-position: center; border-radius: 3cqw; box-shadow: 0 0 0 0.5cqw rgba(20, 26, 51, 0.18); }
-
-/* Nombre, país y datos, a la derecha de la foto */
-.pasaporte-datos {
-  position: absolute;
-  left: 46%;
-  width: 38.5%;
-  top: 13.7%;
-  height: 28%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 1.4cqw;
-  min-width: 0;
-}
-.pasaporte-nombre {
-  font-size: 5.6cqw;
-  font-weight: 900;
-  line-height: 1.1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.pasaporte-pais {
-  display: flex;
-  align-items: center;
-  gap: 1.2cqw;
-  margin-bottom: 1.4cqw;
-  font-size: 3cqw;
-  font-weight: 700;
-  color: #5B6178;
-}
-.pasaporte-bandera { width: 4.2cqw; height: 2.8cqw; border-radius: 0.4cqw; box-shadow: 0 0 0 0.2cqw rgba(20, 26, 51, 0.25); }
-.pasaporte-dato {
-  font-size: 3.4cqw;
-  font-weight: 800;
-  line-height: 1.2;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-/* Sellos: seis círculos en tres columnas y dos filas */
-.pasaporte-sello {
-  position: absolute;
-  width: 19.3%;
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #fff;
-  border: 0.6cqw solid #C9C3B3;
-}
-.pasaporte-sello--0 { left: 19.9%; top: 48.8%; }
-.pasaporte-sello--1 { left: 42.2%; top: 48.8%; }
-.pasaporte-sello--2 { left: 64.5%; top: 48.8%; }
-.pasaporte-sello--3 { left: 19.9%; top: 69.6%; }
-.pasaporte-sello--4 { left: 42.2%; top: 69.6%; }
-.pasaporte-sello--5 { left: 64.5%; top: 69.6%; }
-.pasaporte-sello-insignia {
-  width: 76%;
-  height: 76%;
-  object-fit: contain;
-}
-.pasaporte-candado { width: 34%; height: 34%; color: #A7A9B2; }
-.pasaporte-sello-marca {
-  position: absolute;
-  inset: 3%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: rotate(-15deg);
-  color: #C62828;
-  mix-blend-mode: multiply;
-  opacity: 0.9;
-  pointer-events: none;
-}
-.pasaporte-sello-marca > span {
-  width: 94%;
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 0.6cqw solid currentColor;
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 0.3cqw rgba(198, 40, 40, 0.3);
-  font-size: 2.6cqw;
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  text-shadow: 0 0 0.5cqw rgba(255, 255, 255, 0.95), 0 0 0.9cqw rgba(255, 255, 255, 0.85);
-}
-
-/* "+N más": hay más sellos de los que caben */
-.pasaporte-mas {
-  position: absolute;
-  left: 19.9%;
-  width: 63.9%;
-  top: 90%;
-  display: flex;
-  justify-content: center;
-  font-size: 3cqw;
-  font-weight: 700;
-  color: #5B6178;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pasaporte-fondo, .pasaporte-doc { animation: none; }
-}
-
-/* Interior del documento: ocupa todo el documento para que las posiciones en porcentaje sigan valiendo */
-.pasaporte-interior { position: absolute; inset: 0; }
-
-/* Datos personales (nacimiento, teléfono, género), entre la foto y los sellos */
-.pasaporte-personal {
-  position: absolute;
-  left: 19.9%;
-  width: 63.9%;
-  top: 42.4%;
-  height: 5.9%;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  font-size: 2.5cqw;
-  font-weight: 700;
-  line-height: 1.25;
-  color: #3b4160;
-  overflow: hidden;
-}
-
-/* Lápiz para editar: arriba a la derecha, junto a la X */
+/* Página de datos del viajero */
+.pv-pagina { padding-top: 18px; }
 .pasaporte-editar {
-  position: fixed;
-  top: calc(12px + env(safe-area-inset-top));
-  right: 64px;
-  z-index: 1;
+  position: absolute;
+  top: 12px;
+  right: 8px;
+  z-index: 2;
   width: 44px;
   height: 44px;
   display: flex;
@@ -242,26 +69,129 @@
   background: #E0A92E;
   color: #1B2A6B;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 3px 8px rgba(80, 60, 30, 0.35);
 }
 .pasaporte-editar:hover { background: #F0BA45; }
-.pasaporte-editar:focus-visible { outline: 3px solid var(--color-turquoise, #54C8C0); outline-offset: 2px; }
+.pasaporte-editar:focus-visible { outline: 3px solid #54C8C0; outline-offset: 2px; }
 
-/* Portada que se abre: el mismo cuaderno del registro, a la medida del documento */
-.pasaporte-doc { perspective: 1500px; }
-.pasaporte-tapa { border-radius: 0.6cqw 6.5cqw 6.5cqw 0.6cqw; z-index: 5; }
-.pasaporte-tapa .oc-tapa-interior { padding: 0 7cqw 0 12cqw; gap: 2cqw; }
-.pasaporte-tapa .oc-tapa-w { width: 38cqw; margin-bottom: 2.5cqw; }
-.pasaporte-tapa .oc-tapa-nombre { width: 57cqw; }
-.pasaporte-tapa .oc-tapa-rep { margin-top: 7cqw; font-size: 3.4cqw; }
-.pasaporte-tapa .oc-tapa-pais { font-size: 7.4cqw; }
-.pasaporte-tapa .oc-tapa-linea { width: 42cqw; }
-.pasaporte-tapa .oc-tapa-anio { bottom: 7%; font-size: 3.4cqw; }
-.pasaporte-anillas { z-index: 6; left: -2.4cqw; top: 7%; bottom: 7%; transition: opacity 0.4s ease; }
-.pasaporte-anillas--fuera { opacity: 0; }
-@media (prefers-reduced-motion: reduce) {
-  .pasaporte-anillas { transition: none; }
+.pv-viajero { display: flex; align-items: center; gap: 14px; padding-right: 44px; }
+.pv-foto {
+  flex: none;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(27, 42, 107, 0.1);
+  border: 3px solid var(--oc-azul);
+  box-shadow: 0 4px 10px rgba(27, 42, 107, 0.25);
 }
+.pv-foto-img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 12%; }
+.pv-foto-img--perfil { object-position: center; }
+.pv-viajero-datos { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.pv-nombre {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.3rem;
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--oc-azul);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  outline: none;
+}
+.pv-pais { font-size: 0.88rem; font-weight: 700; color: #5B5F72; }
+.pv-numero { align-self: flex-start; font-family: ui-monospace, Consolas, monospace; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; color: #7C8196; }
+
+/* Filas como renglones de papel */
+.pv-filas { margin: 6px 0 0; padding: 0; }
+.pv-fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 38px;
+  padding: 8px 2px 4px;
+  border-bottom: 1.5px dashed rgba(27, 42, 107, 0.3);
+}
+.pv-fila dt { margin: 0; flex: none; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: #5B5F72; }
+.pv-fila dd {
+  margin: 0;
+  min-width: 0;
+  text-align: right;
+  font-family: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', 'Chalkboard SE', cursive;
+  font-size: 0.95rem;
+  color: var(--oc-lapiz);
+  overflow-wrap: anywhere;
+}
+.pv-fila dd.pv-vacio { color: rgba(42, 58, 120, 0.35); }
+
+.pv-siguiente {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  z-index: 2;
+  transform: translateX(-50%);
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--oc-lapiz);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Página de sellos */
+.pv-sellos {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px 10px;
+}
+.pv-sello {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #C9C3B3;
+}
+.pv-sello-insignia { width: 76%; height: 76%; object-fit: contain; }
+.pv-candado { width: 34%; height: 34%; color: #A7A9B2; }
+.pv-sello-marca {
+  position: absolute;
+  inset: 3%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-15deg);
+  color: #C62828;
+  mix-blend-mode: multiply;
+  opacity: 0.9;
+  pointer-events: none;
+}
+.pv-sello-marca > span {
+  width: 94%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(198, 40, 40, 0.3);
+  font-size: 0.5rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.95), 0 0 4px rgba(255, 255, 255, 0.85);
+}
+.pv-mas { margin: 16px 0 0; text-align: center; font-size: 0.85rem; font-weight: 700; color: #5B5F72; }
 
 /* Editar la información */
 .pasaporte-edicion {
@@ -271,7 +201,7 @@
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55);
-  animation: pasaporteDoc 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: pasaporteLibro 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   color: var(--oc-tinta);
 }
 .pasaporte-edicion-cuerpo {
@@ -298,3 +228,7 @@
   cursor: pointer;
 }
 .pasaporte-edicion-cancelar:disabled { opacity: 0.4; cursor: default; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pasaporte-fondo, .pasaporte-libro, .pasaporte-edicion { animation: none; }
+}
