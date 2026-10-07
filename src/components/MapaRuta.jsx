@@ -9,7 +9,7 @@ import RutaCalculada from './RutaCalculada';
 import PanelSitio from './PanelSitio';
 import HistoriaSitio from './HistoriaSitio';
 import DetalleSitio from './DetalleSitio';
-import { getCategoriaIcono } from '../utils/categoriaSitio';
+import { getCategoriaIcono, svgPinSitio } from '../utils/categoriaSitio';
 import { useGuardados } from '../hooks/useGuardados';
 import { useNegociosActivos } from '../hooks/useNegociosActivos';
 import PanelNegocio from './PanelNegocio';
@@ -57,21 +57,17 @@ const iconoEstoyAqui = L.divIcon({
   iconAnchor: [22, 22],
 });
 
-// Marcador de sitio: pin de gota azul marino con el emoji de su categoría en el centro (rojo si está seleccionado).
-// HTML puro (el emoji dentro de un SVG se veía borroso); estilos en MapaRuta.css (.sitio-pin).
-// Se cachea un icono por categoría y estado.
-const COLOR_PIN_SITIO = '#1B2A6B';
+// Marcador de sitio: pin de gota (25x41, como el de Leaflet) del color de su categoría, con un ícono SVG blanco;
+// rojo oscuro si está seleccionado. Un icono por categoría y estado, cacheado.
 const iconosSitio = new Map();
 function iconoSitio(sitio, seleccionado) {
   const categoria = getCategoriaIcono(sitio);
   const clave = `${categoria.clave}-${seleccionado ? 's' : 'n'}`;
   if (!iconosSitio.has(clave)) {
-    iconosSitio.set(clave, L.divIcon({
-      className: '',
-      html: `<div class="sitio-pin${seleccionado ? ' sitio-pin--activo' : ''}" style="--pin-color: ${COLOR_PIN_SITIO}"><span class="sitio-pin-emoji">${categoria.emoji}</span></div>`,
-      iconSize: [32, 44],
-      // La punta (esquina inferior izquierda del cuadro) queda en (20, 49) tras girar -45° una caja de 32x44 sobre su centro.
-      iconAnchor: [20, 49],
+    iconosSitio.set(clave, L.icon({
+      iconUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgPinSitio(categoria, seleccionado))}`,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
     }));
   }
   return iconosSitio.get(clave);
