@@ -28,24 +28,37 @@ const iconoUbicacion = L.divIcon({
   iconAnchor: [30, 30],
 });
 
-// Marcador de negocio: círculo blanco de 32 px con borde azul marino y la inicial del negocio, para no confundirlo con los
-// pines de gota de los sitios turísticos. Activo (panel abierto o llegada con "Ver en el mapa"): borde rojo y fondo rosado;
-// con "Ver en el mapa" además un halo que pulsa. HTML (DivIcon), cacheado por inicial y estado.
+// Marcador de negocio: círculo blanco con un ícono de tienda, borde azul marino (rojo si está activo: panel abierto o llegada
+// con "Ver en el mapa"). Redondo, para no confundirlo con los pines de gota de los sitios. L.icon con el SVG como data URI,
+// cacheado por estado.
+const COLOR_NEGOCIO = '#1B2A6B';
+const COLOR_NEGOCIO_ACTIVO = '#C62828';
 const iconosNegocio = new Map();
-const escaparHtml = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-function iconoNegocioCirculo(negocio, activo, pulsando) {
-  const inicial = (Array.from((negocio.name || '').trim())[0] || '•').toUpperCase();
-  const clave = `${inicial}-${activo ? 'a' : 'n'}-${pulsando ? 'p' : 'q'}`;
+function iconoNegocio(activo) {
+  const clave = activo ? 'activo' : 'normal';
   if (!iconosNegocio.has(clave)) {
-    iconosNegocio.set(clave, L.divIcon({
-      className: '',
-      html: `<div class="negocio-pin${activo ? ' negocio-pin--activo' : ''}">${pulsando ? '<span class="negocio-pin-halo"></span>' : ''}<span class="negocio-pin-inicial">${escaparHtml(inicial)}</span></div>`,
-      iconSize: [32, 32],
-      iconAnchor: [16, 16],
+    const borde = activo ? COLOR_NEGOCIO_ACTIVO : COLOR_NEGOCIO;
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
+      // r=14.7 (no 15): con el trazo de 2.5 el borde exterior llega justo al límite de 32 y no se recorta
+      + `<circle cx="16" cy="16" r="14.7" fill="white" stroke="${borde}" stroke-width="2.5"/>`
+      + `<path fill="${borde}" d="M8 11h16l-1.5 2H9.5zm1.5 3h13v8h-13zm2 2v4h3v-4zm5 0v4h3v-4z"/>`
+      + '</svg>';
+    iconosNegocio.set(clave, L.icon({
+      iconUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
     }));
   }
   return iconosNegocio.get(clave);
 }
+
+// Aro que pulsa debajo del negocio al que se llegó con "Ver en el mapa" (no se toca: solo guía la vista).
+const iconoHaloNegocio = L.divIcon({
+  className: 'negocio-halo-icono',
+  html: '<span class="negocio-pin-halo"></span>',
+  iconSize: [30, 30],
+  iconAnchor: [15, 15],
+});
 
 // "Estoy aquí": pin azul claro, distinto de los marcadores de negocios y de sitios.
 const iconoEstoyAqui = L.divIcon({
@@ -371,15 +384,22 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
           />
         ))}
 
+        {negocios.filter((n) => n.id === negocioResaltadoId).map((negocio) => (
+          <Marker
+            key={`halo-${negocio.id}`}
+            position={negocio.position}
+            icon={iconoHaloNegocio}
+            zIndexOffset={850}
+            interactive={false}
+            keyboard={false}
+          />
+        ))}
+
         {negocios.map(negocio => (
           <Marker
-            key={`negocio-${negocio.id}${negocio.id === negocioResaltadoId ? '-resaltado' : ''}`}
+            key={`negocio-${negocio.id}`}
             position={negocio.position}
-            icon={iconoNegocioCirculo(
-              negocio,
-              negocio.id === negocioResaltadoId || negocio.id === negocioSeleccionado?.id,
-              negocio.id === negocioResaltadoId,
-            )}
+            icon={iconoNegocio(negocio.id === negocioResaltadoId || negocio.id === negocioSeleccionado?.id)}
             zIndexOffset={negocio.id === negocioResaltadoId ? 900 : negocio.id === negocioSeleccionado?.id ? 700 : 0}
             eventHandlers={{
               click: () => setNegocioSeleccionado(negocio),

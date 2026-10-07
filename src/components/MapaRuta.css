@@ -439,37 +439,13 @@
 }
 
 
-/* ===== Marcadores de negocios: círculo blanco con la inicial (los sitios son pines de gota) ===== */
-.negocio-pin {
-  position: relative;
-  box-sizing: border-box;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  border: 2.5px solid #1B2A6B;
-  border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-  color: #1B2A6B;
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1;
-}
-.negocio-pin--activo {
-  border-color: #E53935;
-  background: #FFF5F5;
-}
-.negocio-pin-inicial { position: relative; }
-/* Llegada con "Ver en el mapa": halo que pulsa detrás del círculo */
+/* ===== Negocio al que se llegó con "Ver en el mapa": aro que pulsa debajo de su marcador ===== */
+.negocio-halo-icono { background: none; border: none; }
 .negocio-pin-halo {
   position: absolute;
-  inset: -2.5px;
+  inset: 0;
   border-radius: 50%;
-  z-index: -1; /* detrás del círculo: solo se ve el aro que se expande */
-  background: #E53935;
+  background: #C62828;
   opacity: 0.5;
   animation: pulsoNegocio 1.8s ease-out infinite;
 }
