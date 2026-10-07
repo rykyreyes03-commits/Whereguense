@@ -2,22 +2,30 @@ import './BottomNav.css';
 import iconoInicio from '../assets/icons/icono_inicio.svg';
 import iconoPasaporte from '../assets/icons/icono_pasaporte.svg';
 import iconoEventos from '../assets/icons/icono_eventos.svg';
-import iconoPerfil from '../assets/icons/icono_perfil.svg';
+import iconoCabezon from '../assets/icons/icono_cabezon.svg';
+import iconoGigantona from '../assets/icons/icono_gigantona.svg';
 import iconoUbicacion from '../assets/icons/icono_ubicacion.svg';
 
 const ITEMS = [
   { id: 'inicio', label: 'INICIO', icon: iconoInicio },
   { id: 'pasaporte', label: 'PASAPORTE', icon: iconoPasaporte },
   { id: 'eventos', label: 'EVENTOS', icon: iconoEventos },
-  { id: 'perfil', label: 'PERFIL', icon: iconoPerfil },
 ];
+
+// El cuarto ítem es el avatar elegido (cabezón o gigantona); lleva a la pantalla de personalización. Perfil se abre desde
+// el botón de la esquina superior derecha de Inicio, así que estando en Perfil ningún ítem queda resaltado.
+function itemAvatar() {
+  const icono = localStorage.getItem('avatarElegido') === 'gigantona' ? iconoGigantona : iconoCabezon;
+  return { id: 'personalizacion', label: 'AVATAR', icon: icono };
+}
 
 function BottomNav({ activo, onNavigate }) {
   const ocultarFab = activo === 'mapa';
+  const items = [...ITEMS, itemAvatar()];
   return (
     <>
       <nav className="bottom-nav" aria-label="Navegación principal">
-        {ITEMS.map((item) => (
+        {items.map((item) => (
           <button
             key={item.id}
             type="button"

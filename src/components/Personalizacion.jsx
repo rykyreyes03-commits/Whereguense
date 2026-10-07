@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './Personalizacion.css';
 import TopBar from './TopBar';
 import Avatar from './Avatar';
+import BottomNav from './BottomNav';
 import { textoPuntos } from '../utils/rangosSello';
 import {
   ROSTROS, ROPAS, SOMBREROS, GIGANTONA,
@@ -109,6 +110,8 @@ function Personalizacion({ onNavigate, desbloqueados, seleccion, elegir, nivel, 
           </div>
         </div>
       </div>
+
+      <BottomNav activo="personalizacion" onNavigate={onNavigate} />
     </div>
   );
 }

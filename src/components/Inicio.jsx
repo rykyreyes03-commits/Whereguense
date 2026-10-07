@@ -1,11 +1,10 @@
 import { useState, useMemo } from 'react';
+import { User } from 'lucide-react';
 import './Inicio.css';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
 import { useGuardados } from '../hooks/useGuardados';
 import { INSIGNIAS } from '../data/insignias';
-import iconoCabezon from '../assets/icons/icono_cabezon.svg';
-import iconoGigantona from '../assets/icons/icono_gigantona.svg';
 import iconoBuscar from '../assets/icons/icono_buscar.svg';
 import iconoArbol from '../assets/icons/icono_arbol.svg';
 import iconoRuta from '../assets/icons/icono_ruta.svg';
@@ -37,7 +36,6 @@ function Inicio({
   const [portadaFallida, setPortadaFallida] = useState(null);
   const { guardados } = useGuardados(usuarioId);
 
-  const iconoAvatar = localStorage.getItem('avatarElegido') === 'gigantona' ? iconoGigantona : iconoCabezon;
 
   const query = busqueda.trim().toLowerCase();
   const buscando = query.length > 0;
@@ -90,10 +88,10 @@ function Inicio({
         rightSlot={
           <button
             className="inicio-avatar-btn"
-            onClick={() => onNavigate?.('personalizacion')}
-            aria-label="Personalizar avatar"
+            onClick={() => onNavigate?.('perfil')}
+            aria-label="Perfil"
           >
-            <img src={iconoAvatar} alt="" />
+            <User size={22} strokeWidth={2.2} aria-hidden="true" />
           </button>
         }
       />

@@ -9,7 +9,7 @@
 }
 
 .personalizacion-contenido{
-  padding: 24px 22px 40px;
+  padding: 24px 22px 150px; /* deja lugar a la barra inferior y al botón flotante del mapa */
 }
 
 /* El avatar nunca debe tocar el borde de la pantalla */

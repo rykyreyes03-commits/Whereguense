@@ -4,6 +4,8 @@ import '/src/index.css';
 import DetalleSitio from '/src/components/DetalleSitio.jsx';
 import PanelSitio from '/src/components/PanelSitio.jsx';
 import MisSellos from '/src/components/MisSellos.jsx';
+import BottomNav from '/src/components/BottomNav.jsx';
+import Personalizacion from '/src/components/Personalizacion.jsx';
 import { useNivel } from '/src/hooks/useNivel.js';
 import { sitios } from '/src/data/sitios.js';
 
@@ -22,6 +24,16 @@ function Pasaporte() {
 // eslint-disable-next-line react-refresh/only-export-components
 function Pantalla() {
   if (params.get('vista') === 'pasaporte') return <Pasaporte />;
+  if (params.get('vista') === 'nav') {
+    return <div style={{ height: '100vh' }}><BottomNav activo={params.get('activo')} onNavigate={(p) => window.__eventos.push(['ir', p])} /></div>;
+  }
+  if (params.get('vista') === 'personalizacion') {
+    return (
+      <Personalizacion onNavigate={(p) => window.__eventos.push(['ir', p])} desbloqueados={{ rostro: [], ropa: [], sombrero: [], gigantona: [] }}
+        seleccion={{ rostro: null, ropa: null, sombrero: null, gigantona: null }} elegir={() => {}} nivel={3}
+        nivelInfo={{ nivel: 3, puntosActuales: 1, puntosParaSiguiente: 6, porcentaje: 16, puntosTotales: 7 }} />
+    );
+  }
   if (params.get('vista') === 'panel') {
     return (
       <div style={{ position: 'relative', height: '100vh', background: '#dde' }}>
