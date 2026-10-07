@@ -143,6 +143,8 @@ for (const ancho of [360, 412]) {
   ok((await pas.page.locator('.nivel-progreso-relleno').evaluate((e) => e.style.width)) === '8%', `${t} la barra avanza 8 %`);
   ok((await pas.page.locator('.nivel-progreso-pie').textContent()).includes('Para el nivel 4: 5.5 puntos más'), `${t} faltan 5.5 puntos para el nivel 4`);
   ok((await pas.page.locator('[role="progressbar"]').getAttribute('aria-valuetext')).includes('0.5 de 6'), `${t} la barra es accesible (aria-valuetext)`);
+  await pas.page.click('.ciudad-card:has-text("León")'); // los sellos se ven dentro de la ciudad
+  await pas.page.waitForSelector('.sello-card');
   const rangoDe = (nombre) => pas.page.locator('.sello-card', { hasText: nombre }).first().locator('.rango-sello-nombre').textContent();
   ok((await rangoDe('Catedral de León')) === 'Oro', `${t} Catedral: oro`);
   ok((await rangoDe('Museo de la Revolución')) === 'Plata', `${t} Museo de la Revolución: plata`);

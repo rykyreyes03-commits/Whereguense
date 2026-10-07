@@ -136,6 +136,8 @@ for (const [nombre, query] of [['turista', 'vista=menu'], ['emprendedor', 'vista
   ok((await colorDe(page, '.nivel-progreso', 'backgroundColor')) === 'rgb(255, 255, 255)', 'claro: las tarjetas siguen blancas');
   ok((await colorDe(page, '.nivel-progreso-nivel', 'color')) === 'rgb(26, 26, 46)', 'claro: los títulos siguen en navy #1A1A2E');
   ok((await colorDe(page, '.nivel-progreso-puntos', 'color')) === 'rgb(30, 42, 120)', 'claro: los textos de acento siguen en índigo #1E2A78');
+  await page.click('.ciudad-card:has-text("León")');
+  await page.waitForSelector('.sello-card.obtenido');
   ok((await colorDe(page, '.sello-card.obtenido', 'backgroundColor')) === 'rgb(238, 240, 255)', 'claro: la tarjeta de sello obtenido conserva su tinte #EEF0FF');
   await ctx.close();
 }

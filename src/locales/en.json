@@ -112,7 +112,9 @@
     "seccion": "PASSPORT",
     "sinSellar": "Not stamped",
     "bloqueado": "{{nombre}} (locked stamp)",
-    "verRanking": "View ranking"
+    "verRanking": "View ranking",
+    "ciudadSellos": "{{n}} of {{total}} stamps",
+    "ciudadProximamente": "Coming soon"
   },
   "nivel": {
     "nivel": "Level {{n}}",
@@ -278,5 +280,19 @@
     "proximamente": "{{opcion}}: coming soon 🚧",
     "temaClaro": "Light",
     "temaOscuro": "Dark"
+  },
+  "sellosCiudad": {
+    "titulo": "{{ciudad}} stamps",
+    "tabsAria": "Sites in {{ciudad}}",
+    "todos": "All",
+    "mios": "My stamps",
+    "obtenidoEl": "Collected on {{fecha}}",
+    "vacioTitulo": "You have no {{ciudad}} stamps yet",
+    "vacioTexto": "Visit a site on the map to get your first one."
+  },
+  "proximamente": {
+    "titulo": "Coming soon to WhereGüense",
+    "texto": "We're getting the sites of {{ciudad}} ready.",
+    "pie": "Complete your León passport first."
   }
 }

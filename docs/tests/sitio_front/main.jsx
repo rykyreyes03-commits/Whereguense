@@ -34,9 +34,12 @@ const registrar = (n) => (...a) => { window.__eventos.push([n, a[0]?.id ?? null]
 
 // eslint-disable-next-line react-refresh/only-export-components
 function Pasaporte() {
-  const sellos = [{ id: 1, sitioId: 1, fecha: '1/10/2026' }, { id: 2, sitioId: 6, fecha: '2/10/2026' }, { id: 3, sitioId: 12, fecha: '3/10/2026' }];
+  const sellos = params.get('sinsellos') === '1' ? [] : [{ id: 1, sitioId: 1, fecha: '1/10/2026' }, { id: 2, sitioId: 6, fecha: '2/10/2026' }, { id: 3, sitioId: 12, fecha: '3/10/2026' }, { id: 4, sitioId: null, fecha: '4/10/2026' }];
   const nivelInfo = useNivel('yo', sellos);
-  return <MisSellos sellos={sellos} sitios={sitios} onNavigate={() => {}} nivelInfo={nivelInfo} />;
+  return (
+    <MisSellos sellos={sellos} sitios={sitios} nivelInfo={nivelInfo} sitioResaltadoId={params.get('resaltado') ? Number(params.get('resaltado')) : null}
+      onNavigate={(p) => window.__eventos.push(['ir', p])} onSeleccionarSitio={(id) => window.__eventos.push(['sitio', id])} />
+  );
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

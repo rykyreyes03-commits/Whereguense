@@ -1,33 +1,45 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
-// { [sitioId]: 'cobre' | 'plata' | 'oro' } de la base (sitio.rango, 038). Se pide una sola vez y se comparte entre pantallas.
-// Los sitios que no estén en el mapa se tratan como cobre (rangoDeSello).
+// Datos de los sitios que viven en la base (sitio.rango, 038, y sitio.ciudad, 039): { [sitioId]: { rango, ciudad } }.
+// Se piden una sola vez y se comparten entre pantallas. Los sitios que no estén en la base se tratan como cobre y de León.
 let cache = null;
 let pendiente = null;
 
-function cargarRangos() {
+function cargarSitiosBD() {
   if (cache) return Promise.resolve(cache);
   if (!pendiente) {
-    pendiente = supabase.from('sitio').select('id, rango').then(({ data, error }) => {
+    pendiente = supabase.from('sitio').select('id, rango, ciudad').then(({ data, error }) => {
       pendiente = null;
       if (error) {
-        console.error('Error cargando los rangos de los sitios:', error);
+        console.error('Error cargando los datos de los sitios:', error);
         return {};
       }
-      cache = Object.fromEntries((data || []).map((s) => [s.id, s.rango]));
+      cache = Object.fromEntries((data || []).map((s) => [s.id, { rango: s.rango, ciudad: s.ciudad }]));
       return cache;
     });
   }
   return pendiente;
 }
 
-export function useRangosSitios() {
-  const [rangos, setRangos] = useState(cache || {});
+function useSitiosBD() {
+  const [datos, setDatos] = useState(cache || {});
   useEffect(() => {
     let activo = true;
-    cargarRangos().then((r) => { if (activo) setRangos(r); });
+    cargarSitiosBD().then((d) => { if (activo) setDatos(d); });
     return () => { activo = false; };
   }, []);
-  return rangos;
+  return datos;
+}
+
+// { [sitioId]: 'cobre' | 'plata' | 'oro' }
+export function useRangosSitios() {
+  const datos = useSitiosBD();
+  return Object.fromEntries(Object.entries(datos).map(([id, s]) => [id, s.rango]));
+}
+
+// { [sitioId]: 'León' | ... }
+export function useCiudadesSitios() {
+  const datos = useSitiosBD();
+  return Object.fromEntries(Object.entries(datos).map(([id, s]) => [id, s.ciudad]));
 }

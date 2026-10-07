@@ -112,7 +112,9 @@
     "seccion": "PASAPORTE",
     "sinSellar": "Sin sellar",
     "bloqueado": "{{nombre}} (sello bloqueado)",
-    "verRanking": "Ver ranking"
+    "verRanking": "Ver ranking",
+    "ciudadSellos": "{{n}} de {{total}} sellos",
+    "ciudadProximamente": "Próximamente"
   },
   "nivel": {
     "nivel": "Nivel {{n}}",
@@ -278,5 +280,19 @@
     "proximamente": "{{opcion}}: próximamente 🚧",
     "temaClaro": "Claro",
     "temaOscuro": "Oscuro"
+  },
+  "sellosCiudad": {
+    "titulo": "Sellos de {{ciudad}}",
+    "tabsAria": "Sitios de {{ciudad}}",
+    "todos": "Todos",
+    "mios": "Mis sellos",
+    "obtenidoEl": "Obtenido el {{fecha}}",
+    "vacioTitulo": "Aún no tienes sellos de {{ciudad}}",
+    "vacioTexto": "Visita un sitio en el mapa para conseguir el primero."
+  },
+  "proximamente": {
+    "titulo": "Próximamente en WhereGüense",
+    "texto": "Estamos preparando los sitios de {{ciudad}}.",
+    "pie": "Completa tu pasaporte de León primero."
   }
 }

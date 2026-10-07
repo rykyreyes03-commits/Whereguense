@@ -1,26 +1,52 @@
+import { useState } from 'react';
 import { Ticket, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './MisSellos.css';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
-import { obtenerRango } from '../utils/rango';
-import { INSIGNIAS } from '../data/insignias';
-import { useRangosSitios } from '../hooks/useRangosSitios';
 import NivelProgreso from './NivelProgreso';
-import RangoSello from './RangoSello';
-import { localeFechas } from '../utils/idioma';
+import SellosCiudad from './SellosCiudad';
+import ModalProximamente from './ModalProximamente';
+import { obtenerRango } from '../utils/rango';
+import { CIUDADES, ciudadDeSitio, conteoDeCiudad } from '../utils/ciudades';
+import { useRangosSitios, useCiudadesSitios } from '../hooks/useRangosSitios';
 
+// Pantalla del pasaporte: nivel, cupones y una tarjeta por ciudad. León abre sus sellos; las demás avisan que vienen pronto.
 function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResaltadoId, cuponesDisponibles = 0, nivelInfo = null }) {
   const { t } = useTranslation();
   const nivel = obtenerRango(sellos.length);
   const rangos = useRangosSitios();
+  const ciudadesBD = useCiudadesSitios();
   const total = sitios.length;
   const progreso = total > 0 ? Math.round((sellos.length / total) * 100) : 0;
 
-  const handleSeleccionar = (sitio) => {
-    onSeleccionarSitio?.(sitio.id);
-    onNavigate?.('detalleSello');
+  // Si se llega por el aviso de un sello recién obtenido, se abre directo la ciudad de ese sitio.
+  const [ciudadAbierta, setCiudadAbierta] = useState(() => {
+    const sitio = sitioResaltadoId != null ? sitios.find((s) => s.id === sitioResaltadoId) : null;
+    return sitio ? CIUDADES.find((c) => c.nombre === ciudadDeSitio(sitio)) || null : null;
+  });
+  const [ciudadProximamente, setCiudadProximamente] = useState(null);
+
+  const abrirCiudad = (ciudad) => {
+    const { total: sitiosDeLaCiudad } = conteoDeCiudad(ciudad, sitios, sellos, ciudadesBD);
+    if (sitiosDeLaCiudad > 0) setCiudadAbierta(ciudad);
+    else setCiudadProximamente(ciudad);
   };
+
+  if (ciudadAbierta) {
+    return (
+      <SellosCiudad
+        ciudad={ciudadAbierta}
+        sitios={sitios.filter((s) => ciudadDeSitio(s, ciudadesBD) === ciudadAbierta.nombre)}
+        sellos={sellos}
+        rangos={rangos}
+        sitioResaltadoId={sitioResaltadoId}
+        onVolver={() => setCiudadAbierta(null)}
+        onNavigate={onNavigate}
+        onSeleccionarSitio={onSeleccionarSitio}
+      />
+    );
+  }
 
   return (
     <div className="mis-sellos-wrapper">
@@ -57,41 +83,28 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResalt
         </button>
 
         <h2 className="seccion">{t('pasaporte.seccion')}</h2>
-        <div className="mis-sellos-grid">
-          {sitios.map((sitio) => {
-            const sello = sellos.find((s) => s.sitioId === sitio.id);
-
-            if (sello) {
-              return (
-                <div
-                  key={sitio.id}
-                  className={`sello-card obtenido ${sitio.id === sitioResaltadoId ? 'recien-obtenido' : ''}`}
-                  onClick={() => handleSeleccionar(sitio)}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <img className="sello-icono" src={INSIGNIAS[sitio.badge]} alt={sitio.name} />
-                  <strong>{sitio.name}</strong>
-                  <span className="sello-fecha">{sello.fechaIso ? new Date(sello.fechaIso).toLocaleDateString(localeFechas()) : sello.fecha}</span>
-                  <RangoSello rango={rangos[sitio.id]} conNombre />
-                </div>
-              );
-            }
-
+        <ul className="ciudades-lista">
+          {CIUDADES.map((ciudad) => {
+            const { total: sitiosDeLaCiudad, obtenidos } = conteoDeCiudad(ciudad, sitios, sellos, ciudadesBD);
+            const contador = sitiosDeLaCiudad > 0
+              ? t('pasaporte.ciudadSellos', { n: obtenidos, total: sitiosDeLaCiudad })
+              : t('pasaporte.ciudadProximamente');
             return (
-              <div key={sitio.id} className="sello-card bloqueado">
-                <img
-                  className="sello-icono"
-                  src={INSIGNIAS[sitio.badge]}
-                  alt={t('pasaporte.bloqueado', { nombre: sitio.name })}
-                />
-                <strong>{sitio.name}</strong>
-                <span className="sello-fecha">{t('pasaporte.sinSellar')}</span>
-                <RangoSello rango={rangos[sitio.id]} conNombre />
-              </div>
+              <li key={ciudad.id}>
+                <button
+                  type="button"
+                  className={`ciudad-card ${sitiosDeLaCiudad > 0 ? '' : 'ciudad-card--pronto'}`}
+                  onClick={() => abrirCiudad(ciudad)}
+                  aria-label={`${ciudad.nombre}. ${contador}`}
+                >
+                  <img className="ciudad-card-imagen" src={ciudad.imagen} alt="" loading="lazy" />
+                  <span className="ciudad-card-nombre">{ciudad.nombre}</span>
+                  <span className="ciudad-card-contador">{contador}</span>
+                </button>
+              </li>
             );
           })}
-        </div>
+        </ul>
 
         <button className="mis-sellos-accion-btn" onClick={() => onNavigate?.('ranking')}>
           {t('pasaporte.verRanking')}
@@ -99,6 +112,10 @@ function MisSellos({ sellos, sitios, onNavigate, onSeleccionarSitio, sitioResalt
       </div>
 
       <BottomNav activo="pasaporte" onNavigate={onNavigate} />
+
+      {ciudadProximamente && (
+        <ModalProximamente ciudad={ciudadProximamente.nombre} onCerrar={() => setCiudadProximamente(null)} />
+      )}
     </div>
   );
 }
