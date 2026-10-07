@@ -522,3 +522,24 @@
   .negocio-marcador-halo,
   .estoy-aqui-halo { animation: none; opacity: 0.25; }
 }
+
+/* Marcadores de sitios: pin de gota (cuadrado girado) con el emoji de la categoría */
+.sitio-pin {
+  box-sizing: border-box;
+  width: 32px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--pin-color);
+  border: 2px solid white;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+.sitio-pin--activo { background: #E53935; }
+.sitio-pin-emoji {
+  transform: rotate(45deg); /* contrarresta el giro del pin */
+  font-size: 16px;
+  line-height: 1;
+}

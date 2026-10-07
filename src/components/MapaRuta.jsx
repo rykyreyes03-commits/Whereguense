@@ -58,22 +58,20 @@ const iconoEstoyAqui = L.divIcon({
 });
 
 // Marcador de sitio: pin de gota azul marino con el emoji de su categoría en el centro (rojo si está seleccionado).
-// Es un SVG usado como imagen (no un div): se cachea un icono por categoría y estado.
+// HTML puro (el emoji dentro de un SVG se veía borroso); estilos en MapaRuta.css (.sitio-pin).
+// Se cachea un icono por categoría y estado.
 const COLOR_PIN_SITIO = '#1B2A6B';
-const COLOR_PIN_SITIO_ACTIVO = '#E53935';
 const iconosSitio = new Map();
 function iconoSitio(sitio, seleccionado) {
   const categoria = getCategoriaIcono(sitio);
   const clave = `${categoria.clave}-${seleccionado ? 's' : 'n'}`;
   if (!iconosSitio.has(clave)) {
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36">'
-      + '<path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24S24 21 24 12C24 5.4 18.6 0 12 0z" fill="' + (seleccionado ? COLOR_PIN_SITIO_ACTIVO : COLOR_PIN_SITIO) + '"/>'
-      + '<text x="12" y="15" text-anchor="middle" dominant-baseline="middle" font-size="11" fill="white">' + categoria.emoji + '</text>'
-      + '</svg>';
-    iconosSitio.set(clave, L.icon({
-      iconUrl: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg),
-      iconSize: [28, 42],
-      iconAnchor: [14, 42],
+    iconosSitio.set(clave, L.divIcon({
+      className: '',
+      html: `<div class="sitio-pin${seleccionado ? ' sitio-pin--activo' : ''}" style="--pin-color: ${COLOR_PIN_SITIO}"><span class="sitio-pin-emoji">${categoria.emoji}</span></div>`,
+      iconSize: [32, 44],
+      // La punta (esquina inferior izquierda del cuadro) queda en (20, 49) tras girar -45° una caja de 32x44 sobre su centro.
+      iconAnchor: [20, 49],
     }));
   }
   return iconosSitio.get(clave);
