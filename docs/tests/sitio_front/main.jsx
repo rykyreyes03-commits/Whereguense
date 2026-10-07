@@ -18,7 +18,6 @@ import Landing from '/src/components/Landing.jsx';
 import Ranking from '/src/components/Ranking.jsx';
 import MisGuardados from '/src/components/MisGuardados.jsx';
 import RegistroNegocio from '/src/components/RegistroNegocio.jsx';
-import Onboarding from '/src/components/Onboarding.jsx';
 import OnboardingCuaderno from '/src/components/OnboardingCuaderno.jsx';
 import { useState } from 'react';
 import PanelAdmin from '/src/components/PanelAdmin.jsx';
@@ -85,7 +84,6 @@ function Pantalla() {
   if (vistaExtra === 'ranking') return <Ranking sellos={[{ id: 1, sitioId: 1, fecha: '1/10/2026' }]} onNavigate={ir} />;
   if (vistaExtra === 'guardados') return <MisGuardados usuarioId="yo" eventos={[]} onVerSitio={() => {}} onVerEvento={() => {}} onVolver={() => {}} />;
   if (vistaExtra === 'registro') return <RegistroNegocio onRegistrar={async () => ({ exito: true })} onVolver={() => {}} />;
-  if (vistaExtra === 'onboarding') return <Onboarding onTerminar={() => {}} />;
   if (vistaExtra === 'cuaderno') return <CuadernoPrueba />;
   if (vistaExtra === 'admin') return <PanelAdmin onVolver={() => {}} usuarioId="admin-1" />;
   if (vistaExtra === 'detalleEvento') {

@@ -9,7 +9,6 @@ import OnboardingCuaderno from './components/OnboardingCuaderno';
 import { dataUrlABlob } from './utils/fotoPerfil';
 import OnboardingEmprendedor from './components/OnboardingEmprendedor';
 import PanelAdmin from './components/PanelAdmin';
-import Onboarding from './components/Onboarding';
 import Login from './components/Login';
 import MfaEnrolamiento from './components/MfaEnrolamiento';
 import MfaChallenge from './components/MfaChallenge';
@@ -368,10 +367,6 @@ function App() {
       irAFlujoNegocio();
       return;
     }
-    setPantalla('onboarding');
-  };
-
-  const handleTerminarOnboarding = () => {
     setPantalla('cuaderno');
   };
 
@@ -646,10 +641,6 @@ function App() {
         onNavigate={cambiarPantalla}
       />
     );
-  }
-
-  if (pantalla === 'onboarding') {
-    return <Onboarding onTerminar={handleTerminarOnboarding} />;
   }
 
   if (pantalla === 'cuaderno') {

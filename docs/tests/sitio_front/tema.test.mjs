@@ -193,7 +193,7 @@ const pantallas = [
   ['Personalización', 'vista=personalizacion', '.personalizacion-wrapper'], ['Ficha del sitio', 'sitio=1', '.sitio-detalle-nombre'],
   ['Panel del emprendedor', 'vista=negocio', '.perfilnegocio-accesos'], ['Barra inferior', 'vista=nav&activo=inicio', '.bottom-nav'],
   ['Login', 'vista=login', '.login-btn-invitado'], ['Landing', 'vista=landing', 'h1'], ['Ranking', 'vista=ranking', 'h1'], ['Guardados', 'vista=guardados', 'h1'],
-  ['Registro de negocio', 'vista=registro', 'form, input'], ['Onboarding', 'vista=onboarding', 'button'], ['Panel admin', 'vista=admin', 'h1, h2'], ['Detalle de evento', 'vista=detalleEvento', 'h1'],
+  ['Registro de negocio', 'vista=registro', 'form, input'], ['Panel admin', 'vista=admin', 'h1, h2'], ['Detalle de evento', 'vista=detalleEvento', 'h1'],
 ];
 for (const [nombre, query, esperar] of pantallas) {
   const { ctx, page } = await abrir(`${query}&tema=oscuro`, esperar);
