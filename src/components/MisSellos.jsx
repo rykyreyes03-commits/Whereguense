@@ -13,7 +13,7 @@ import { CIUDADES, ciudadDeSitio, conteoDeCiudad } from '../utils/ciudades';
 import { useRangosSitios, useCiudadesSitios } from '../hooks/useRangosSitios';
 
 // Pantalla del pasaporte: nivel, el pasaporte de viajero y una tarjeta por ciudad. León abre sus sellos; las demás avisan que vienen pronto.
-function MisSellos({ sellos, sitios, rutas = [], usuario = null, onNavigate, onSeleccionarSitio, sitioResaltadoId, nivelInfo = null }) {
+function MisSellos({ sellos, sitios, rutas = [], usuario = null, onNavigate, onSeleccionarSitio, sitioResaltadoId, nivelInfo = null, abrirPasaporte = false, onGuardarPerfil = null, guardandoPerfil = false, errorPerfil = null }) {
   const { t } = useTranslation();
   const nivel = obtenerRango(sellos.length);
   const rangos = useRangosSitios();
@@ -27,7 +27,7 @@ function MisSellos({ sellos, sitios, rutas = [], usuario = null, onNavigate, onS
     return sitio ? CIUDADES.find((c) => c.nombre === ciudadDeSitio(sitio)) || null : null;
   });
   const [ciudadProximamente, setCiudadProximamente] = useState(null);
-  const [verPasaporte, setVerPasaporte] = useState(false);
+  const [verPasaporte, setVerPasaporte] = useState(abrirPasaporte);
 
   const abrirCiudad = (ciudad) => {
     const { total: sitiosDeLaCiudad } = conteoDeCiudad(ciudad, sitios, sellos, ciudadesBD);
@@ -112,7 +112,7 @@ function MisSellos({ sellos, sitios, rutas = [], usuario = null, onNavigate, onS
       <BottomNav activo="pasaporte" onNavigate={onNavigate} />
 
       {verPasaporte && (
-        <PasaporteVisual usuario={usuario} sellos={sellos} sitios={sitios} rutas={rutas} nivel={nivelInfo?.nivel} onCerrar={() => setVerPasaporte(false)} />
+        <PasaporteVisual usuario={usuario} sellos={sellos} sitios={sitios} rutas={rutas} nivel={nivelInfo?.nivel} onGuardarPerfil={onGuardarPerfil} guardando={guardandoPerfil} error={errorPerfil} onCerrar={() => setVerPasaporte(false)} />
       )}
 
       {ciudadProximamente && (

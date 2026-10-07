@@ -442,6 +442,13 @@ function App() {
     return true;
   };
 
+  // Editar la información desde el pasaporte: se guarda igual que en el registro y el idioma elegido se aplica de inmediato.
+  const handleEditarDesdePasaporte = async (datos) => {
+    const ok = await handleGuardarDatosPerfil(datos);
+    if (ok) cambiarIdioma(datos.idioma);
+    return ok;
+  };
+
   // Cambiar el idioma desde Configuración: se aplica ya y, con sesión, se guarda en la cuenta (para el próximo inicio de sesión).
   const handleCambiarIdioma = async (idioma) => {
     cambiarIdioma(idioma);
@@ -734,9 +741,14 @@ function App() {
     );
   }
 
-  if (pantalla === 'pasaporte') {
+  if (pantalla === 'pasaporte' || pantalla === 'pasaporteVisual') {
     return (
       <MisSellos
+        key={pantalla}
+        abrirPasaporte={pantalla === 'pasaporteVisual'}
+        onGuardarPerfil={handleEditarDesdePasaporte}
+        guardandoPerfil={guardandoDatosPerfil}
+        errorPerfil={errorDatosPerfil}
         sellos={sellos}
         sitios={sitios}
         onNavigate={cambiarPantalla}

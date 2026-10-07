@@ -191,7 +191,8 @@
     "cerrarSesion": "Cerrar sesión",
     "confirmarCerrar": "¿Seguro que quieres cerrar sesión? Se borrarán tus sellos y datos de perfil guardados en este dispositivo.",
     "errorGuardar": "No se pudo guardar tu perfil. Intenta de nuevo.",
-    "errorImagen": "No se pudo usar esa imagen. Prueba con otra foto."
+    "errorImagen": "No se pudo usar esa imagen. Prueba con otra foto.",
+    "miPasaporte": "Mi pasaporte"
   },
   "sitio": {
     "volverMapa": "Volver al mapa",
@@ -303,6 +304,18 @@
     "mas": "+{{n}} más",
     "nivel": "Nivel: {{n}}",
     "sellosDe": "Sellos: {{n}} de {{total}}",
-    "ruta": "Ruta: {{nombre}}"
+    "ruta": "Ruta: {{nombre}}",
+    "abrir": "Abrir el pasaporte",
+    "editar": "Editar información",
+    "guardar": "Guardar cambios",
+    "guardando": "Guardando…",
+    "cancelar": "Cancelar",
+    "nacimiento": "Nac. {{fecha}}",
+    "telefono": "Tel. {{numero}}",
+    "generos": {
+      "masculino": "Masculino",
+      "femenino": "Femenino",
+      "prefiero_no_decir": "Prefiere no decir"
+    }
   }
 }

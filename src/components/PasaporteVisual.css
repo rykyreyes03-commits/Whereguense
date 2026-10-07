@@ -204,3 +204,97 @@
 @media (prefers-reduced-motion: reduce) {
   .pasaporte-fondo, .pasaporte-doc { animation: none; }
 }
+
+/* Interior del documento: ocupa todo el documento para que las posiciones en porcentaje sigan valiendo */
+.pasaporte-interior { position: absolute; inset: 0; }
+
+/* Datos personales (nacimiento, teléfono, género), entre la foto y los sellos */
+.pasaporte-personal {
+  position: absolute;
+  left: 19.9%;
+  width: 63.9%;
+  top: 42.4%;
+  height: 5.9%;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  font-size: 2.5cqw;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #3b4160;
+  overflow: hidden;
+}
+
+/* Lápiz para editar: arriba a la derecha, junto a la X */
+.pasaporte-editar {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top));
+  right: 64px;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #E0A92E;
+  color: #1B2A6B;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+.pasaporte-editar:hover { background: #F0BA45; }
+.pasaporte-editar:focus-visible { outline: 3px solid var(--color-turquoise, #54C8C0); outline-offset: 2px; }
+
+/* Portada que se abre: el mismo cuaderno del registro, a la medida del documento */
+.pasaporte-doc { perspective: 1500px; }
+.pasaporte-tapa { border-radius: 0.6cqw 6.5cqw 6.5cqw 0.6cqw; z-index: 5; }
+.pasaporte-tapa .oc-tapa-interior { padding: 0 7cqw 0 12cqw; gap: 2cqw; }
+.pasaporte-tapa .oc-tapa-w { width: 38cqw; margin-bottom: 2.5cqw; }
+.pasaporte-tapa .oc-tapa-nombre { width: 57cqw; }
+.pasaporte-tapa .oc-tapa-rep { margin-top: 7cqw; font-size: 3.4cqw; }
+.pasaporte-tapa .oc-tapa-pais { font-size: 7.4cqw; }
+.pasaporte-tapa .oc-tapa-linea { width: 42cqw; }
+.pasaporte-tapa .oc-tapa-anio { bottom: 7%; font-size: 3.4cqw; }
+.pasaporte-anillas { z-index: 6; left: -2.4cqw; top: 7%; bottom: 7%; transition: opacity 0.4s ease; }
+.pasaporte-anillas--fuera { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .pasaporte-anillas { transition: none; }
+}
+
+/* Editar la información */
+.pasaporte-edicion {
+  position: relative;
+  width: min(100%, 360px);
+  height: min(660px, calc(100dvh - 90px));
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55);
+  animation: pasaporteDoc 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--oc-tinta);
+}
+.pasaporte-edicion-cuerpo {
+  position: absolute;
+  inset: 12px 12px 12px 30px;
+  padding: 20px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 1;
+}
+.pasaporte-edicion .oc-titulo-sello { outline: none; }
+.pasaporte-edicion-cancelar {
+  align-self: center;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 0 12px;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--oc-lapiz);
+  cursor: pointer;
+}
+.pasaporte-edicion-cancelar:disabled { opacity: 0.4; cursor: default; }

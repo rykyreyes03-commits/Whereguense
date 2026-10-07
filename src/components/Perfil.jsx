@@ -282,6 +282,12 @@ function Perfil({ sellos, total, onNavigate, onVolver, onCerrarSesion, usuarioAc
               </button>
               <button
                 className="perfil-btn perfil-btn-secundario"
+                onClick={() => onNavigate?.('pasaporteVisual')}
+              >
+                {t('perfil.miPasaporte')}
+              </button>
+              <button
+                className="perfil-btn perfil-btn-secundario"
                 onClick={() => onNavigate?.('ranking')}
               >
                 {t('perfil.ranking')}

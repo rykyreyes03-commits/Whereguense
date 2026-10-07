@@ -27,6 +27,8 @@ ok(numeroDePasaporte('3f9a1c2e-5b7d-4e08-9a41-c0ffee123456') === '#3f9a1c', 'nú
 ok(numeroDePasaporte(null) === '#------' && numeroDePasaporte(undefined) === '#------', 'número: sin sesión "#------"');
 
 // ---------- el documento en pantalla ----------
+// PNG de 1x1 para subir como foto
+const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
 const servidor = await createServer({ configFile: path.join(aqui, 'vite.config.mjs') });
 await servidor.listen();
 const base = 'http://localhost:5198/';
@@ -36,7 +38,7 @@ const BD = {
   uid: 'yo', sesion: true, llamadas: [], fotos: [], resenas: [],
   nivel: { nivel_actual: 3, puntos_actuales: 0.5, puntos_para_siguiente: 6, porcentaje: 8, puntos_totales: 6.5 }, sitioFila: [],
 };
-async function abrir(query, { ancho = 390, alto = 800, local = null } = {}) {
+async function abrir(query, { ancho = 390, alto = 800, local = null, esperar = '.mis-sellos-pasaporte' } = {}) {
   const ctx = await browser.newContext({ viewport: { width: ancho, height: alto }, locale: 'en-US', deviceScaleFactor: 2 });
   const page = await ctx.newPage();
   const errores = [];
@@ -46,11 +48,11 @@ async function abrir(query, { ancho = 390, alto = 800, local = null } = {}) {
     if (loc) for (const [k, v] of Object.entries(loc)) localStorage.setItem(k, v);
   }, [BD, local]);
   await page.goto(`${base}?${query}&lang=es`);
-  await page.waitForSelector('.mis-sellos-pasaporte');
+  await page.waitForSelector(esperar);
   await page.waitForTimeout(300);
   return { ctx, page, errores };
 }
-const abrirDoc = async (page) => { await page.click('.mis-sellos-pasaporte'); await page.waitForSelector('.pasaporte-doc'); await page.waitForTimeout(500); };
+const abrirDoc = async (page) => { await page.click('.mis-sellos-pasaporte'); await page.waitForSelector('.pasaporte-doc'); await page.locator('.pasaporte-tapa').waitFor({ state: 'detached', timeout: 6000 }); await page.waitForTimeout(200); };
 const txt = (page, sel) => page.locator(sel).first().textContent();
 
 for (const ancho of [360, 412]) {
@@ -182,6 +184,147 @@ for (const ancho of [360, 412]) {
   await abrirDoc(page);
   const d = await page.locator('.pasaporte-doc').boundingBox();
   ok(d.y >= 0 && d.y + d.height <= 560 + 1, `en una pantalla de 360x560 el documento cabe completo (${Math.round(d.width)}x${Math.round(d.height)})`);
+  await ctx.close();
+}
+
+
+// ---------- portada que se abre ----------
+{
+  const { ctx, page } = await abrir('vista=pasaporte');
+  await page.click('.mis-sellos-pasaporte');
+  await page.waitForSelector('.pasaporte-tapa');
+  const t0 = Date.now();
+  ok((await page.locator('.pasaporte-tapa img').count()) === 2 && /NICARAGUA/.test(await txt(page, '.pasaporte-tapa')) && /2026/.test(await txt(page, '.pasaporte-tapa')), 'portada: el cuaderno azul con la W, "WhereGüense", NICARAGUA y 2026');
+  ok((await page.locator('.pasaporte-tapa').evaluate((e) => getComputedStyle(e).backgroundImage)).includes('rgb(30, 42, 74)'), 'portada: azul marino #1E2A4A');
+  ok((await page.locator('.pasaporte-interior').getAttribute('inert')) !== null && (await page.locator('.pasaporte-editar').count()) === 0, 'portada: el interior no se puede tocar y todavía no hay lápiz');
+  await page.screenshot({ path: path.join(capturas, 'pasaporte_portada.png') });
+  await page.waitForTimeout(Math.max(0, 600 - (Date.now() - t0)));
+  ok(!(await page.locator('.pasaporte-tapa').getAttribute('class')).includes('oc-volteada'), 'portada: a los 0,6 s sigue cerrada');
+  await page.waitForTimeout(1000);
+  const clase = await page.locator('.pasaporte-tapa').getAttribute('class').catch(() => 'oc-volteada');
+  ok(clase.includes('oc-volteada') || (await page.locator('.pasaporte-tapa').count()) === 0, 'portada: pasado 1 s se abre (animación)');
+  await page.screenshot({ path: path.join(capturas, 'pasaporte_abriendo.png') });
+  await page.locator('.pasaporte-tapa').waitFor({ state: 'detached', timeout: 4000 });
+  ok((await page.locator('.pasaporte-interior').getAttribute('inert')) === null && (await page.locator('.pasaporte-editar').count()) === 1, 'portada: al abrirse queda el interior activo y aparece el lápiz');
+  await ctx.close();
+}
+{
+  const { ctx, page } = await abrir('vista=pasaporte');
+  await page.click('.mis-sellos-pasaporte');
+  await page.waitForSelector('.pasaporte-tapa');
+  await page.click('.pasaporte-tapa');
+  await page.locator('.pasaporte-tapa').waitFor({ state: 'detached', timeout: 3000 });
+  ok(true, 'portada: tocarla la abre sin esperar el segundo');
+  await ctx.close();
+}
+
+// ---------- datos del usuario en el interior ----------
+{
+  const { ctx, page } = await abrir('vista=pasaporte');
+  await abrirDoc(page);
+  ok((await txt(page, '.pasaporte-personal')) === 'Nac. 10 may 2000 · Tel. +505 88888888 · Femenino', `datos: nacimiento, teléfono y género (${await txt(page, '.pasaporte-personal')})`);
+  const p = await page.locator('.pasaporte-personal').boundingBox();
+  const f = await page.locator('.pasaporte-foto').boundingBox();
+  const s0 = await page.locator('.pasaporte-sello--0').boundingBox();
+  ok(p.y >= f.y + f.height - 1 && p.y + p.height <= s0.y + 1, 'datos: la línea queda entre la foto y los sellos');
+  await page.screenshot({ path: path.join(capturas, 'pasaporte_datos.png') });
+  await ctx.close();
+}
+{
+  const { ctx, page } = await abrir('vista=pasaporte&sindatos=1&pais=Honduras');
+  await abrirDoc(page);
+  ok((await page.locator('.pasaporte-personal').count()) === 0, 'datos: sin nacimiento, teléfono ni género no se dibuja la línea');
+  ok((await txt(page, '.pasaporte-pais')).trim() === 'Honduras' && (await page.locator('.pasaporte-pais svg').count()) === 0, 'datos: el país es el del usuario (Honduras, sin la bandera de Nicaragua)');
+  await ctx.close();
+}
+{
+  const { ctx, page } = await abrir('vista=pasaporte&invitado=1');
+  await abrirDoc(page);
+  ok((await page.locator('.pasaporte-editar').count()) === 0, 'invitado: no hay lápiz para editar');
+  await ctx.close();
+}
+
+// ---------- editar la información ----------
+{
+  const { ctx, page } = await abrir('vista=pasaporte');
+  await abrirDoc(page);
+  const lapiz = page.locator('.pasaporte-editar');
+  const lb = await lapiz.boundingBox();
+  const cb = await page.locator('.pasaporte-cerrar').boundingBox();
+  ok(lb.width >= 44 && lb.height >= 44 && lb.y < 70 && lb.x + lb.width <= cb.x + 1 && (await lapiz.getAttribute('aria-label')) === 'Editar información', 'editar: lápiz de 44 px arriba a la derecha, junto a la X');
+  await lapiz.click();
+  await page.waitForSelector('.pasaporte-edicion');
+  const ed = page.locator('.pasaporte-edicion');
+  ok((await ed.locator('.oc-titulo-sello').textContent()) === 'Editar información', 'editar: abre el formulario "Editar información"');
+  ok((await ed.locator('#ed-usuario').inputValue()) === 'Ryky' && (await ed.locator('#ed-pais').inputValue()) === 'Nicaragua' && (await ed.locator('input[name="ed-idioma"]:checked').getAttribute('value')) === 'es' && (await ed.locator('#ed-nacimiento').inputValue()) === '2000-05-10' && (await ed.locator('.oc-cod').inputValue()) === '+505' && (await ed.locator('#ed-telefono').inputValue()) === '88888888' && (await ed.locator('input[name="ed-genero"]:checked').getAttribute('value')) === 'femenino', 'editar: los campos llegan con los datos actuales');
+  ok((await ed.locator('.oc-foto-marco img').getAttribute('src')).includes('cabezon'), 'editar: sin foto propia, el marco muestra el personaje elegido');
+  ok((await ed.locator('.oc-foto-pegar').boundingBox()).height >= 44, 'editar: la foto se puede tocar (zona de al menos 44 px)');
+  await page.screenshot({ path: path.join(capturas, 'pasaporte_editar.png') });
+
+  // validación: nombre vacío no guarda; la fecha ya no es obligatoria
+  await ed.locator('#ed-usuario').fill('');
+  await ed.locator('#ed-nacimiento').fill('');
+  await ed.locator('.oc-boton--form').click();
+  ok((await ed.locator('.oc-msg').allTextContents()).join('|') === 'Escribe tu nombre de usuario.' && (await page.evaluate(() => (window.__guardados || []).length)) === 0, 'editar: sin nombre no guarda (y la fecha vacía no se reclama)');
+
+  // cambiar todo, quitar lo opcional y cambiar la foto
+  await ed.locator('#ed-usuario').fill('Ryky Viajero');
+  await ed.locator('#ed-pais').selectOption('Costa Rica');
+  await ed.locator('input[name="ed-idioma"][value="en"]').check({ force: true });
+  await ed.locator('#ed-telefono').fill('');
+  await ed.locator('input[name="ed-genero"][value="femenino"]').click({ force: true });
+  ok((await ed.locator('input[name="ed-genero"]:checked').count()) === 0, 'editar: tocar de nuevo el género elegido lo deja vacío');
+  await ed.locator('input[type=file]').setInputFiles({ name: 'yo.png', mimeType: 'image/png', buffer: PNG });
+  await ed.locator('.oc-foto-marco img[src^="data:image/jpeg"]').waitFor();
+  ok((await ed.locator('.oc-foto-pegar strong').textContent()) === 'Cambiar foto', 'editar: al tocar la foto se elige otra y se ve la vista previa');
+  await ed.locator('.oc-boton--form').click();
+  await page.waitForSelector('.pasaporte-edicion', { state: 'detached' });
+  const g = (await page.evaluate(() => window.__guardados)).at(-1);
+  ok(g.nombre === 'Ryky Viajero' && g.pais === 'Costa Rica' && g.idioma === 'en' && g.fechaNacimiento === null && g.telefono === null && g.genero === null && g.foto.startsWith('data:image/jpeg'), `editar: guarda los cambios y los opcionales vacíos salen null (${JSON.stringify({ ...g, foto: g.foto?.slice(0, 15) })})`);
+  ok((await txt(page, '.pasaporte-nombre')) === 'Ryky Viajero' && (await txt(page, '.pasaporte-pais')).trim() === 'Costa Rica' && (await page.locator('.pasaporte-personal').count()) === 0, 'editar: al guardar vuelve al pasaporte con los datos nuevos');
+  const img = page.locator('.pasaporte-foto img');
+  ok((await img.getAttribute('src')).startsWith('data:image/jpeg') && (await img.getAttribute('class')).includes('perfil'), 'editar: la foto nueva sale en el pasaporte');
+  await page.screenshot({ path: path.join(capturas, 'pasaporte_editado.png') });
+  await ctx.close();
+}
+{
+  const { ctx, page } = await abrir('vista=pasaporte&fallo=1');
+  await abrirDoc(page);
+  await page.click('.pasaporte-editar');
+  await page.waitForSelector('.pasaporte-edicion');
+  await page.fill('#ed-usuario', 'Otro nombre');
+  await page.click('.pasaporte-edicion .oc-boton--form');
+  await page.waitForTimeout(400);
+  ok((await txt(page, '.pasaporte-edicion .oc-error')) === 'No se pudo guardar tu información. Intenta de nuevo.' && (await page.locator('.pasaporte-edicion').count()) === 1, 'editar: si falla el guardado, el aviso sale en el formulario');
+  ok((await page.inputValue('#ed-usuario')) === 'Otro nombre', 'editar: lo escrito se conserva tras el error');
+  await page.click('.pasaporte-edicion-cancelar');
+  await page.waitForSelector('.pasaporte-edicion', { state: 'detached' });
+  ok((await txt(page, '.pasaporte-nombre')) === 'Ryky', 'editar: Cancelar vuelve al pasaporte sin cambios');
+  await ctx.close();
+}
+{
+  const { ctx, page } = await abrir('vista=pasaporte&gigantona=1');
+  await abrirDoc(page);
+  await page.click('.pasaporte-editar');
+  await page.waitForSelector('.pasaporte-edicion');
+  ok((await page.locator('.pasaporte-edicion .oc-foto-marco img').getAttribute('src')).includes('gigantona'), 'editar: con la gigantona elegida, el marco muestra a la gigantona');
+  await page.keyboard.press('Escape');
+  ok((await page.locator('.pasaporte-doc, .pasaporte-edicion').count()) === 0, 'editar: Escape cierra todo el pasaporte');
+  await ctx.close();
+}
+{
+  // "Mi pasaporte" en el Perfil
+  const { ctx, page } = await abrir('vista=perfil', { esperar: '.perfil-acciones' });
+  await page.getByRole('button', { name: 'Mi pasaporte' }).click();
+  ok(JSON.stringify(await page.evaluate(() => window.__eventos)) === '[["ir","pasaporteVisual"]]', 'perfil: el botón "Mi pasaporte" abre el pasaporte visual');
+  await ctx.close();
+}
+{
+  // se abre directo desde el perfil
+  const { ctx, page } = await abrir('vista=pasaporte&abrir=1');
+  await page.waitForSelector('.pasaporte-tapa');
+  await page.locator('.pasaporte-tapa').waitFor({ state: 'detached', timeout: 5000 });
+  ok((await page.locator('.pasaporte-doc').count()) === 1, 'perfil: llegando desde el perfil el pasaporte se abre solo (portada y luego interior)');
   await ctx.close();
 }
 

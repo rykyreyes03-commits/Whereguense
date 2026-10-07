@@ -191,7 +191,8 @@
     "cerrarSesion": "Sign out",
     "confirmarCerrar": "Are you sure you want to sign out? The stamps and profile data saved on this device will be deleted.",
     "errorGuardar": "Your profile could not be saved. Try again.",
-    "errorImagen": "That image could not be used. Try another photo."
+    "errorImagen": "That image could not be used. Try another photo.",
+    "miPasaporte": "My passport"
   },
   "sitio": {
     "volverMapa": "Back to the map",
@@ -303,6 +304,18 @@
     "mas": "+{{n}} more",
     "nivel": "Level: {{n}}",
     "sellosDe": "Stamps: {{n}} of {{total}}",
-    "ruta": "Route: {{nombre}}"
+    "ruta": "Route: {{nombre}}",
+    "abrir": "Open the passport",
+    "editar": "Edit information",
+    "guardar": "Save changes",
+    "guardando": "Saving…",
+    "cancelar": "Cancel",
+    "nacimiento": "Born {{fecha}}",
+    "telefono": "Tel. {{numero}}",
+    "generos": {
+      "masculino": "Male",
+      "femenino": "Female",
+      "prefiero_no_decir": "Prefers not to say"
+    }
   }
 }
