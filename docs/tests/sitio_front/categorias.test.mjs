@@ -40,16 +40,17 @@ ok(getCategoriaIcono({ name: 'Cualquier cosa', categoria: 'parque' }).clave === 
 ok(getCategoriaIcono({ name: 'Iglesia X', categoria: 'inventada' }).clave === 'iglesia', 'un campo categoria desconocido se ignora');
 ok(getCategoriaIcono(undefined).clave === 'otro' && getCategoriaIcono({}).clave === 'otro', 'sin datos -> otro');
 
-const colores = { iglesia: '#1565C0', museo: '#1B2A6B', parque: '#2E7D32', edificio: '#37474F', monumento: '#4E342E', ruinas: '#6A1515', deporte: '#00695C', otro: '#455A64' };
-for (const [k, c] of Object.entries(colores)) ok(CATEGORIAS_SITIO[k].color === c, `${k}: color de fondo ${c}`);
-ok(Object.values(CATEGORIAS_SITIO).every((c) => !('emoji' in c) && c.icono.length > 0), 'ninguna categoría usa emoji; todas traen su ícono SVG');
+const colores = { iglesia: '#1565C0', museo: '#6A1B9A', parque: '#2E7D32', edificio: '#1B2A6B', monumento: '#E65100', ruinas: '#BF360C', deporte: '#00695C', otro: '#546E7A' };
+for (const [k, c] of Object.entries(colores)) ok(CATEGORIAS_SITIO[k].color === c, `${k}: color del pin ${c}`);
+ok(Object.values(CATEGORIAS_SITIO).every((c) => !('emoji' in c) && !('icono' in c)), 'ninguna categoría trae emoji ni ícono: solo color');
 
-// SVG del pin: gota estándar de Leaflet (25x41) con el color y el ícono, rojo oscuro al seleccionar
+// SVG del pin: el clásico de Leaflet (25x41) con el color de la categoría y el círculo blanco; rojo al seleccionar
 for (const [k, cat] of Object.entries(CATEGORIAS_SITIO)) {
   const normal = svgPinSitio(cat);
   const activo = svgPinSitio(cat, true);
-  ok(normal.includes('viewBox="0 0 25 41"') && normal.includes(`fill="${cat.color}"`) && normal.includes(cat.icono), `${k}: pin normal con su color e ícono`);
-  ok(activo.includes(`fill="${COLOR_PIN_SITIO_ACTIVO}"`) && !activo.includes(`fill="${cat.color}"`) && activo.includes(cat.icono), `${k}: pin seleccionado en ${COLOR_PIN_SITIO_ACTIVO} con el mismo ícono`);
+  ok(normal.includes('viewBox="0 0 25 41"') && normal.includes(`fill="${cat.color}"`), `${k}: pin con su color`);
+  ok(normal.includes('<circle cx="12.5" cy="12.5" r="4.5" fill="white" opacity="0.95"/>') && (normal.match(/<path/g) || []).length === 1, `${k}: solo el círculo blanco adentro (sin ícono)`);
+  ok(activo.includes(`fill="${COLOR_PIN_SITIO_ACTIVO}"`) && !activo.includes(`fill="${cat.color}"`), `${k}: seleccionado en ${COLOR_PIN_SITIO_ACTIVO}`);
   ok(!/[\u{1F300}-\u{1FAFF}☀-➿]/u.test(normal), `${k}: el SVG no lleva emojis`);
 }
 ok(COLOR_PIN_SITIO_ACTIVO === '#C62828', 'seleccionado: #C62828');

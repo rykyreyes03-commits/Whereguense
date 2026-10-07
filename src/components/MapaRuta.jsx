@@ -57,8 +57,8 @@ const iconoEstoyAqui = L.divIcon({
   iconAnchor: [22, 22],
 });
 
-// Marcador de sitio: pin de gota (25x41, como el de Leaflet) del color de su categoría, con un ícono SVG blanco;
-// rojo oscuro si está seleccionado. Un icono por categoría y estado, cacheado.
+// Marcador de sitio: pin clásico de Leaflet (25x41) del color de su categoría con el círculo blanco de siempre;
+// rojo si está seleccionado. Un icono por categoría y estado, cacheado.
 const iconosSitio = new Map();
 function iconoSitio(sitio, seleccionado) {
   const categoria = getCategoriaIcono(sitio);
