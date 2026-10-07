@@ -5,7 +5,8 @@ import Landing from './components/Landing';
 import LandingEventos from './components/LandingEventos';
 import LandingMapas from './components/LandingMapas';
 import LandingRutaDetalle from './components/LandingRutaDetalle';
-import DatosPerfil from './components/DatosPerfil';
+import OnboardingCuaderno from './components/OnboardingCuaderno';
+import { dataUrlABlob } from './utils/fotoPerfil';
 import OnboardingEmprendedor from './components/OnboardingEmprendedor';
 import PanelAdmin from './components/PanelAdmin';
 import Onboarding from './components/Onboarding';
@@ -13,7 +14,6 @@ import Login from './components/Login';
 import MfaEnrolamiento from './components/MfaEnrolamiento';
 import MfaChallenge from './components/MfaChallenge';
 import Proposito from './components/Proposito';
-import SeleccionDanzante from './components/SeleccionDanzante';
 import Inicio from './components/Inicio';
 import MapaRuta from './components/MapaRuta';
 import MisSellos from './components/MisSellos';
@@ -278,6 +278,7 @@ function App() {
           if (fila.onboarding_completado) {
             localStorage.setItem('avatarElegido', aPersonajeLocal(fila.avatar_personaje));
             localStorage.setItem('flujoInicialCompletado', 'true');
+            if (fila.foto_perfil_url && !localStorage.getItem('fotoPerfil')) localStorage.setItem('fotoPerfil', fila.foto_perfil_url);
             setPantalla('inicio');
           } else {
             setPantalla('proposito');
@@ -371,22 +372,40 @@ function App() {
   };
 
   const handleTerminarOnboarding = () => {
-    setPantalla('datosPerfil');
+    setPantalla('cuaderno');
   };
 
+  // Guarda los datos del cuaderno (nombre, país, idioma, fecha de nacimiento, teléfono, género y foto). Devuelve true si quedó guardado.
   const handleGuardarDatosPerfil = async (datos) => {
     setErrorDatosPerfil(null);
     setGuardandoDatosPerfil(true);
 
     if (usuarioActual) {
-      const { error } = await supabase
-        .from('usuario')
-        .update({
-          nombre_usuario: datos.nombre,
-          pais: datos.pais || null,
-          idioma_preferido: datos.idioma,
-        })
-        .eq('id', usuarioActual.id);
+      let fotoUrl = null;
+      if (datos.foto) {
+        const ruta = `${usuarioActual.id}/perfil.jpg`;
+        const { error: errorSubida } = await supabase.storage
+          .from('perfiles')
+          .upload(ruta, await dataUrlABlob(datos.foto), { upsert: true, contentType: 'image/jpeg' });
+        if (errorSubida) {
+          console.error('Error subiendo la foto de perfil:', errorSubida);
+          setGuardandoDatosPerfil(false);
+          setErrorDatosPerfil('No se pudo subir tu foto. Intenta de nuevo o continúa sin foto.');
+          return false;
+        }
+        fotoUrl = `${supabase.storage.from('perfiles').getPublicUrl(ruta).data.publicUrl}?t=${Date.now()}`;
+      }
+
+      const cambios = {
+        nombre_usuario: datos.nombre,
+        pais: datos.pais || null,
+        idioma_preferido: datos.idioma,
+        fecha_nacimiento: datos.fechaNacimiento || null,
+        telefono: datos.telefono || null,
+        genero: datos.genero || null,
+        ...(fotoUrl ? { foto_perfil_url: fotoUrl } : {}),
+      };
+      const { error } = await supabase.from('usuario').update(cambios).eq('id', usuarioActual.id);
 
       setGuardandoDatosPerfil(false);
 
@@ -397,12 +416,10 @@ function App() {
         } else {
           setErrorDatosPerfil('No se pudo guardar tu información. Intenta de nuevo.');
         }
-        return;
+        return false;
       }
 
-      setUsuarioActual((u) =>
-        u ? { ...u, nombre_usuario: datos.nombre, pais: datos.pais, idioma_preferido: datos.idioma } : u
-      );
+      setUsuarioActual((u) => (u ? { ...u, ...cambios } : u));
     } else {
       setGuardandoDatosPerfil(false);
       cambiarIdioma(datos.idioma);
@@ -411,13 +428,23 @@ function App() {
           nombre: datos.nombre,
           pais: datos.pais,
           idioma: datos.idioma,
+          fechaNacimiento: datos.fechaNacimiento,
+          telefono: datos.telefono,
+          genero: datos.genero,
         }));
       } catch (e) {
         console.error('Error guardando perfil local:', e);
       }
     }
 
-    setPantalla('danzante');
+    if (datos.foto) {
+      try {
+        localStorage.setItem('fotoPerfil', datos.foto);
+      } catch (e) {
+        console.error('Error guardando la foto de perfil en el dispositivo:', e);
+      }
+    }
+    return true;
   };
 
   // Cambiar el idioma desde Configuración: se aplica ya y, con sesión, se guarda en la cuenta (para el próximo inicio de sesión).
@@ -625,29 +652,21 @@ function App() {
     return <Onboarding onTerminar={handleTerminarOnboarding} />;
   }
 
-  if (pantalla === 'datosPerfil') {
+  if (pantalla === 'cuaderno') {
     return (
-      <DatosPerfil
+      <OnboardingCuaderno
         valorInicial={{
           nombre: usuarioActual?.nombre_usuario || '',
           pais: usuarioActual?.pais || '',
           idioma: usuarioActual?.idioma_preferido || 'es',
         }}
-        onContinuar={handleGuardarDatosPerfil}
-        onVolverALanding={() => setPantalla('landing')}
+        onGuardarDatos={handleGuardarDatosPerfil}
         guardando={guardandoDatosPerfil}
         error={errorDatosPerfil}
-      />
-    );
-  }
-
-  if (pantalla === 'danzante') {
-    return (
-      <SeleccionDanzante
-        onElegir={handleElegirDanzante}
+        onTerminar={handleElegirDanzante}
+        guardandoFinal={guardandoDanzante}
+        errorFinal={errorDanzante}
         onVolverALanding={() => setPantalla('landing')}
-        guardando={guardandoDanzante}
-        error={errorDanzante}
       />
     );
   }

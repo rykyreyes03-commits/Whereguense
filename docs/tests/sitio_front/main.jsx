@@ -19,6 +19,8 @@ import Ranking from '/src/components/Ranking.jsx';
 import MisGuardados from '/src/components/MisGuardados.jsx';
 import RegistroNegocio from '/src/components/RegistroNegocio.jsx';
 import Onboarding from '/src/components/Onboarding.jsx';
+import OnboardingCuaderno from '/src/components/OnboardingCuaderno.jsx';
+import { useState } from 'react';
 import PanelAdmin from '/src/components/PanelAdmin.jsx';
 import DetalleEvento from '/src/components/DetalleEvento.jsx';
 import PerfilNegocio from '/src/components/PerfilNegocio.jsx';
@@ -28,6 +30,34 @@ import { sitios } from '/src/data/sitios.js';
 import { rutas } from '/src/data/rutas.js';
 
 const params = new URLSearchParams(window.location.search);
+
+// El cuaderno con su guardado simulado: ?repetido=1 hace que el guardado falle con "nombre en uso"; ?previo=1 trae datos de una sesión.
+window.__cuaderno = { guardados: [], terminados: [] };
+// eslint-disable-next-line react-refresh/only-export-components
+function CuadernoPrueba() {
+  const [error, setError] = useState(null);
+  const [guardando, setGuardando] = useState(false);
+  const previo = params.get('previo') === '1' ? { nombre: 'Ryky', pais: 'Honduras', idioma: 'en' } : { nombre: '', pais: '', idioma: 'es' };
+  return (
+    <OnboardingCuaderno
+      valorInicial={previo}
+      guardando={guardando}
+      error={error}
+      onGuardarDatos={async (datos) => {
+        setError(null); setGuardando(true);
+        await new Promise((r) => setTimeout(r, 80));
+        setGuardando(false);
+        if (params.get('repetido') === '1' && !window.__cuaderno.reintento) { window.__cuaderno.reintento = true; setError('Ese nombre de usuario ya está en uso. Elige otro.'); return false; }
+        window.__cuaderno.guardados.push(datos);
+        return true;
+      }}
+      onTerminar={(c) => window.__cuaderno.terminados.push(c)}
+      guardandoFinal={false}
+      errorFinal={null}
+      onVolverALanding={() => window.__eventos.push(['ir', 'landing'])}
+    />
+  );
+}
 const sitio = sitios.find((s) => s.id === Number(params.get('sitio') || 1));
 window.__eventos = [];
 aplicarTema(temaGuardado());
@@ -56,6 +86,7 @@ function Pantalla() {
   if (vistaExtra === 'guardados') return <MisGuardados usuarioId="yo" eventos={[]} onVerSitio={() => {}} onVerEvento={() => {}} onVolver={() => {}} />;
   if (vistaExtra === 'registro') return <RegistroNegocio onRegistrar={async () => ({ exito: true })} onVolver={() => {}} />;
   if (vistaExtra === 'onboarding') return <Onboarding onTerminar={() => {}} />;
+  if (vistaExtra === 'cuaderno') return <CuadernoPrueba />;
   if (vistaExtra === 'admin') return <PanelAdmin onVolver={() => {}} usuarioId="admin-1" />;
   if (vistaExtra === 'detalleEvento') {
     const evento = { id: 'e1', nombre: 'Feria del maíz', fechaInicio: '2026-10-16', fechaFin: '2026-10-27', categoria: 'gastronomia', lugar: 'Parque Central', descripcion: 'Una feria con comida típica.', eslogan: 'Sabores de León', etiquetas: ['comida', 'feria'], organizador: { nombre: 'Café Colibrí' } };

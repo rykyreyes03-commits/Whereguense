@@ -6,6 +6,7 @@ import TopBar from './TopBar';
 import cabezonImg from '../assets/flujo-inicial/explorer_transparente_final.png';
 import gigantonaImg from '../assets/flujo-inicial/gigantona.png';
 import { obtenerRango } from '../utils/rango';
+import { redimensionarImagen } from '../utils/fotoPerfil';
 
 const PERFIL_POR_DEFECTO = {
   nombre: 'Invitado',
@@ -51,31 +52,6 @@ function cargarFoto() {
     console.error('Error leyendo foto de perfil:', error);
     return null;
   }
-}
-
-const FOTO_MAX_PX = 256;
-
-function redimensionarImagen(file) {
-  return new Promise((resolve, reject) => {
-    const lector = new FileReader();
-    lector.onerror = () => reject(new Error('No se pudo leer el archivo.'));
-    lector.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error('El archivo no es una imagen válida.'));
-      img.onload = () => {
-        const escala = Math.min(1, FOTO_MAX_PX / Math.max(img.width, img.height));
-        const w = Math.round(img.width * escala);
-        const h = Math.round(img.height * escala);
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.85));
-      };
-      img.src = lector.result;
-    };
-    lector.readAsDataURL(file);
-  });
 }
 
 function Perfil({ sellos, total, onNavigate, onVolver, onCerrarSesion, usuarioActual, onActualizarPerfil, modoNegocio = false }) {

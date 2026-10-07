@@ -1,7 +1,7 @@
 // Traducción del personaje base entre el valor que usa el frontend y el que
 // acepta la columna `usuario.avatar_personaje` en Supabase.
 //
-//   frontend (SeleccionDanzante, Perfil, Personalizacion, localStorage): 'enano' | 'gigantona'
+//   frontend (OnboardingCuaderno, Perfil, Personalizacion, localStorage): 'enano' | 'gigantona'
 //   base de datos (CHECK avatar_personaje in ('cabezon','gigantona')):    'cabezon' | 'gigantona'
 //
 // El resto del código sigue trabajando con 'enano'. Esta capa solo traduce en
