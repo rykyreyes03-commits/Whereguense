@@ -73,15 +73,19 @@ for (const ancho of [360, 412]) {
   ok((await doc.getAttribute('role')) === 'dialog' && (await doc.getAttribute('aria-label')) === 'Pasaporte de Ryky', `${t} es un diálogo accesible ("Pasaporte de Ryky")`);
   ok((await doc.evaluate((e) => getComputedStyle(e).backgroundImage)).includes('pasaporte_base'), `${t} la imagen pasaporte_base es el fondo`);
   ok((await txt(page, '.pasaporte-numero')).toLowerCase() === '#3f9a1c', `${t} número de pasaporte: # + 6 primeros caracteres del id`);
-  ok((await txt(page, '.pasaporte-valor--nombre')) === 'Ryky', `${t} nombre de usuario`);
-  ok((await txt(page, '.pasaporte-valor--nacionalidad')) === 'Nicaragua', `${t} nacionalidad: Nicaragua`);
-  ok((await txt(page, '.pasaporte-valor--sellos')) === '4', `${t} cantidad de sellos: 4`);
-  ok((await txt(page, '.pasaporte-valor--ruta')) === 'Ruta Dariana', `${t} ruta favorita: Ruta Dariana`);
+  ok((await txt(page, '.pasaporte-nombre')) === 'Ryky', `${t} nombre de usuario`);
+  ok((await txt(page, '.pasaporte-pais')).trim() === 'Nicaragua' && (await page.locator('.pasaporte-pais svg').count()) === 1, `${t} nacionalidad: Nicaragua con su bandera`);
+  ok((await txt(page, '.pasaporte-dato--nivel')).includes('Nivel: 3') && (await txt(page, '.pasaporte-dato--sellos')).includes('Sellos: 3 de 89'), `${t} nivel y "Sellos: 3 de 89"`);
+  ok((await txt(page, '.pasaporte-dato--ruta')).includes('Ruta: Ruta Dariana'), `${t} ruta favorita: Ruta Dariana`);
+  ok((await page.locator('text=/Apellidos|Títulos|Sexo/').count()) === 0, `${t} sin Apellidos, Títulos ni Sexo`);
+  const nb = await page.locator('.pasaporte-numero').boundingBox();
+  const cx = (nb.x + nb.width / 2 - d.x) / d.width, cy = (nb.y + nb.height / 2 - d.y) / d.height;
+  ok(Math.abs(cx - 1341 / 1504) < 0.01 && Math.abs(cy - 118 / 1680) < 0.01, `${t} el número tapa exactamente el "##" impreso`);
   const foto = page.locator('.pasaporte-foto img');
   ok((await foto.getAttribute('src')).includes('cabezon') && !(await foto.getAttribute('class')).includes('perfil'), `${t} la foto es el personaje elegido (cabezón)`);
 
   // ---- los sellos
-  ok((await page.locator('.pasaporte-sello').count()) === 3, `${t} 3 sellos de sitio (el de QR de negocio no va): 3 círculos llenos`);
+  ok((await page.locator('.pasaporte-sello:not(.pasaporte-sello--vacio)').count()) === 3, `${t} 3 sellos de sitio (el de QR de negocio no va)`);
   ok((await page.locator('.pasaporte-sello-insignia').count()) === 3 && (await page.locator('.pasaporte-sello-insignia').evaluateAll((els) => els.every((e) => e.complete && e.naturalWidth > 0))), `${t} cada círculo muestra la insignia de su sitio`);
   const marcas = await page.locator('.pasaporte-sello-marca > span').allTextContents();
   ok(marcas.length === 3 && marcas.every((m) => m === 'Sellado'), `${t} cada sello lleva la marca "SELLADO"`);
@@ -92,7 +96,7 @@ for (const ancho of [360, 412]) {
   ok(grados === -15, `${t} la marca está rotada -15° (${grados}°)`);
   ok(estilo.borde === 'solid' && parseFloat(estilo.radio) > 10 && Number(estilo.peso) >= 800 && estilo.mayus === 'uppercase', `${t} borde circular, tipografía en negrita y mayúsculas`);
   // los círculos sin sello conservan el "?" impreso: no se dibuja nada encima
-  ok((await page.locator('.pasaporte-sello--3, .pasaporte-sello--4, .pasaporte-sello--5').count()) === 0, `${t} los 3 círculos vacíos no se tocan (queda el "?" del documento)`);
+  ok((await page.locator('.pasaporte-sello--vacio .pasaporte-candado').count()) === 3 && (await page.locator('.pasaporte-sello').count()) === 6, `${t} los 3 círculos vacíos muestran un candado gris`);
   ok((await page.locator('.pasaporte-mas').count()) === 0, `${t} con 3 sellos no hay "+"`);
   await page.screenshot({ path: path.join(capturas, `pasaporte_visual_${ancho}.png`) });
 
@@ -118,11 +122,11 @@ for (const ancho of [360, 412]) {
 {
   const { ctx, page } = await abrir('vista=pasaporte&muchos=1');
   await abrirDoc(page);
-  ok((await page.locator('.pasaporte-sello').count()) === 6, 'con 9 sellos se dibujan solo 6 círculos');
-  ok((await txt(page, '.pasaporte-mas')) === '+3', 'y un "+3" abajo con los que faltan');
-  ok((await txt(page, '.pasaporte-valor--sellos')) === '9', 'la cantidad de sellos sigue siendo 9');
+  ok((await page.locator('.pasaporte-sello:not(.pasaporte-sello--vacio)').count()) === 6, 'con 9 sellos se dibujan solo 6 círculos');
+  ok((await txt(page, '.pasaporte-mas')) === '+3 más', 'y un "+3 más" abajo con los que faltan');
+  ok((await txt(page, '.pasaporte-dato--sellos')).includes('9 de 89'), 'el contador dice 9 de 89');
   const ordenados = await page.locator('.pasaporte-sello').evaluateAll((els) => els.map((e) => ({ x: e.getBoundingClientRect().left, y: e.getBoundingClientRect().top })));
-  ok(ordenados[0].y === ordenados[1].y && ordenados[2].y > ordenados[0].y && ordenados[4].y > ordenados[2].y && ordenados[1].x > ordenados[0].x, 'los círculos se llenan en orden: de izquierda a derecha y de arriba abajo');
+  ok(ordenados.length === 6 && ordenados[0].y === ordenados[2].y && ordenados[3].y > ordenados[0].y && ordenados[1].x > ordenados[0].x && ordenados[2].x > ordenados[1].x && ordenados[3].x === ordenados[0].x, 'los círculos se llenan en orden: 3 por fila, de izquierda a derecha y de arriba abajo');
   await page.screenshot({ path: path.join(capturas, 'pasaporte_visual_muchos.png') });
   await ctx.close();
 }
@@ -131,8 +135,8 @@ for (const ancho of [360, 412]) {
 {
   const { ctx, page } = await abrir('vista=pasaporte&sinsellos=1');
   await abrirDoc(page);
-  ok((await txt(page, '.pasaporte-valor--sellos')) === '0' && (await txt(page, '.pasaporte-valor--ruta')) === 'Sin ruta aún', 'sin sellos: cantidad 0 y "Sin ruta aún"');
-  ok((await page.locator('.pasaporte-sello').count()) === 0 && (await page.locator('.pasaporte-mas').count()) === 0, 'sin sellos: los 6 círculos conservan su "?"');
+  ok((await txt(page, '.pasaporte-dato--sellos')).includes('0 de 89') && (await txt(page, '.pasaporte-dato--ruta')).includes('Sin ruta aún'), 'sin sellos: 0 de 89 y "Sin ruta aún"');
+  ok((await page.locator('.pasaporte-candado').count()) === 6 && (await page.locator('.pasaporte-mas').count()) === 0, 'sin sellos: los 6 círculos llevan candado');
   await ctx.close();
 }
 
@@ -154,7 +158,7 @@ for (const ancho of [360, 412]) {
 {
   const { ctx, page } = await abrir('vista=pasaporte&invitado=1');
   await abrirDoc(page);
-  ok((await txt(page, '.pasaporte-numero')) === '#------' && (await txt(page, '.pasaporte-valor--nombre')) === 'Invitado', 'invitado: "#------" y nombre "Invitado"');
+  ok((await txt(page, '.pasaporte-numero')) === '#------' && (await txt(page, '.pasaporte-nombre')) === 'Invitado', 'invitado: "#------" y nombre "Invitado"');
   await ctx.close();
 }
 

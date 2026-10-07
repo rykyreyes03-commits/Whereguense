@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { X, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './PasaporteVisual.css';
 import baseImg from '../assets/pasaporte_base.png';
@@ -22,8 +22,8 @@ function leerLocal(clave) {
 }
 
 // El pasaporte de viajero: la imagen del documento con los datos del usuario encima y sus sellos con la marca SELLADO.
-//   usuario: { id, nombre_usuario, avatar_personaje }, sellos: los del usuario, sitios: todos, rutas: [{ nombre, sitios }].
-function PasaporteVisual({ usuario, sellos, sitios, rutas, onCerrar }) {
+//   usuario: { id, nombre_usuario, avatar_personaje }, sellos: los del usuario, sitios: todos, rutas: [{ nombre, sitios }], nivel: número.
+function PasaporteVisual({ usuario, sellos, sitios, rutas, nivel = 1, onCerrar }) {
   const { t } = useTranslation();
   const cerrarRef = useRef(null);
   const accionRef = useRef(onCerrar);
@@ -69,7 +69,7 @@ function PasaporteVisual({ usuario, sellos, sitios, rutas, onCerrar }) {
         aria-modal="true"
         aria-label={t('pasaporteVisual.aria', { nombre })}
       >
-        <span className="pasaporte-numero">{numeroDePasaporte(usuario?.id)}</span>
+        <span className="pasaporte-numero"><span>#</span><span>{numeroDePasaporte(usuario?.id).slice(1)}</span></span>
 
         <div className="pasaporte-foto">
           {fotoPerfil
@@ -77,12 +77,30 @@ function PasaporteVisual({ usuario, sellos, sitios, rutas, onCerrar }) {
             : <img className="pasaporte-foto-img" src={avatar} alt="" />}
         </div>
 
-        <span className="pasaporte-valor pasaporte-valor--nombre">{nombre}</span>
-        <span className="pasaporte-valor pasaporte-valor--nacionalidad">Nicaragua</span>
-        <span className="pasaporte-valor pasaporte-valor--sellos">{sellos.length}</span>
-        <span className="pasaporte-valor pasaporte-valor--ruta">{ruta ? ruta.nombre : t('pasaporteVisual.sinRuta')}</span>
+        <div className="pasaporte-datos">
+          <span className="pasaporte-nombre">{nombre}</span>
+          <span className="pasaporte-pais">
+            Nicaragua
+            <svg className="pasaporte-bandera" viewBox="0 0 30 20" aria-hidden="true">
+              <rect width="30" height="20" fill="#0067C6" />
+              <rect y="6.5" width="30" height="7" fill="#fff" />
+              <path d="M15 8.2l2 3.4h-4z" fill="#E0B100" />
+            </svg>
+          </span>
+          <span className="pasaporte-dato pasaporte-dato--nivel"><span aria-hidden="true">🌟</span> {t('pasaporteVisual.nivel', { n: nivel })}</span>
+          <span className="pasaporte-dato pasaporte-dato--sellos"><span aria-hidden="true">🗺️</span> {t('pasaporteVisual.sellosDe', { n: deSitio.length, total: sitios.length })}</span>
+          <span className="pasaporte-dato pasaporte-dato--ruta"><span aria-hidden="true">⭐</span> {t('pasaporteVisual.ruta', { nombre: ruta ? ruta.nombre : t('pasaporteVisual.sinRuta') })}</span>
+        </div>
 
-        {mostrados.map((sello, i) => {
+        {Array.from({ length: MAX_SELLOS }, (_, i) => {
+          const sello = mostrados[i];
+          if (!sello) {
+            return (
+              <div key={`vacio-${i}`} className={`pasaporte-sello pasaporte-sello--vacio pasaporte-sello--${i}`}>
+                <Lock className="pasaporte-candado" strokeWidth={2.2} aria-hidden="true" />
+              </div>
+            );
+          }
           const sitio = sitiosPorId[sello.sitioId];
           return (
             <div key={sello.id ?? sello.sitioId} className={`pasaporte-sello pasaporte-sello--${i}`} title={sitio.name}>
@@ -92,7 +110,7 @@ function PasaporteVisual({ usuario, sellos, sitios, rutas, onCerrar }) {
           );
         })}
 
-        {resto > 0 && <span className="pasaporte-mas" aria-label={t('pasaporteVisual.masAria', { n: resto })}>+{resto}</span>}
+        {resto > 0 && <span className="pasaporte-mas">{t('pasaporteVisual.mas', { n: resto })}</span>}
       </div>
     </div>,
     document.body,

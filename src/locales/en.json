@@ -300,6 +300,9 @@
     "invitado": "Guest",
     "sinRuta": "No route yet",
     "sellado": "Stamped",
-    "masAria": "{{n}} more stamps"
+    "mas": "+{{n}} more",
+    "nivel": "Level: {{n}}",
+    "sellosDe": "Stamps: {{n}} of {{total}}",
+    "ruta": "Route: {{nombre}}"
   }
 }

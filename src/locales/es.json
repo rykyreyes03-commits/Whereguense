@@ -300,6 +300,9 @@
     "invitado": "Invitado",
     "sinRuta": "Sin ruta aún",
     "sellado": "Sellado",
-    "masAria": "{{n}} sellos más"
+    "mas": "+{{n}} más",
+    "nivel": "Nivel: {{n}}",
+    "sellosDe": "Sellos: {{n}} de {{total}}",
+    "ruta": "Ruta: {{nombre}}"
   }
 }

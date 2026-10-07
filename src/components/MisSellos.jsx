@@ -112,7 +112,7 @@ function MisSellos({ sellos, sitios, rutas = [], usuario = null, onNavigate, onS
       <BottomNav activo="pasaporte" onNavigate={onNavigate} />
 
       {verPasaporte && (
-        <PasaporteVisual usuario={usuario} sellos={sellos} sitios={sitios} rutas={rutas} onCerrar={() => setVerPasaporte(false)} />
+        <PasaporteVisual usuario={usuario} sellos={sellos} sitios={sitios} rutas={rutas} nivel={nivelInfo?.nivel} onCerrar={() => setVerPasaporte(false)} />
       )}
 
       {ciudadProximamente && (

@@ -1,7 +1,7 @@
 /* =========================================================
    Pasaporte de viajero: la imagen del documento con los datos encima.
-   Todas las posiciones son porcentajes del documento recortado (2230 x 2451 px de la imagen original), medidas sobre
-   los campos impresos; los tamaños de letra usan cqw (1 % del ancho del documento) para que todo escale junto.
+   Todas las posiciones son porcentajes del documento recortado (1504 x 1680 px de la imagen original), medidas sobre
+   la imagen en blanco; los tamaños de letra usan cqw (1 % del ancho del documento) para que todo escale junto.
    ========================================================= */
 
 .pasaporte-fondo {
@@ -42,8 +42,8 @@
 .pasaporte-doc {
   position: relative;
   container-type: inline-size;
-  width: min(100%, 440px, calc((100dvh - 100px) * 2230 / 2451));
-  aspect-ratio: 2230 / 2451;
+  width: min(100%, 440px, calc((100dvh - 100px) * 1504 / 1680));
+  aspect-ratio: 1504 / 1680;
   background-size: 100% 100%;
   background-repeat: no-repeat;
   filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.5));
@@ -56,34 +56,35 @@
   to { opacity: 1; transform: none; }
 }
 
-/* Número de pasaporte, sobre la línea que sigue al título */
+/* Número de pasaporte: un disco del mismo azul tapa el "##" impreso y lleva el código en dos líneas */
 .pasaporte-numero {
   position: absolute;
-  left: 48.7%;
-  width: 32.5%;
-  top: 2.8%;
-  height: 3.2%;
+  left: 85%;
+  width: 8.3%;
+  aspect-ratio: 1;
+  top: 3.3%;
   display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  font-size: 3.4cqw;
-  font-weight: 900;
-  letter-spacing: 0.06em;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #3271B8;
+  color: #fff;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 2.2cqw;
+  font-weight: 800;
+  line-height: 1.1;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
-/* Foto: cubre la silueta impresa con el mismo fondo oscuro del marco */
+/* Foto: el personaje sin fondo, o la foto de perfil con esquinas redondeadas */
 .pasaporte-foto {
   position: absolute;
-  left: 19.2%;
-  width: 34.4%;
-  top: 14.1%;
-  height: 27.1%;
-  padding: 2% 3% 0;
-  overflow: hidden;
-  border-radius: 1.6cqw;
-  background: #121A25;
+  left: 19.9%;
+  width: 22%;
+  top: 13.7%;
+  height: 28%;
 }
 .pasaporte-foto-img {
   display: block;
@@ -92,51 +93,73 @@
   object-fit: contain;
   object-position: center bottom;
 }
-.pasaporte-foto-img--perfil { object-fit: cover; object-position: center; margin: -2% -3% 0; width: 106%; height: 102%; }
+.pasaporte-foto-img--perfil { object-fit: cover; object-position: center; border-radius: 3cqw; box-shadow: 0 0 0 0.5cqw rgba(20, 26, 51, 0.18); }
 
-/* Datos: encima de la línea de cada campo */
-.pasaporte-valor {
+/* Nombre, país y datos, a la derecha de la foto */
+.pasaporte-datos {
   position: absolute;
-  left: 54.9%;
-  width: 29.1%;
-  height: 3.5%;
+  left: 46%;
+  width: 38.5%;
+  top: 13.7%;
+  height: 28%;
   display: flex;
-  align-items: flex-end;
-  padding-bottom: 0.5cqw;
-  font-size: 3.6cqw;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.4cqw;
+  min-width: 0;
+}
+.pasaporte-nombre {
+  font-size: 5.6cqw;
   font-weight: 900;
-  line-height: 1;
-  white-space: nowrap;
+  line-height: 1.1;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.pasaporte-valor--nombre { top: 17%; }
-.pasaporte-valor--nacionalidad { top: 61.6%; }
-.pasaporte-valor--sellos { top: 74.3%; }
-.pasaporte-valor--ruta { top: 86.4%; }
+.pasaporte-pais {
+  display: flex;
+  align-items: center;
+  gap: 1.2cqw;
+  margin-bottom: 1.4cqw;
+  font-size: 3cqw;
+  font-weight: 700;
+  color: #5B6178;
+}
+.pasaporte-bandera { width: 4.2cqw; height: 2.8cqw; border-radius: 0.4cqw; box-shadow: 0 0 0 0.2cqw rgba(20, 26, 51, 0.25); }
+.pasaporte-dato {
+  font-size: 3.4cqw;
+  font-weight: 800;
+  line-height: 1.2;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
 
-/* Sellos: seis círculos en dos columnas; cada uno tapa su "?" con un disco blanco y lleva la insignia y la marca SELLADO */
+/* Sellos: seis círculos en tres columnas y dos filas */
 .pasaporte-sello {
   position: absolute;
-  width: 15.5%;
+  width: 19.3%;
   aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   background: #fff;
+  border: 0.6cqw solid #C9C3B3;
 }
-.pasaporte-sello--0 { left: 19.4%; top: 43.7%; }
-.pasaporte-sello--1 { left: 36.9%; top: 43.7%; }
-.pasaporte-sello--2 { left: 19.4%; top: 60.1%; }
-.pasaporte-sello--3 { left: 36.9%; top: 60.1%; }
-.pasaporte-sello--4 { left: 19.4%; top: 76.6%; }
-.pasaporte-sello--5 { left: 36.9%; top: 76.6%; }
+.pasaporte-sello--0 { left: 19.9%; top: 48.8%; }
+.pasaporte-sello--1 { left: 42.2%; top: 48.8%; }
+.pasaporte-sello--2 { left: 64.5%; top: 48.8%; }
+.pasaporte-sello--3 { left: 19.9%; top: 69.6%; }
+.pasaporte-sello--4 { left: 42.2%; top: 69.6%; }
+.pasaporte-sello--5 { left: 64.5%; top: 69.6%; }
 .pasaporte-sello-insignia {
   width: 76%;
   height: 76%;
   object-fit: contain;
 }
+.pasaporte-candado { width: 34%; height: 34%; color: #A7A9B2; }
 .pasaporte-sello-marca {
   position: absolute;
   inset: 3%;
@@ -155,31 +178,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 0.55cqw solid currentColor;
+  border: 0.6cqw solid currentColor;
   border-radius: 50%;
   box-shadow: inset 0 0 0 0.3cqw rgba(198, 40, 40, 0.3);
-  font-size: 2.35cqw;
+  font-size: 2.6cqw;
   font-weight: 900;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   text-shadow: 0 0 0.5cqw rgba(255, 255, 255, 0.95), 0 0 0.9cqw rgba(255, 255, 255, 0.85);
 }
 
-/* "+N": hay más sellos de los que caben */
+/* "+N más": hay más sellos de los que caben */
 .pasaporte-mas {
   position: absolute;
-  left: 27.3%;
-  width: 17%;
-  top: 94.2%;
-  height: 3.4%;
+  left: 19.9%;
+  width: 63.9%;
+  top: 90%;
   display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 4.4cqw;
-  font-weight: 900;
-  color: #fff;
-  background: #1B2A6B;
-  border-radius: 999px;
+  font-size: 3cqw;
+  font-weight: 700;
+  color: #5B6178;
 }
 
 @media (prefers-reduced-motion: reduce) {
