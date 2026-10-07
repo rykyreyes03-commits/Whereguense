@@ -6,6 +6,7 @@ import PanelSitio from '/src/components/PanelSitio.jsx';
 import MisSellos from '/src/components/MisSellos.jsx';
 import BottomNav from '/src/components/BottomNav.jsx';
 import Personalizacion from '/src/components/Personalizacion.jsx';
+import Perfil from '/src/components/Perfil.jsx';
 import { useNivel } from '/src/hooks/useNivel.js';
 import { sitios } from '/src/data/sitios.js';
 
@@ -24,6 +25,12 @@ function Pasaporte() {
 // eslint-disable-next-line react-refresh/only-export-components
 function Pantalla() {
   if (params.get('vista') === 'pasaporte') return <Pasaporte />;
+  if (params.get('vista') === 'perfil') {
+    return (
+      <Perfil sellos={[{ id: 1, sitioId: 1, fecha: '1/10/2026' }]} total={89} onNavigate={(p) => window.__eventos.push(['ir', p])} onCerrarSesion={() => {}}
+        usuarioActual={{ id: 'yo', nombre_usuario: 'Ryky', pais: 'Nicaragua', idioma_preferido: 'es' }} onActualizarPerfil={async () => ({ exito: true })} />
+    );
+  }
   if (params.get('vista') === 'nav') {
     return <div style={{ height: '100vh' }}><BottomNav activo={params.get('activo')} onNavigate={(p) => window.__eventos.push(['ir', p])} /></div>;
   }

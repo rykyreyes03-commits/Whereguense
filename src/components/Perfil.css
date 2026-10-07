@@ -17,7 +17,7 @@
   margin: 0 auto;
   position: relative;
   min-height: 100vh;
-  padding-bottom: 96px;
+  padding-bottom: 32px; /* sin barra inferior: Perfil se abre desde el botón de Inicio */
   transition: max-width 0.2s ease;
 }
 

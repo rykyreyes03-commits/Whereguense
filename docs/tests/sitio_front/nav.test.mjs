@@ -77,6 +77,34 @@ for (const ancho of [360, 412]) {
   await p.ctx.close();
 }
 
+// Perfil: sin barra inferior ni botón del mapa, con ← Volver a Inicio
+for (const ancho of [360, 412]) {
+  const t = `[${ancho}px perfil]`;
+  const ctx = await browser.newContext({ viewport: { width: ancho, height: 700 }, deviceScaleFactor: 2 });
+  const page = await ctx.newPage();
+  const errores = [];
+  page.on('pageerror', (e) => errores.push(e.message));
+  await page.addInitScript(() => { window.__db = { uid: 'yo', sesion: true, llamadas: [], fotos: [], resenas: [] }; });
+  await page.goto(`${base}?vista=perfil`);
+  await page.waitForSelector('.perfil-wrapper');
+  await page.waitForTimeout(300);
+  ok((await page.locator('.bottom-nav').count()) === 0, `${t} Perfil no muestra la barra inferior`);
+  ok((await page.locator('.bottom-nav-fab').count()) === 0, `${t} ni el botón flotante del mapa (es parte de la barra)`);
+  ok((await page.locator('.topbar-volver').count()) === 1 && (await page.locator('.topbar-volver').textContent()).includes('Volver'), `${t} hay un botón ← Volver arriba a la izquierda`);
+  ok((await page.locator('.topbar-menu').count()) === 0, `${t} el botón de menú se cambió por Volver`);
+  const caja = await page.locator('.topbar-volver').boundingBox();
+  ok(caja.x < 60 && caja.y < 120, `${t} Volver arriba a la izquierda (x ${Math.round(caja.x)}, y ${Math.round(caja.y)})`);
+  await page.locator('.topbar-volver').click();
+  ok((await page.evaluate(() => window.__eventos.map((e) => e[1]).join(','))) === 'inicio', `${t} Volver regresa a 'inicio'`);
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  const piso = await page.evaluate(() => document.querySelector('.perfil-wrapper').getBoundingClientRect().bottom <= window.innerHeight + 1 || document.documentElement.scrollHeight - window.scrollY - window.innerHeight < 2);
+  ok(piso, `${t} el final del contenido llega al borde sin hueco de la barra`);
+  ok(errores.length === 0, `${t} sin errores de página (${errores.join('; ')})`);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ path: path.join(capturas, `perfil_volver_${ancho}.png`) });
+  await ctx.close();
+}
+
 await browser.close();
 await servidor.close();
 console.log(`\n${total - fallas.length}/${total} comprobaciones`);

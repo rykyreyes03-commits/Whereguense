@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import './Perfil.css';
 import TopBar from './TopBar';
-import BottomNav from './BottomNav';
 import cabezonImg from '../assets/flujo-inicial/explorer_transparente_final.png';
 import gigantonaImg from '../assets/flujo-inicial/gigantona.png';
 import { obtenerRango } from '../utils/rango';
@@ -162,7 +161,7 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
 
   return (
     <div className="perfil-wrapper">
-      <TopBar align="center" onMenuClick={() => onNavigate?.('menu')}>
+      <TopBar align="center" onBack={() => onNavigate?.('inicio')}>
         <button
           type="button"
           className={`perfil-avatar ${fotoPerfil ? 'perfil-avatar--foto' : ''}`}
@@ -314,9 +313,6 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
           Cerrar sesión
         </button>
       </div>
-
-      {/* Perfil no es un ítem de la barra: aquí ningún ítem queda resaltado */}
-      <BottomNav activo={null} onNavigate={onNavigate} />
     </div>
   );
 }
