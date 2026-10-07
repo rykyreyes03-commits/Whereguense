@@ -48,7 +48,7 @@ function PanelNegocio({ negocio, estaGuardado, onCerrar, onComoLlegar, onGuardar
 
       <div className="panel-sitio-texto">
         <span className="panel-sitio-etiqueta">{negocio.categoria || 'Negocio'}</span>
-        <p>{negocio.descripcion || 'Este negocio aún no agregó una descripción.'}</p>
+        {negocio.descripcion && <p>{negocio.descripcion}</p>}
       </div>
 
       <div className="panel-sitio-acciones">
