@@ -522,26 +522,3 @@
   .negocio-marcador-halo,
   .estoy-aqui-halo { animation: none; opacity: 0.25; }
 }
-
-/* Marcadores de sitios: círculo con el emoji de la categoría */
-.sitio-marcador-icono { background: none; border: none; }
-.sitio-marcador {
-  box-sizing: border-box;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 3px solid var(--sitio-color);
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(26, 26, 46, 0.3);
-  font-size: 20px;
-  line-height: 1;
-}
-.sitio-marcador--activo {
-  transform: scale(1.2);
-  border-color: #fff;
-  background: var(--color-coral);
-  box-shadow: 0 0 0 3px var(--color-coral), 0 3px 10px rgba(26, 26, 46, 0.4);
-}
