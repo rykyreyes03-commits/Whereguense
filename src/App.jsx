@@ -58,6 +58,7 @@ function pantallaInicial() {
 function App() {
   const [pantalla, setPantalla] = useState(pantallaInicial);
   const [pantallaAnterior, setPantallaAnterior] = useState('inicio');
+  const [perfilOrigen, setPerfilOrigen] = useState('inicio'); // de dónde se abrió Perfil (su Volver regresa allí)
   const [session, setSession] = useState(null);
   const [usuarioActual, setUsuarioActual] = useState(null);
 
@@ -327,6 +328,9 @@ function App() {
     if (nueva === 'menu') {
       setPantallaAnterior(pantalla);
     }
+    if (nueva === 'perfil') {
+      setPerfilOrigen(pantalla);
+    }
     setPantalla(nueva);
   };
 
@@ -414,6 +418,18 @@ function App() {
     }
 
     setPantalla('danzante');
+  };
+
+  // Cambiar el idioma desde Configuración: se aplica ya y, con sesión, se guarda en la cuenta (para el próximo inicio de sesión).
+  const handleCambiarIdioma = async (idioma) => {
+    cambiarIdioma(idioma);
+    if (!usuarioActual) return;
+    const { error } = await supabase.from('usuario').update({ idioma_preferido: idioma }).eq('id', usuarioActual.id);
+    if (error) {
+      console.error('Error guardando el idioma:', error);
+      return;
+    }
+    setUsuarioActual((u) => (u ? { ...u, idioma_preferido: idioma } : u));
   };
 
   const handleActualizarPerfilUsuario = async (datos) => {
@@ -743,6 +759,7 @@ function App() {
         sellos={sellos}
         total={sitios.length}
         onNavigate={cambiarPantalla}
+        onVolver={() => setPantalla(perfilOrigen)}
         onCerrarSesion={handleCerrarSesionGlobal}
         usuarioActual={usuarioActual}
         onActualizarPerfil={handleActualizarPerfilUsuario}
@@ -904,6 +921,9 @@ function App() {
         onVolver={() => cambiarPantalla(pantallaAnterior)}
         onCerrarSesion={handleCerrarSesionGlobal}
         onMiNegocio={irAFlujoNegocio}
+        onCambiarIdioma={handleCambiarIdioma}
+        // Si el menú se abrió desde el panel del emprendedor, se muestra su versión (sin lo del turista).
+        modoNegocio={pantallaAnterior === 'perfilNegocio'}
         esAdmin={usuarioActual?.rol === 'admin'}
       />
     );

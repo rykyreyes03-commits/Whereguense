@@ -126,3 +126,28 @@
   .menu-wrapper { max-width: 1100px; }
   .menu-contenido { max-width: 620px; margin: 0 auto; }
 }
+
+/* ===== Selector de idioma (se abre bajo "Cambiar idioma") ===== */
+.menu-idiomas {
+  display: flex;
+  gap: 8px;
+  padding: 2px 12px 12px 64px;
+}
+.menu-idioma {
+  flex: 1;
+  min-height: 44px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.menu-idioma[aria-checked='true'] {
+  border-color: var(--color-primary);
+  background: rgba(30, 42, 120, 0.08);
+  color: var(--color-primary);
+}
+.menu-idioma:focus-visible { outline: 3px solid var(--color-turquoise); outline-offset: 2px; }

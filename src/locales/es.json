@@ -262,5 +262,23 @@
     "estrellasValor": "{{valor}} de 5 estrellas",
     "estrella_one": "{{count}} estrella",
     "estrella_other": "{{count}} estrellas"
+  },
+  "menu": {
+    "titulo": "Configuración",
+    "panelAdmin": "Panel Admin",
+    "escanearSello": "Escanear sello QR",
+    "escanearCupon": "Escanear cupón",
+    "miNegocio": "Mi negocio",
+    "idioma": "Cambiar idioma",
+    "notificaciones": "Notificaciones",
+    "tema": "Tema",
+    "privacidad": "Privacidad",
+    "ayuda": "Ayuda y soporte",
+    "acerca": "Acerca de",
+    "proximamente": "{{opcion}}: próximamente 🚧"
+  },
+  "negocio": {
+    "verPerfil": "Ver mi perfil",
+    "verPerfilSub": "Tu foto, tus datos de usuario y el idioma"
   }
 }

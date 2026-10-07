@@ -1,3 +1,6 @@
+import { Fragment, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { cambiarIdioma } from '../i18n';
 import './Menu.css';
 import TopBar from './TopBar';
 
@@ -77,34 +80,49 @@ const IconoAdmin = () => (
   </svg>
 );
 
-function opcionesMenu(esAdmin) {
-  const base = [
-    { etiqueta: 'Escanear sello QR', Icono: IconoQR, pantalla: 'escanearQR' },
-    { etiqueta: 'Escanear cupón', Icono: IconoCupon, pantalla: 'escanearCupon' },
-    { etiqueta: 'Mi negocio', Icono: IconoNegocio, accion: 'miNegocio' },
-    { etiqueta: 'Cambiar idioma', Icono: IconoIdioma },
-    { etiqueta: 'Notificaciones', Icono: IconoNotificaciones },
-    { etiqueta: 'Tema', Icono: IconoTema },
-    { etiqueta: 'Privacidad', Icono: IconoPrivacidad },
-    { etiqueta: 'Ayuda y soporte', Icono: IconoAyuda },
-    { etiqueta: 'Acerca de', Icono: IconoAcerca },
+// Qué opciones ve cada quien. El menú del emprendedor (se abre desde su panel) no trae las funciones del turista
+// (escanear sello y cupón) ni "Mi negocio", que ya es una pestaña de su barra. "Panel Admin" solo lo ve un admin.
+function opcionesMenu(esAdmin, modoNegocio) {
+  const deTurista = [
+    { clave: 'escanearSello', Icono: IconoQR, pantalla: 'escanearQR' },
+    { clave: 'escanearCupon', Icono: IconoCupon, pantalla: 'escanearCupon' },
+    { clave: 'miNegocio', Icono: IconoNegocio, accion: 'miNegocio' },
   ];
-  if (esAdmin) {
-    base.unshift({ etiqueta: 'Panel Admin', Icono: IconoAdmin, pantalla: 'panelAdmin' });
-  }
-  return base;
+  const comunes = [
+    { clave: 'idioma', Icono: IconoIdioma, accion: 'idioma' },
+    { clave: 'notificaciones', Icono: IconoNotificaciones },
+    { clave: 'tema', Icono: IconoTema },
+    { clave: 'privacidad', Icono: IconoPrivacidad },
+    { clave: 'ayuda', Icono: IconoAyuda },
+    { clave: 'acerca', Icono: IconoAcerca },
+  ];
+  const lista = modoNegocio ? comunes : [...deTurista, ...comunes];
+  if (esAdmin) lista.unshift({ clave: 'panelAdmin', Icono: IconoAdmin, pantalla: 'panelAdmin' });
+  return lista;
 }
 
-function Menu({ onNavigate, onVolver, onCerrarSesion, onMiNegocio, esAdmin }) {
-  const OPCIONES = opcionesMenu(esAdmin);
-  const handleOpcion = (opcion) => {
-    window.alert(`${opcion}: próximamente 🚧`);
+const IDIOMAS = [
+  { id: 'es', nombre: 'Español' },
+  { id: 'en', nombre: 'English' },
+];
+
+function Menu({ onNavigate, onVolver, onCerrarSesion, onMiNegocio, onCambiarIdioma, esAdmin, modoNegocio = false }) {
+  const { t, i18n } = useTranslation();
+  const [idiomaAbierto, setIdiomaAbierto] = useState(false);
+  const idiomaActual = String(i18n.language || 'es').slice(0, 2) === 'en' ? 'en' : 'es';
+  const OPCIONES = opcionesMenu(esAdmin, modoNegocio);
+
+  const handleOpcion = (clave) => {
+    window.alert(t('menu.proximamente', { opcion: t(`menu.${clave}`) }));
+  };
+
+  const elegirIdioma = (id) => {
+    // La app guarda la preferencia en la cuenta; sin ese manejador (pruebas) solo cambia en este dispositivo.
+    (onCambiarIdioma || cambiarIdioma)(id);
   };
 
   const handleCerrarSesion = () => {
-    const confirmado = window.confirm(
-      '¿Seguro que quieres cerrar sesión? Se borrarán tus sellos y datos de perfil guardados en este dispositivo.'
-    );
+    const confirmado = window.confirm(t('perfil.confirmarCerrar'));
     if (!confirmado) return;
 
     onCerrarSesion?.();
@@ -112,34 +130,54 @@ function Menu({ onNavigate, onVolver, onCerrarSesion, onMiNegocio, esAdmin }) {
 
   return (
     <div className="menu-wrapper">
-      <TopBar title="Configuración" onBack={onVolver} />
+      <TopBar title={t('menu.titulo')} onBack={onVolver} />
 
       <div className="menu-contenido">
         <nav className="menu-lista">
-          {OPCIONES.map(({ etiqueta, Icono, pantalla, accion }) => (
-            <button
-              key={etiqueta}
-              className="menu-item"
-              onClick={() => {
-                if (accion === 'miNegocio') {
-                  onMiNegocio?.();
-                } else if (pantalla) {
-                  onNavigate?.(pantalla);
-                } else {
-                  handleOpcion(etiqueta);
-                }
-              }}
-            >
-              <span className="menu-item-icono"><Icono /></span>
-              <span className="menu-item-texto">{etiqueta}</span>
-              <Chevron />
-            </button>
+          {OPCIONES.map(({ clave, Icono, pantalla, accion }) => (
+            <Fragment key={clave}>
+              <button
+                className="menu-item"
+                aria-expanded={accion === 'idioma' ? idiomaAbierto : undefined}
+                onClick={() => {
+                  if (accion === 'idioma') {
+                    setIdiomaAbierto((abierto) => !abierto);
+                  } else if (accion === 'miNegocio') {
+                    onMiNegocio?.();
+                  } else if (pantalla) {
+                    onNavigate?.(pantalla);
+                  } else {
+                    handleOpcion(clave);
+                  }
+                }}
+              >
+                <span className="menu-item-icono"><Icono /></span>
+                <span className="menu-item-texto">{t(`menu.${clave}`)}</span>
+                <Chevron />
+              </button>
+              {accion === 'idioma' && idiomaAbierto && (
+                <div className="menu-idiomas" role="radiogroup" aria-label={t('menu.idioma')}>
+                  {IDIOMAS.map(({ id, nombre }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      role="radio"
+                      aria-checked={idiomaActual === id}
+                      className="menu-idioma"
+                      onClick={() => elegirIdioma(id)}
+                    >
+                      {nombre}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </Fragment>
           ))}
         </nav>
 
         <div className="menu-sesion">
           <button className="menu-logout-btn" onClick={handleCerrarSesion}>
-            Cerrar sesión
+            {t('perfil.cerrarSesion')}
           </button>
         </div>
       </div>

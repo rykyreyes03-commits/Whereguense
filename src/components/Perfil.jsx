@@ -78,7 +78,7 @@ function redimensionarImagen(file) {
   });
 }
 
-function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onActualizarPerfil }) {
+function Perfil({ sellos, total, onNavigate, onVolver, onCerrarSesion, usuarioActual, onActualizarPerfil }) {
   const { t } = useTranslation();
   const [perfil, setPerfil] = useState(() =>
     usuarioActual ? perfilDesdeUsuario(usuarioActual) : cargarPerfil()
@@ -164,7 +164,7 @@ function Perfil({ sellos, total, onNavigate, onCerrarSesion, usuarioActual, onAc
 
   return (
     <div className="perfil-wrapper">
-      <TopBar align="center" onBack={() => onNavigate?.('inicio')}>
+      <TopBar align="center" onBack={() => (onVolver ? onVolver() : onNavigate?.('inicio'))}>
         <button
           type="button"
           className={`perfil-avatar ${fotoPerfil ? 'perfil-avatar--foto' : ''}`}

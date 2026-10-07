@@ -1,0 +1,108 @@
+// Prueba del menú de Configuración (turista y emprendedor), el selector de idioma real y la tarjeta "Ver mi perfil" del Resumen.
+// Uso (desde la raíz del proyecto):  node docs/tests/sitio_front/menu.test.mjs   (requiere playwright; CHROMIUM_PATH opcional)
+import { createServer } from 'vite';
+import { chromium } from 'playwright';
+import path from 'node:path';
+import os from 'node:os';
+import { fileURLToPath } from 'node:url';
+
+const aqui = path.dirname(fileURLToPath(import.meta.url));
+const servidor = await createServer({ configFile: path.join(aqui, 'vite.config.mjs') });
+await servidor.listen();
+const base = 'http://localhost:5198/';
+const capturas = process.env.CAPTURAS || path.join(os.homedir(), 'Downloads');
+let total = 0;
+const fallas = [];
+const ok = (cond, texto) => { total += 1; if (!cond) fallas.push(texto); console.log(`${cond ? 'OK   ' : 'FALLA'} ${texto}`); };
+const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+
+async function abrir(query, esperar, ancho = 390) {
+  const ctx = await browser.newContext({ viewport: { width: ancho, height: 800 }, locale: 'en-US' });
+  const page = await ctx.newPage();
+  const errores = [];
+  const dialogos = [];
+  page.on('pageerror', (e) => errores.push(e.message));
+  page.on('dialog', (d) => { dialogos.push(d.message()); d.dismiss(); });
+  await page.addInitScript(() => { window.__db = { uid: 'yo', sesion: true, llamadas: [], fotos: [], resenas: [] }; });
+  await page.goto(`${base}?${query}&lang=es`);
+  await page.waitForSelector(esperar);
+  await page.waitForTimeout(300);
+  return { ctx, page, errores, dialogos };
+}
+const etiquetas = (page) => page.locator('.menu-item-texto').allTextContents();
+
+// ---- Menú del turista: igual que siempre
+{
+  const { ctx, page } = await abrir('vista=menu', '.menu-lista');
+  const e = await etiquetas(page);
+  ok(e.join(' | ') === 'Escanear sello QR | Escanear cupón | Mi negocio | Cambiar idioma | Notificaciones | Tema | Privacidad | Ayuda y soporte | Acerca de', `turista: ${e.join(' | ')}`);
+  await ctx.close();
+}
+{
+  const { ctx, page } = await abrir('vista=menu&admin=1', '.menu-lista');
+  ok((await etiquetas(page))[0] === 'Panel Admin', 'turista admin: "Panel Admin" va primero');
+  await ctx.close();
+}
+
+// ---- Menú del emprendedor
+for (const ancho of [360, 412]) {
+  const t = `[${ancho}px]`;
+  const { ctx, page, errores, dialogos } = await abrir('vista=menu&negocio=1', '.menu-lista', ancho);
+  const e = await etiquetas(page);
+  ok(e.join(' | ') === 'Cambiar idioma | Notificaciones | Tema | Privacidad | Ayuda y soporte | Acerca de', `${t} emprendedor: ${e.join(' | ')}`);
+  ok(!e.includes('Escanear sello QR') && !e.includes('Escanear cupón'), `${t} emprendedor: sin escanear sello ni cupón`);
+  ok(!e.includes('Mi negocio'), `${t} emprendedor: sin "Mi negocio"`);
+  ok(!e.includes('Panel Admin'), `${t} emprendedor que no es admin: sin "Panel Admin"`);
+  ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `${t} sin desborde horizontal`);
+
+  // Cambiar idioma: abre un selector real (no el aviso "próximamente")
+  await page.click('.menu-item:has-text("Cambiar idioma")');
+  ok(dialogos.length === 0, `${t} Cambiar idioma no lanza el aviso "próximamente"`);
+  ok((await page.locator('.menu-idioma').allTextContents()).join(',') === 'Español,English', `${t} el selector ofrece Español y English`);
+  ok((await page.locator('.menu-idioma[aria-checked="true"]').textContent()) === 'Español', `${t} está marcado el idioma actual (Español)`);
+  const alto = await page.locator('.menu-idioma').first().boundingBox();
+  ok(alto.height >= 44, `${t} los botones de idioma miden al menos 44 px (${Math.round(alto.height)})`);
+  await page.screenshot({ path: path.join(capturas, `menu_emprendedor_${ancho}.png`) });
+  await page.click('.menu-idioma:has-text("English")');
+  await page.waitForTimeout(200);
+  const en = await etiquetas(page);
+  ok(en.join(' | ') === 'Change language | Notifications | Theme | Privacy | Help and support | About', `${t} la pantalla pasa a inglés: ${en.join(' | ')}`);
+  ok((await page.locator('.topbar-titulo').textContent()) === 'Settings', `${t} el título pasa a "Settings"`);
+  ok((await page.evaluate(() => localStorage.getItem('idioma'))) === 'en', `${t} el idioma queda guardado`);
+  ok((await page.locator('.menu-idioma[aria-checked="true"]').textContent()) === 'English', `${t} ahora está marcado English`);
+  await page.click('.menu-item:has-text("Notifications")');
+  ok(dialogos.length === 1 && dialogos[0] === 'Notifications: coming soon 🚧', `${t} las demás opciones siguen con su aviso, ya en inglés (${dialogos[0]})`);
+  await page.click('.menu-idioma:has-text("Español")');
+  await page.waitForTimeout(200);
+  ok((await etiquetas(page))[0] === 'Cambiar idioma', `${t} se puede volver al español`);
+  ok(errores.length === 0, `${t} sin errores de página (${errores.join('; ')})`);
+  await ctx.close();
+}
+{
+  const { ctx, page } = await abrir('vista=menu&negocio=1&admin=1', '.menu-lista');
+  const e = await etiquetas(page);
+  ok(e[0] === 'Panel Admin' && e.length === 7, 'emprendedor que SÍ es admin: "Panel Admin" aparece (solo para admins)');
+  await ctx.close();
+}
+
+// ---- Resumen del emprendedor: tarjeta "Ver mi perfil"
+for (const ancho of [360, 412]) {
+  const t = `[${ancho}px]`;
+  const { ctx, page, errores } = await abrir('vista=negocio', '.perfilnegocio-accesos', ancho);
+  const tarjetas = await page.locator('.perfilnegocio-acceso strong').allTextContents();
+  ok(tarjetas.includes('Ver mi perfil'), `${t} el Resumen tiene la tarjeta "Ver mi perfil" (${tarjetas.join(' | ')})`);
+  ok((await page.locator('.perfilnegocio-acceso:has-text("Ver mi perfil") .perfilnegocio-acceso-texto span').textContent()).length > 5, `${t} la tarjeta lleva su descripción`);
+  const caja = await page.locator('.perfilnegocio-acceso:has-text("Ver mi perfil")').boundingBox();
+  ok(caja.height >= 44, `${t} la tarjeta mide al menos 44 px de alto`);
+  await page.locator('.perfilnegocio-acceso:has-text("Ver mi perfil")').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: path.join(capturas, `resumen_ver_perfil_${ancho}.png`) });
+  await page.click('.perfilnegocio-acceso:has-text("Ver mi perfil")');
+  ok((await page.evaluate(() => window.__eventos.map((x) => x[1]).join(','))) === 'perfil', `${t} la tarjeta abre 'perfil'`);
+  ok(errores.length === 0, `${t} Resumen sin errores de página (${errores.join('; ')})`);
+  await ctx.close();
+}
+
+await browser.close();
+await servidor.close();
+console.log(`\n${total - fallas.length}/${total} comprobaciones`);
+if (fallas.length) { console.log('FALLAS:\n' + fallas.join('\n')); process.exit(1); }

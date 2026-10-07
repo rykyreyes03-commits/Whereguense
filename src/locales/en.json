@@ -262,5 +262,23 @@
     "estrellasValor": "{{valor}} out of 5 stars",
     "estrella_one": "{{count}} star",
     "estrella_other": "{{count}} stars"
+  },
+  "menu": {
+    "titulo": "Settings",
+    "panelAdmin": "Admin panel",
+    "escanearSello": "Scan stamp QR",
+    "escanearCupon": "Scan coupon",
+    "miNegocio": "My business",
+    "idioma": "Change language",
+    "notificaciones": "Notifications",
+    "tema": "Theme",
+    "privacidad": "Privacy",
+    "ayuda": "Help and support",
+    "acerca": "About",
+    "proximamente": "{{opcion}}: coming soon 🚧"
+  },
+  "negocio": {
+    "verPerfil": "View my profile",
+    "verPerfilSub": "Your photo, your account details and language"
   }
 }

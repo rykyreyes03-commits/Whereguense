@@ -10,6 +10,8 @@ import BottomNav from '/src/components/BottomNav.jsx';
 import Personalizacion from '/src/components/Personalizacion.jsx';
 import Perfil from '/src/components/Perfil.jsx';
 import Inicio from '/src/components/Inicio.jsx';
+import Menu from '/src/components/Menu.jsx';
+import PerfilNegocio from '/src/components/PerfilNegocio.jsx';
 import Eventos from '/src/components/Eventos.jsx';
 import { useNivel } from '/src/hooks/useNivel.js';
 import { sitios } from '/src/data/sitios.js';
@@ -29,6 +31,19 @@ function Pasaporte() {
 // eslint-disable-next-line react-refresh/only-export-components
 function Pantalla() {
   if (params.get('vista') === 'pasaporte') return <Pasaporte />;
+  if (params.get('vista') === 'menu') {
+    return (
+      <Menu onNavigate={(p) => window.__eventos.push(['ir', p])} onVolver={() => window.__eventos.push(['ir', 'volver'])} onCerrarSesion={() => {}}
+        onMiNegocio={() => window.__eventos.push(['ir', 'miNegocio'])} esAdmin={params.get('admin') === '1'} modoNegocio={params.get('negocio') === '1'} />
+    );
+  }
+  if (params.get('vista') === 'negocio') {
+    const negocio = { id: 1, nombre: 'Café Colibrí', categoria: 'Cafetería', estado: 'activo', vencimientoSuscripcion: '2027-03-04T00:00:00Z' };
+    return (
+      <PerfilNegocio negocio={negocio} horarios={[]} fotos={[]} productos={[]} actividades={[]} actividadesQR={[]} sellosEntregados={{}}
+        onNavigate={(p) => window.__eventos.push(['ir', p])} />
+    );
+  }
   if (params.get('vista') === 'inicio') {
     const evento = { id: 'e1', nombre: 'Feria del maíz', ubicacion: 'Parque Central', fechaInicio: '2026-10-16', fechaFin: '2026-10-27', categoria: 'gastronomia', imagenUrl: null };
     return (
