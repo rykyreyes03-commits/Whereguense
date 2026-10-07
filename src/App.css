@@ -18,14 +18,14 @@
   gap: 24px;
   background: var(--color-primary);
 }
-/* Gigantona + Cabezón (whereguense_pareja.png, 1163×1244, recortada a su
+/* Gigantona + Cabezón (whereguense_pareja.webp, 1140×1192, recortada a su
    contenido). El ancho sale del menor entre: 78vw, 520px y el ancho que
-   corresponde a la altura máxima (46vh × 1163/1244), así la caja siempre
+   corresponde a la altura máxima (46vh × 1140/1192), así la caja siempre
    coincide con la imagen visible, sin bandas vacías por object-fit. */
 .app-cargando-gigantona {
   --cargando-alto-max: 46vh;
-  width: min(78vw, 520px, calc(var(--cargando-alto-max) * 1163 / 1244));
-  aspect-ratio: 1163 / 1244;
+  width: min(78vw, 520px, calc(var(--cargando-alto-max) * 1140 / 1192));
+  aspect-ratio: 1140 / 1192;
   animation: appCargandoEntrar 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .app-cargando-gigantona img {
