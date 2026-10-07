@@ -5,6 +5,7 @@ import TopBar from './TopBar';
 import BottomNav from './BottomNav';
 import { useGuardados } from '../hooks/useGuardados';
 import { INSIGNIAS } from '../data/insignias';
+import { hoyManagua, esDeEstaSemana } from '../utils/eventos';
 import iconoBuscar from '../assets/icons/icono_buscar.svg';
 import iconoArbol from '../assets/icons/icono_arbol.svg';
 import iconoRuta from '../assets/icons/icono_ruta.svg';
@@ -51,6 +52,8 @@ function Inicio({
     () => eventos?.find((e) => e.id === eventoDestacadoId) || null,
     [eventos, eventoDestacadoId]
   );
+  // "Eventos de esta semana" mientras el destacado esté en curso o empiece en 7 días; si es más lejano, la sección dice "Próximo evento".
+  const tituloEventos = !eventoDestacado || esDeEstaSemana(eventoDestacado, hoyManagua()) ? 'Eventos de esta semana' : 'Próximo evento';
   // Evento con foto: la tarjeta lleva la foto de fondo (criterio de DetalleEvento).
   const eventoConFoto = Boolean(eventoDestacado?.imagenUrl) && portadaFallida !== eventoDestacado.imagenUrl;
 
@@ -261,7 +264,7 @@ function Inicio({
         )}
 
         <div className="inicio-seccion-header">
-          <h2 className="inicio-seccion">Eventos de esta semana</h2>
+          <h2 className="inicio-seccion">{tituloEventos}</h2>
           <button className="inicio-ver-todas" onClick={() => onNavigate?.('eventos')}>
             Ver todos
           </button>
@@ -301,7 +304,7 @@ function Inicio({
         ) : (
           <div className="inicio-empty">
             <div className="inicio-empty-icono" aria-hidden="true">🎉</div>
-            <h3>Sin eventos esta semana</h3>
+            <h3>Sin eventos por ahora</h3>
             <p>Vuelve pronto: la agenda cultural de León se actualiza cada semana.</p>
             <button className="inicio-empty-btn inicio-empty-btn--ghost" onClick={() => onNavigate?.('eventos')}>
               Ver agenda completa

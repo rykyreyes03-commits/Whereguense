@@ -46,7 +46,7 @@ import { useEventosPublicos } from './hooks/useEventosPublicos';
 import { useAvatarPersonalizado } from './hooks/useAvatarPersonalizado';
 import { supabase } from './lib/supabaseClient';
 import { aPersonajeDB, aPersonajeLocal } from './utils/avatarPersonaje';
-import { hoyManagua, diaDeFin, eventoDesdeGuardado } from './utils/eventos';
+import { hoyManagua, eventoParaInicio, eventoDesdeGuardado } from './utils/eventos';
 import L from 'leaflet';
 
 function pantallaInicial() {
@@ -631,9 +631,8 @@ function App() {
 
   if (pantalla === 'inicio') {
     const hoy = hoyManagua(); // la fecha de Managua (con toISOString era la UTC: de noche ya era "mañana")
-    const eventoVigente = eventos
-      .filter(e => e.fechaInicio <= hoy && hoy <= diaDeFin(e))
-      .sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio))[0];
+    // El evento en curso o, si no hay, el próximo en empezar (antes solo contaban los que ya estaban en curso).
+    const eventoVigente = eventoParaInicio(eventos, hoy);
     return (
       <Inicio
         sitios={sitios}

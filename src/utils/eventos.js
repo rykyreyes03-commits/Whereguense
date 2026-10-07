@@ -301,3 +301,22 @@ export function instanteDe(valor) {
 export function inicialDe(nombre) {
   return String(nombre || '').trim().charAt(0).toUpperCase() || '?';
 }
+
+// El evento que destaca Inicio: el que está en curso hoy (si hay varios, el que empezó antes) y, si ninguno lo está, el
+// próximo en empezar, sin importar cuántos días falten. Lo que ya terminó no cuenta. `hoy` es 'YYYY-MM-DD' de Managua.
+export function eventoParaInicio(eventos, hoy) {
+  const vigentes = (eventos || []).filter((e) => {
+    const ultimo = diaDeFin(e);
+    return ultimo === null ? e.fechaInicio >= hoy : ultimo >= hoy;
+  });
+  const enCurso = (e) => e.fechaInicio <= hoy;
+  return [...vigentes].sort((a, b) => {
+    if (enCurso(a) !== enCurso(b)) return enCurso(a) ? -1 : 1;
+    return a.fechaInicio.localeCompare(b.fechaInicio);
+  })[0] || null;
+}
+
+// ¿Empieza el evento dentro de esta semana (o ya está en curso)? Misma ventana que el filtro "Esta semana" de Eventos: hoy y 6 días más.
+export function esDeEstaSemana(e, hoy) {
+  return e.fechaInicio <= sumarDias(hoy, 6);
+}
