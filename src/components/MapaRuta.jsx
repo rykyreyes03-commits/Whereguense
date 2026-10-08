@@ -17,11 +17,13 @@ import PanelNegocio from './PanelNegocio';
 import PerfilNegocioPublico from './PerfilNegocioPublico';
 
 const RADIO_GEOFENCE_DEFECTO = 80;
-// Efecto radar de los círculos de sellado: el anillo crece 1.5 veces su radio y se desvanece cada 2 s. Los círculos son SVG de
-// Leaflet, así que se anima con setRadius/setStyle (un solo requestAnimationFrame para todos, a unos 30 cuadros por segundo).
+// Efecto radar de los círculos de sellado: el anillo sale del centro (10 % del radio) y llega justo al borde del radio real de
+// sellado (100 %), desvaneciéndose, cada 2 s. Los círculos son SVG de Leaflet, así que se anima con setRadius/setStyle (un solo
+// requestAnimationFrame para todos, a unos 30 cuadros por segundo).
 const DURACION_RADAR_MS = 2000;
-const CRECIMIENTO_RADAR = 1.5;
-const OPACIDAD_RADAR = 0.6;
+const RADIO_INICIAL_RADAR = 0.1;
+const OPACIDAD_RADAR = 0.4;
+const COLOR_RADAR = '#38BDF8';
 
 const iconoUbicacion = L.divIcon({
   className: 'ubicacion-usuario-icono',
@@ -213,7 +215,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
       ultimo = t;
       circulos.forEach(({ circulo, base, desfase }) => {
         const progreso = ((t + desfase) % DURACION_RADAR_MS) / DURACION_RADAR_MS;
-        circulo.setRadius(base * (1 + progreso * CRECIMIENTO_RADAR));
+        circulo.setRadius(base * (RADIO_INICIAL_RADAR + progreso * (1 - RADIO_INICIAL_RADAR)));
         circulo.setStyle({ opacity: OPACIDAD_RADAR * (1 - progreso), fillOpacity: 0 });
       });
     };
@@ -407,7 +409,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
               radius={base}
               pathOptions={{
                 className: 'mapa-geofence',
-                color: '#1B2A6B',
+                color: COLOR_RADAR,
                 weight: 2,
                 opacity: OPACIDAD_RADAR,
                 fillOpacity: 0,
