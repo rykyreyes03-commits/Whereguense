@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es-NI">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      // Tema oscuro guardado: se aplica antes de que se dibuje nada, para que no haya un parpadeo claro (ver src/tema.js).
+      try { if (localStorage.getItem('tema') === 'oscuro') document.documentElement.classList.add('dark'); } catch (e) { /* sin almacenamiento */ }
+    </script>
+    <link rel="icon" type="image/png" sizes="48x48" href="/Whereguense/favicon-48x48.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" sizes="180x180" href="/Whereguense/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;700;900&family=Lora:wght@400;600&family=Nunito:wght@400;600;700;800&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>WhereGuense</title>
+    <script type="module" crossorigin src="/Whereguense/assets/index-CdFyTica.js"></script>
+    <link rel="stylesheet" crossorigin href="/Whereguense/assets/index-CMMcOBXL.css">
+  <link rel="manifest" href="/Whereguense/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Whereguense/registerSW.js"></script></head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
