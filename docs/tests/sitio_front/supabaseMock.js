@@ -42,5 +42,11 @@ export const supabase = {
   // sitio_foto: el mock no filtra por es_portada; para el panel se pasa db().portada ya resuelta.
   from: (tabla) => resultado(tabla === 'sitio_foto' ? (db().portada !== undefined ? db().portada : db().fotos) : tabla === 'sitio' ? (db().sitioFila || []) : []),
   rpc: (nombre, args) => resultado(funciones[nombre] ? funciones[nombre](args || {}) : []),
-  auth: { getSession: async () => ({ data: { session: db().sesion ? { user: { id: db().uid } } : null } }) },
+  // signInWithPassword y signUp anotan la llamada en db().llamadas y devuelven db().auth.signIn / db().auth.signUp si existen
+  auth: {
+    getSession: async () => ({ data: { session: db().sesion ? { user: { id: db().uid } } : null } }),
+    signInWithPassword: async (a) => { db().llamadas.push(['signIn', a]); return db().auth?.signIn || { data: { session: {} }, error: null }; },
+    signInWithOAuth: async (a) => { db().llamadas.push(['oauth', a]); return db().auth?.oauth || { data: {}, error: null }; },
+    signUp: async (a) => { db().llamadas.push(['signUp', a]); return db().auth?.signUp || { data: { user: { identities: [{}] }, session: {} }, error: null }; },
+  },
 };

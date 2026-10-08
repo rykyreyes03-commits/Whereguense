@@ -129,19 +129,6 @@
 .login-btn img { width: 22px; height: 22px; object-fit: contain; }
 
 /* CTA principal — el más prominente */
-.login-btn-invitado {
-  background: var(--color-primary);
-  color: var(--color-white);
-  font-size: 1.05rem;
-  font-weight: 800;
-  padding: 18px 24px;
-  box-shadow: var(--shadow-md);
-}
-.login-btn-invitado:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  background: #25338c;
-}
 
 /* Botones secundarios */
 .login-btn-secundario {
@@ -179,20 +166,20 @@
   background: var(--color-border);
 }
 
-/* ===== Flujo OTP por correo ===== */
-.login-otp {
+/* ===== Correo y contraseña ===== */
+.login-form {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-top: 12px;
 }
-.login-otp-label {
+.login-form-label {
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.3px;
   color: var(--color-text-muted);
 }
-.login-otp-input {
+.login-form-input {
   width: 100%;
   box-sizing: border-box;
   padding: 14px 16px;
@@ -204,53 +191,42 @@
   color: var(--color-text);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.login-otp-input:focus {
+.login-form-input:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(30, 42, 120, 0.15); /* var(--color-primary) al 15% */
 }
-.login-otp-input:disabled {
+.login-form-input:disabled {
   opacity: 0.6;
 }
-.login-otp-input-codigo {
-  text-align: center;
-  font-size: 1.2rem;
-  font-weight: 800;
-  letter-spacing: 0.5em;
-}
-.login-otp-btn {
+.login-form-btn {
   width: 100%;
   margin-bottom: 0;
 }
-.login-otp-acciones {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 2px;
-}
-.login-otp-link {
-  padding: 4px 2px;
+.login-form-link {
+  min-height: 44px;
+  padding: 4px 4px;
   background: none;
   border: none;
   font-family: var(--font-body);
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 0.88rem;
+  font-weight: 800;
   color: var(--color-accent-text);
   cursor: pointer;
 }
-.login-otp-link:hover { text-decoration: underline; }
-.login-otp-link:disabled {
+.login-form-link:hover { text-decoration: underline; }
+.login-form-link:disabled {
   opacity: 0.5;
   cursor: default;
   text-decoration: none;
 }
-.login-otp-aviso {
+.login-form-aviso {
   margin: 10px 0 0;
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--color-folk);
 }
-.login-otp-error {
+.login-form-error {
   margin: 10px 0 0;
   font-size: 0.85rem;
   font-weight: 700;
@@ -263,12 +239,6 @@
   font-size: 0.88rem;
   color: var(--color-text-muted);
 }
-.login-crear-cuenta span {
-  color: var(--color-accent-text);
-  font-weight: 800;
-  cursor: pointer;
-}
-.login-crear-cuenta span:hover { text-decoration: underline; }
 
 /* ===== Reduced motion ===== */
 @media (prefers-reduced-motion: reduce) {

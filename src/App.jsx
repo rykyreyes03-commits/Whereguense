@@ -600,7 +600,6 @@ function App() {
   if (pantalla === 'login') {
     return (
       <Login
-        onIniciarComoInvitado={() => setPantalla('proposito')}
         onVolverALanding={() => setPantalla('landing')}
         sesionExpirada={avisoSesionExpirada}
       />

@@ -3,4 +3,10 @@
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+// PKCE: el enlace del correo vuelve a la app con ?code=... y Supabase lo canjea por la sesión (detectSessionInUrl).
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    flowType: 'pkce',
+    detectSessionInUrl: true,
+  },
+})

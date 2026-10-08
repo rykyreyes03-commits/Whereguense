@@ -96,7 +96,7 @@ function Pantalla() {
   if (params.get('vista') === 'pasaporte') return <Pasaporte />;
   const ir = (p) => window.__eventos.push(['ir', p]);
   const vistaExtra = params.get('vista');
-  if (vistaExtra === 'login') return <Login onIniciarComoInvitado={() => {}} onVolverALanding={() => {}} sesionExpirada={false} />;
+  if (vistaExtra === 'login') return <Login onVolverALanding={() => {}} sesionExpirada={false} />;
   if (vistaExtra === 'landing') return <Landing onComenzar={() => {}} onNavigate={ir} />;
   if (vistaExtra === 'ranking') return <Ranking sellos={[{ id: 1, sitioId: 1, fecha: '1/10/2026' }]} onNavigate={ir} />;
   if (vistaExtra === 'guardados') return <MisGuardados usuarioId="yo" eventos={[]} onVerSitio={() => {}} onVerEvento={() => {}} onVolver={() => {}} />;
