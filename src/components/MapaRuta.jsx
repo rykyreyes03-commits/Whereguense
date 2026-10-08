@@ -17,6 +17,11 @@ import PanelNegocio from './PanelNegocio';
 import PerfilNegocioPublico from './PerfilNegocioPublico';
 
 const RADIO_GEOFENCE_DEFECTO = 80;
+// Efecto radar de los círculos de sellado: el anillo crece 1.5 veces su radio y se desvanece cada 2 s. Los círculos son SVG de
+// Leaflet, así que se anima con setRadius/setStyle (un solo requestAnimationFrame para todos, a unos 30 cuadros por segundo).
+const DURACION_RADAR_MS = 2000;
+const CRECIMIENTO_RADAR = 1.5;
+const OPACIDAD_RADAR = 0.6;
 
 const iconoUbicacion = L.divIcon({
   className: 'ubicacion-usuario-icono',
@@ -148,6 +153,7 @@ function SeguidorUbicacion({ ubicacion, activo, onSeguirDesactivado }) {
 function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocadoId = null, onVolver, onVerRuta, usuarioId }) {
   const { t } = useTranslation();
   const mapRef = useRef(null);
+  const circulosRadarRef = useRef(new Map()); // id del sitio -> { circulo (Leaflet), base (m), desfase (ms) }
   const { ubicacion, error } = useUbicacionActual();
   const { estaGuardado: estaGuardadoSupabase, toggleGuardar } = useGuardados(usuarioId);
   const { negocios, cargando: cargandoNegocios } = useNegociosActivos();
@@ -190,6 +196,29 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
     setNegocioSeleccionado(null);
     setLlegadaDesdeFicha(true);
     if (mapRef.current) mapRef.current.flyTo(negocio.position, 17);
+  }, []);
+
+  // Radar de los círculos de sellado
+  useEffect(() => {
+    const circulos = circulosRadarRef.current;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      circulos.forEach(({ circulo }) => circulo.setStyle({ opacity: 0.25, fillOpacity: 0 }));
+      return undefined;
+    }
+    let cuadro;
+    let ultimo = 0;
+    const paso = (t) => {
+      cuadro = requestAnimationFrame(paso);
+      if (t - ultimo < 33) return;
+      ultimo = t;
+      circulos.forEach(({ circulo, base, desfase }) => {
+        const progreso = ((t + desfase) % DURACION_RADAR_MS) / DURACION_RADAR_MS;
+        circulo.setRadius(base * (1 + progreso * CRECIMIENTO_RADAR));
+        circulo.setStyle({ opacity: OPACIDAD_RADAR * (1 - progreso), fillOpacity: 0 });
+      });
+    };
+    cuadro = requestAnimationFrame(paso);
+    return () => cancelAnimationFrame(cuadro);
   }, []);
 
   useEffect(() => {
@@ -361,18 +390,31 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
           maxZoom={20}
           attribution='&copy; OpenStreetMap contributors &copy; CARTO'
         />
-        {sitios.map(sitio => (
-          <Circle
-            key={`radio-${sitio.id}`}
-            center={sitio.position}
-            radius={sitio.radioSelloMetros ?? RADIO_GEOFENCE_DEFECTO}
-            pathOptions={{
-              className: `mapa-geofence mapa-geofence-delay-${sitio.id % 3}`,
-              weight: 1,
-              fillOpacity: 0.08,
-            }}
-          />
-        ))}
+        {sitios.map(sitio => {
+          const base = sitio.radioSelloMetros ?? RADIO_GEOFENCE_DEFECTO;
+          return (
+            <Circle
+              key={`radio-${sitio.id}`}
+              ref={(circulo) => {
+                if (circulo) {
+                  // Los sitios salen escalonados (3 fases) para que se vean ondas múltiples
+                  circulosRadarRef.current.set(sitio.id, { circulo, base, desfase: (sitio.id % 3) * (DURACION_RADAR_MS / 3) });
+                } else {
+                  circulosRadarRef.current.delete(sitio.id);
+                }
+              }}
+              center={sitio.position}
+              radius={base}
+              pathOptions={{
+                className: 'mapa-geofence',
+                color: '#1B2A6B',
+                weight: 2,
+                opacity: OPACIDAD_RADAR,
+                fillOpacity: 0,
+              }}
+            />
+          );
+        })}
 
         {sitios.map(sitio => (
           <Marker
