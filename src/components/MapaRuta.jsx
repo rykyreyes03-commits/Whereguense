@@ -18,9 +18,9 @@ import PerfilNegocioPublico from './PerfilNegocioPublico';
 
 const RADIO_GEOFENCE_DEFECTO = 80;
 // Efecto radar de los círculos de sellado: el anillo sale del centro (10 % del radio) y llega justo al borde del radio real de
-// sellado (100 %), desvaneciéndose, cada 2 s. Los círculos son SVG de Leaflet, así que se anima con setRadius/setStyle (un solo
+// sellado (100 %), desvaneciéndose, cada 3.5 s. Los círculos son SVG de Leaflet, así que se anima con setRadius/setStyle (un solo
 // requestAnimationFrame para todos, a unos 30 cuadros por segundo).
-const DURACION_RADAR_MS = 2000;
+const DURACION_RADAR_MS = 3500;
 const RADIO_INICIAL_RADAR = 0.1;
 const OPACIDAD_RADAR = 0.4;
 const COLOR_RADAR = '#38BDF8';
@@ -399,8 +399,8 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocado
               key={`radio-${sitio.id}`}
               ref={(circulo) => {
                 if (circulo) {
-                  // Los sitios salen escalonados (3 fases) para que se vean ondas múltiples
-                  circulosRadarRef.current.set(sitio.id, { circulo, base, desfase: (sitio.id % 3) * (DURACION_RADAR_MS / 3) });
+                  // Cada sitio tiene su propio desfase: las ondas son independientes y no pulsan todas a la vez
+                  circulosRadarRef.current.set(sitio.id, { circulo, base, desfase: (sitio.id * 1237) % DURACION_RADAR_MS });
                 } else {
                   circulosRadarRef.current.delete(sitio.id);
                 }
