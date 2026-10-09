@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 830" width="1300" height="830" font-family="Arial, Helvetica, sans-serif">
+<title>Wheregüense — Diagrama ER estilo Chen (2FN)</title>
+<rect width="1300" height="830" fill="#ffffff"/>
+<text x="20" y="32" font-size="18" font-weight="bold" fill="#1E3A8A">Wheregüense — Modelo Entidad-Relación (notación de Chen, 2FN)</text>
+<text x="20" y="54" font-size="12" fill="#64748B">PK = clave primaria · FK = clave foránea · 1 = uno · * = muchos</text>
+<line x1="250" y1="170" x2="250.0" y2="303.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="95" y1="225" x2="210.1" y2="303.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="80" y1="330" x2="175.0" y2="330.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="95" y1="435" x2="210.1" y2="357.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="395" y1="215" x2="284.0" y2="303.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="730" y1="170" x2="730.0" y2="303.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="590" y1="215" x2="697.1" y2="303.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="870" y1="215" x2="762.9" y2="303.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="730" y1="460" x2="730.0" y2="357.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="1060" y1="170" x2="1060.0" y2="303.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="1200" y1="215" x2="1092.9" y2="303.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="1215" y1="330" x2="1135.0" y2="330.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="1200" y1="445" x2="1092.9" y2="357.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="900" y1="470" x2="1029.1" y2="357.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="95" y1="610" x2="190.2" y2="653.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="95" y1="730" x2="175.0" y2="704.2" stroke="#64748B" stroke-width="1.5"/>
+<line x1="250" y1="785" x2="250.0" y2="707.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="405" y1="730" x2="325.0" y2="704.2" stroke="#64748B" stroke-width="1.5"/>
+<line x1="405" y1="610" x2="309.8" y2="653.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="900" y1="690" x2="985.0" y2="684.7" stroke="#64748B" stroke-width="1.5"/>
+<line x1="1060" y1="780" x2="1060.0" y2="707.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="1210" y1="710" x2="1135.0" y2="695.0" stroke="#64748B" stroke-width="1.5"/>
+<line x1="325.0" y1="330.0" x2="428.0" y2="330.0" stroke="#64748B" stroke-width="2"/>
+<text x="345.0" y="349.0" font-size="18" font-weight="bold" fill="#0F172A" text-anchor="middle">1</text>
+<line x1="655.0" y1="330.0" x2="552.0" y2="330.0" stroke="#64748B" stroke-width="2"/>
+<text x="635.0" y="321.0" font-size="18" font-weight="bold" fill="#0F172A" text-anchor="middle">*</text>
+<line x1="805.0" y1="330.0" x2="833.0" y2="330.0" stroke="#64748B" stroke-width="2"/>
+<text x="825.0" y="349.0" font-size="18" font-weight="bold" fill="#0F172A" text-anchor="middle">*</text>
+<line x1="985.0" y1="330.0" x2="957.0" y2="330.0" stroke="#64748B" stroke-width="2"/>
+<text x="965.0" y="321.0" font-size="18" font-weight="bold" fill="#0F172A" text-anchor="middle">1</text>
+<line x1="250.0" y1="357.0" x2="250.0" y2="471.0" stroke="#64748B" stroke-width="2"/>
+<text x="236.0" y="382.0" font-size="18" font-weight="bold" fill="#0F172A" text-anchor="middle">1</text>
+<line x1="250.0" y1="653.0" x2="250.0" y2="539.0" stroke="#64748B" stroke-width="2"/>
+<text x="264.0" y="638.0" font-size="18" font-weight="bold" fill="#0F172A" text-anchor="middle">*</text>
+<line x1="1060.0" y1="357.0" x2="1060.0" y2="476.0" stroke="#64748B" stroke-width="2"/>
+<text x="1046.0" y="382.0" font-size="18" font-weight="bold" fill="#0F172A" text-anchor="middle">*</text>
+<line x1="1060.0" y1="653.0" x2="1060.0" y2="544.0" stroke="#64748B" stroke-width="2"/>
+<text x="1074.0" y="638.0" font-size="18" font-weight="bold" fill="#0F172A" text-anchor="middle">*</text>
+<ellipse cx="250" cy="170" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="250" y="174" font-size="12" fill="#1E3A8A" text-anchor="middle" text-decoration="underline">id (PK)</text>
+<ellipse cx="95" cy="225" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="95" y="229" font-size="12" fill="#1E3A8A" text-anchor="middle">email</text>
+<ellipse cx="80" cy="330" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="80" y="334" font-size="12" fill="#1E3A8A" text-anchor="middle">nombre_usuario</text>
+<ellipse cx="95" cy="435" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="95" y="439" font-size="12" fill="#1E3A8A" text-anchor="middle">rol</text>
+<ellipse cx="395" cy="215" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="395" y="219" font-size="12" fill="#1E3A8A" text-anchor="middle">fecha_registro</text>
+<ellipse cx="730" cy="170" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="730" y="174" font-size="12" fill="#1E3A8A" text-anchor="middle" text-decoration="underline">id (PK)</text>
+<ellipse cx="590" cy="215" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="590" y="219" font-size="12" fill="#1E3A8A" text-anchor="middle">usuario_id (FK)</text>
+<ellipse cx="870" cy="215" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="870" y="219" font-size="12" fill="#1E3A8A" text-anchor="middle">sitio_id (FK)</text>
+<ellipse cx="730" cy="460" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="730" y="464" font-size="12" fill="#1E3A8A" text-anchor="middle">fecha_sello</text>
+<ellipse cx="1060" cy="170" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="1060" y="174" font-size="12" fill="#1E3A8A" text-anchor="middle" text-decoration="underline">id (PK)</text>
+<ellipse cx="1200" cy="215" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="1200" y="219" font-size="12" fill="#1E3A8A" text-anchor="middle">nombre</text>
+<ellipse cx="1215" cy="330" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="1215" y="334" font-size="12" fill="#1E3A8A" text-anchor="middle">descripcion_corta</text>
+<ellipse cx="1200" cy="445" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="1200" y="449" font-size="12" fill="#1E3A8A" text-anchor="middle">latitud</text>
+<ellipse cx="900" cy="470" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="900" y="474" font-size="12" fill="#1E3A8A" text-anchor="middle">longitud</text>
+<ellipse cx="95" cy="610" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="95" y="614" font-size="12" fill="#1E3A8A" text-anchor="middle" text-decoration="underline">id (PK)</text>
+<ellipse cx="95" cy="730" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="95" y="734" font-size="12" fill="#1E3A8A" text-anchor="middle">nombre_negocio</text>
+<ellipse cx="250" cy="785" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="250" y="789" font-size="12" fill="#1E3A8A" text-anchor="middle">usuario_id (FK)</text>
+<ellipse cx="405" cy="730" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="405" y="734" font-size="12" fill="#1E3A8A" text-anchor="middle">estado</text>
+<ellipse cx="405" cy="610" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="405" y="614" font-size="12" fill="#1E3A8A" text-anchor="middle">categoria</text>
+<ellipse cx="900" cy="690" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="900" y="694" font-size="12" fill="#1E3A8A" text-anchor="middle" text-decoration="underline">id (PK)</text>
+<ellipse cx="1060" cy="780" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="1060" y="784" font-size="12" fill="#1E3A8A" text-anchor="middle">nombre</text>
+<ellipse cx="1210" cy="710" rx="70" ry="20" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="1"/>
+<text x="1210" y="714" font-size="12" fill="#1E3A8A" text-anchor="middle">ciudad</text>
+<polygon points="490,296 552,330 490,364 428,330" fill="#F59E0B" stroke="#B45309" stroke-width="1.5"/>
+<text x="490" y="335" font-size="14" font-weight="bold" fill="#000000" text-anchor="middle">obtiene</text>
+<polygon points="895,296 957,330 895,364 833,330" fill="#F59E0B" stroke="#B45309" stroke-width="1.5"/>
+<text x="895" y="335" font-size="14" font-weight="bold" fill="#000000" text-anchor="middle">pertenece</text>
+<polygon points="250,471 312,505 250,539 188,505" fill="#F59E0B" stroke="#B45309" stroke-width="1.5"/>
+<text x="250" y="510" font-size="14" font-weight="bold" fill="#000000" text-anchor="middle">registra</text>
+<polygon points="1060,476 1122,510 1060,544 998,510" fill="#F59E0B" stroke="#B45309" stroke-width="1.5"/>
+<text x="1060" y="515" font-size="14" font-weight="bold" fill="#000000" text-anchor="middle">incluye</text>
+<rect x="175.0" y="303.0" width="150" height="54" fill="#1E3A8A" stroke="#172554" stroke-width="2"/>
+<text x="250" y="336" font-size="18" font-weight="bold" fill="#ffffff" text-anchor="middle">Usuario</text>
+<rect x="655.0" y="303.0" width="150" height="54" fill="#1E3A8A" stroke="#172554" stroke-width="2"/>
+<text x="730" y="336" font-size="18" font-weight="bold" fill="#ffffff" text-anchor="middle">Sello</text>
+<rect x="985.0" y="303.0" width="150" height="54" fill="#1E3A8A" stroke="#172554" stroke-width="2"/>
+<text x="1060" y="336" font-size="18" font-weight="bold" fill="#ffffff" text-anchor="middle">Sitio</text>
+<rect x="175.0" y="653.0" width="150" height="54" fill="#1E3A8A" stroke="#172554" stroke-width="2"/>
+<text x="250" y="686" font-size="18" font-weight="bold" fill="#ffffff" text-anchor="middle">Negocio</text>
+<rect x="985.0" y="653.0" width="150" height="54" fill="#1E3A8A" stroke="#172554" stroke-width="2"/>
+<text x="1060" y="686" font-size="18" font-weight="bold" fill="#ffffff" text-anchor="middle">Ruta</text>
+</svg>

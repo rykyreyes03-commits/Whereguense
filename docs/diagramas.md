@@ -1,6 +1,8 @@
 # Diagramas técnicos — Wheregüense
 
-Vigente a la migración **033** (2026-10). Generado a partir del esquema real de Supabase (27 tablas
+**Diagrama en Segunda Forma Normal (2FN) — cada atributo no clave depende completamente de la clave primaria.**
+
+Vigente a la migración **041** (2026-10). Generado a partir del esquema real de Supabase (31 tablas
 en `public`) y del código. GitHub dibuja los bloques `mermaid` directamente.
 
 Los diagramas anteriores ([`diagrama_bd_v2.md`](diagrama_bd_v2.md), [`diagrama_bd_v3.md`](diagrama_bd_v3.md))
@@ -317,9 +319,29 @@ erDiagram
         smallint nivel_hito PK,FK
         int pieza_id PK,FK
     }
+
+    solicitud_demo {
+        uuid id PK
+        text nombre
+        text correo
+        text organizacion "opcional"
+        text mensaje "opcional"
+        timestamptz created_at
+        boolean leida
+        boolean atendida
+    }
 ```
 
 Notas de diseño:
+
+- `solicitud_demo` (041) no se relaciona con otras tablas: la llena el formulario público de la landing solo
+  mediante `crear_solicitud_demo()` y la lee solo el administrador.
+- **No existe una tabla `solicitud_sello`**: la solicitud de sello son columnas de `actividad_negocio`
+  (`solicita_sello`, `estado_sello`, `justificacion_sello`, `motivo_rechazo_sello`, `qr_sello_id`); es 2FN porque
+  dependen de la actividad, que es la clave. Tampoco hay `is_admin`: el rol está en `usuario.rol`.
+- Cobertura pedida por la rúbrica: `usuario`, `sitio`, `sello`, `negocio`, `ruta`, `actividad_negocio`,
+  `solicitud_demo`, `resena` y `cupon` son tablas del diagrama; `solicitud_sello` es parte de `actividad_negocio`.
+- Versión en notación de Chen de las entidades principales: [`diagrama-er-chen.svg`](diagrama-er-chen.svg).
 
 - `sello` tiene exactamente uno de `sitio_id` o `qr_sello_id` según `tipo`. Un sello de QR es **la prueba**
   de haber visitado ese negocio: de ahí sale quién puede reseñar (`puede_resenar`).
