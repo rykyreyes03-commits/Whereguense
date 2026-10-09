@@ -43,7 +43,10 @@ sus actividades y sus cupones, y reciben reseñas de quienes los visitaron.
 
 ## Demo en vivo
 
-**https://rykyreyes03-commits.github.io/Whereguense/**
+| Dónde | URL | Estado |
+| --- | --- | --- |
+| GitHub Pages | https://rykyreyes03-commits.github.io/Whereguense/ | Activo |
+| Azure (VM Ubuntu + Nginx) | http://68.221.114.205 | En preparación: Nginx y el build aún no están instalados en la VM |
 
 Se puede navegar sin instalar nada: la landing es pública y cualquiera puede registrarse como turista.
 No hay cuenta de demostración pública.
