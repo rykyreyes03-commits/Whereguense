@@ -400,6 +400,93 @@
   object-fit: contain;
 }
 
+/* ===== Solicitud de demo ===== */
+.landing-demo {
+  background: var(--color-card);
+  padding: 64px 18px;
+}
+.landing-demo-inner {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+.landing-demo h2 {
+  font-size: 1.6rem;
+  color: var(--color-heading);
+  margin-bottom: 8px;
+}
+.landing-demo-sub {
+  margin: 0 0 24px;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+.landing-demo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+}
+.landing-demo-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--color-heading);
+}
+.landing-demo-campo em { font-style: normal; font-weight: 400; color: var(--color-text-muted); }
+.landing-demo-campo input,
+.landing-demo-campo textarea {
+  width: 100%;
+  background: var(--color-card);
+  color: var(--color-text);
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  resize: vertical;
+}
+.landing-demo-campo input:focus,
+.landing-demo-campo textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+.landing-demo-btn {
+  margin-top: 6px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-indigo), var(--color-ultramarine));
+  color: #fff;
+  padding: 14px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.landing-demo-btn:disabled { opacity: 0.6; cursor: default; }
+.landing-demo-error {
+  margin: 0;
+  color: var(--color-coral);
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: center;
+}
+.landing-demo-ok {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-green);
+}
+.landing-demo-ok p {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
 /* ===== CTA final ===== */
 .landing-cta {
   position: relative;
@@ -509,6 +596,8 @@
   .landing-perso-personajes img { max-height: 300px; }
   .landing-perso-derecha h2 { font-size: 2rem; }
 
+  .landing-demo { padding: 88px 40px; }
+  .landing-demo h2 { font-size: 2rem; }
   .landing-cta { padding: 100px 40px 110px; }
   .landing-cta h2 { font-size: 2.4rem; }
 }

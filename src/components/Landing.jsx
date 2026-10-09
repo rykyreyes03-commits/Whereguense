@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import './Landing.css';
 import LandingNavbar from './LandingNavbar';
+import SolicitudDemo from './SolicitudDemo';
 import touristPresenting from '../assets/landing/tourist-presenting.png';
 import parejaTuristas from '../assets/landing/pareja-turistas.png';
 import foto1 from '../assets/landing/foto-1.png';
@@ -236,6 +237,8 @@ function Landing({ onComenzar, onNavigate }) {
           </div>
         </div>
       </section>
+
+      <SolicitudDemo />
 
       {/* ===== CTA final ===== */}
       <section className="landing-cta" id="landing-cta">
