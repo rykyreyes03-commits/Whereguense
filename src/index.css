@@ -91,5 +91,21 @@ button {
 }
 
 #root {
+  width: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Escritorio y tableta: la app es una columna centrada (cada pantalla limita su ancho: 480, 700 y 1100 px). Los laterales se ven
+   del azul oscuro de la marca y la pantalla pone su propio fondo, en vez de dejar espacios grises sin estilo.
+   :where() deja la especificidad en cero: cualquier pantalla que defina su propio fondo o alto lo mantiene. */
+@media (min-width: 640px) {
+  html,
+  body {
+    background-color: #0F1A2E;
+  }
+  :where(#root > *) {
+    background-color: var(--color-surface);
+    min-height: 100dvh;
+  }
 }
