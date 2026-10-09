@@ -1,6 +1,6 @@
 # Wheregüense
 
-Plataforma de turismo cultural gamificado, piloto en la Ruta Dariana (León, Nicaragua).
+**Wheregüense** es una plataforma de turismo cultural gamificado, con piloto en la Ruta Dariana (León, Nicaragua).
 Proyecto del equipo **Cap'n Code** — Hackathon Nicaragua 2026, Categoría Avanzado.
 
 Funciona como sitio web instalable (PWA) y como app Android (Capacitor), con el mismo código.
@@ -26,7 +26,7 @@ sus actividades y sus cupones, y reciben reseñas de quienes los visitaron.
 - Suscripción con vencimiento: un negocio vencido deja de verse en público (el dueño sigue entrando).
 
 **Administrador**
-- Aprueba o rechaza negocios y solicitudes de sello; modera reseñas.
+- Aprueba o rechaza negocios y solicitudes de sello; modera reseñas; ve las solicitudes de demo que llegan desde la landing.
 
 ## Tecnologías
 
@@ -35,9 +35,18 @@ sus actividades y sus cupones, y reciben reseñas de quienes los visitaron.
 | Interfaz | React 19, Vite 8, CSS plano por componente (tokens en `src/index.css`) |
 | Mapa y rutas | Leaflet / react-leaflet, tiles CARTO Voyager, ruteo peatonal con OpenRouteService |
 | QR | `jsqr` (leer con la cámara), `qrcode.react` (dibujar) |
-| Backend | Supabase: PostgreSQL, Auth (OTP por correo + TOTP), Storage, Row Level Security |
+| Iconos | `lucide-react` |
+| Idiomas | `i18next` + `react-i18next` (español e inglés) |
+| Backend | Supabase: PostgreSQL, Auth (correo y contraseña, Google, TOTP opcional), Storage, Row Level Security |
 | App móvil | Capacitor 8 (Android), plugins SplashScreen y StatusBar |
 | PWA | `vite-plugin-pwa` (Workbox) |
+
+## Demo en vivo
+
+**https://rykyreyes03-commits.github.io/Whereguense/**
+
+Se puede navegar sin instalar nada: la landing es pública y cualquiera puede registrarse como turista.
+No hay cuenta de demostración pública.
 
 ## Arquitectura
 
@@ -54,13 +63,33 @@ en `src/App.jsx`, sin librería de rutas. Los datos se leen con hooks por domini
 
 ## Instalación y ejecución
 
+Requisitos: Node.js 20.19 o superior (o 22.12+) y npm.
+
 ```bash
 git clone https://github.com/rykyreyes03-commits/Whereguense.git
 cd Whereguense
 npm install
-cp .env.example .env.local   # y completa las 4 variables
+cp .env.example .env.local
+# Abre .env.local y llena VITE_SUPABASE_URL y VITE_SUPABASE_PUBLISHABLE_KEY
+# (las otras dos son para el mapa y la ruta peatonal)
 npm run dev                  # http://localhost:5173
 ```
+
+Abre `http://localhost:5173` en el navegador. Si ves la landing, el servidor está bien; si la pantalla
+queda en blanco o no deja registrarte, revisa las dos variables de Supabase y reinicia `npm run dev`
+(Vite solo lee `.env.local` al arrancar).
+
+### Ejemplo de uso: un turista escanea un QR y obtiene un sello
+
+1. El turista se registra o entra y abre **Escanear** (la cámara pide permiso).
+2. Apunta al QR que el negocio tiene en el local. `jsqr` lee el código y la app llama a
+   `canjear_qr_sello(token)` en Supabase.
+3. La base valida que el QR exista, que el negocio siga participando, que la actividad no haya
+   terminado, que el turista no lo haya canjeado antes y que no se pase del límite de canjes.
+4. Si todo está bien aparece **"¡Sello obtenido en …!"**, el sello entra al pasaporte;
+   si no, se muestra el motivo (por ejemplo "Esta actividad ya terminó.").
+
+Los sitios de la ruta se sellan de otra forma: por geolocalización, estando dentro del radio del sitio.
 
 ### Variables de entorno (`.env.local`, nunca se sube al repositorio)
 
@@ -82,6 +111,8 @@ Nunca pongas aquí la llave `service_role` de Supabase.
 | `npm run build` | Compila para producción en `dist/` |
 | `npm run lint` | ESLint sobre todo el proyecto |
 | `npm run preview` | Sirve el build de producción localmente |
+| `npm run build:pages` | Compila para GitHub Pages (base `/Whereguense/`) |
+| `npm run deploy` | Publica `dist/` en la rama `gh-pages` (corre `build:pages` antes) |
 | `npx cap sync android` | Copia `dist/` y los plugins al proyecto Android |
 
 Despliegue web y Android: [`DEPLOYMENT.md`](DEPLOYMENT.md).
@@ -100,9 +131,12 @@ android/        # Proyecto Android generado por Capacitor
 assets/         # Fuentes del ícono y el splash (capacitor-assets)
 scripts/        # Utilidades de build (íconos adaptativos de Android)
 docs/
-  migrations/   # Esquema y reglas de la base, 001 a 033, en orden
+  migrations/   # Esquema y reglas de la base, 001 a 041, en orden
   tests/        # Pruebas con rollback de la base y de la interfaz (ver docs/tests/README.md)
   diagramas.md  # ER, clases, casos de uso y flujos (vigente)
+  diagrama-er-chen.svg   # ER en notación de Chen (entidades principales, 2FN)
+  control-versiones.md, seguridad-roles.md
+  documentacion/         # documentación completa y diagramas PNG
   diagrama_bd_v2.md, diagrama_bd_v3.md   # históricos
 ```
 
@@ -123,10 +157,11 @@ La llave pública está en el navegador, así que cualquiera puede llamar a la A
    `responder_resena`, `admin_aprobar_negocio`, `admin_aprobar_sello`.
 4. **Funciones internas** (`fin_de_actividad`, `autor_visible`, `crear_actividad_qr`) solo las puede
    ejecutar `service_role`: no se pueden llamar desde la API.
-5. **Roles.** `turista`, `admin` (y `auditor` de solo lectura). Ser *emprendedor* no es un rol: es ser
-   dueño de un `negocio`. Las funciones `admin_*` verifican `rol = 'admin'`; un admin no puede aprobar
-   el sello de su propio negocio.
-6. **Autenticación.** Correo con código (OTP) y segundo factor TOTP (Supabase MFA) obligatorio.
+5. **Roles.** `usuario.rol` es `turista`, `emprendedor`, `admin` o `auditor`. Las funciones `admin_*`
+   verifican `rol = 'admin'`; un admin no puede aprobar el sello de su propio negocio.
+   Detalle en [`docs/seguridad-roles.md`](docs/seguridad-roles.md).
+6. **Autenticación.** Correo y contraseña o Google; el segundo factor TOTP (Supabase MFA) es opcional y
+   se activa desde el Perfil.
 7. **Reseñas (032).** La tabla `resena` no se lee ni se escribe directo (ni `anon` ni `authenticated`):
    se lee con `resenas_publicas` / `resumen_resenas` (que muestran el alias "Viajero" mientras el
    usuario no haya cambiado su nombre y nunca `usuario_id` ni el correo) y se escribe con
@@ -180,8 +215,10 @@ Supabase simulado. Qué prueba cada archivo y cómo correrlo: [`docs/tests/READM
 
 ## Diagramas
 
-[`docs/diagramas.md`](docs/diagramas.md): ER de las 27 tablas, clases, casos de uso y los flujos
-actividad → sello → canje, cupones, reseñas y "lo terminado desaparece".
+- [`docs/diagrama-er-chen.svg`](docs/diagrama-er-chen.svg): ER en notación de Chen de las entidades principales.
+- [`docs/diagramas.md`](docs/diagramas.md): ER de las 31 tablas, clases, casos de uso y los flujos
+  actividad → sello → canje, cupones, reseñas y "lo terminado desaparece".
+- [`docs/control-versiones.md`](docs/control-versiones.md) y [`docs/seguridad-roles.md`](docs/seguridad-roles.md).
 
 ## Equipo
 
