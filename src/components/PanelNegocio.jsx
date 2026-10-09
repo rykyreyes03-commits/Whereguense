@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import '../components/PanelSitio.css';
 
 function IconoComoLlegar() {
@@ -31,6 +32,7 @@ function IconoPerfil() {
 }
 
 function PanelNegocio({ negocio, estaGuardado, onCerrar, onComoLlegar, onGuardar, onVerPerfil }) {
+  const { t } = useTranslation();
   if (!negocio) return null;
 
   return (
@@ -39,7 +41,7 @@ function PanelNegocio({ negocio, estaGuardado, onCerrar, onComoLlegar, onGuardar
         type="button"
         className="panel-sitio-cerrar"
         onClick={onCerrar}
-        aria-label="Cerrar"
+        aria-label={t('comun.cerrar')}
       >
         ×
       </button>
@@ -47,8 +49,8 @@ function PanelNegocio({ negocio, estaGuardado, onCerrar, onComoLlegar, onGuardar
       <h2 className="panel-sitio-nombre">{negocio.name}</h2>
 
       <div className="panel-sitio-texto">
-        <span className="panel-sitio-etiqueta">{negocio.categoria || 'Negocio'}</span>
-        <p>{negocio.descripcion || 'Este negocio aún no agregó una descripción.'}</p>
+        <span className="panel-sitio-etiqueta">{negocio.categoria || t('panel.negocio')}</span>
+        {negocio.descripcion && <p>{negocio.descripcion}</p>}
       </div>
 
       <div className="panel-sitio-acciones">
@@ -58,7 +60,7 @@ function PanelNegocio({ negocio, estaGuardado, onCerrar, onComoLlegar, onGuardar
           onClick={() => onComoLlegar(negocio)}
         >
           <IconoComoLlegar />
-          Cómo llegar
+          {t('panel.comoLlegar')}
         </button>
         <button
           type="button"
@@ -66,7 +68,7 @@ function PanelNegocio({ negocio, estaGuardado, onCerrar, onComoLlegar, onGuardar
           onClick={() => onGuardar(negocio)}
         >
           <IconoGuardar />
-          {estaGuardado ? 'Guardado' : 'Guardar'}
+          {estaGuardado ? t('comun.guardado') : t('comun.guardar')}
         </button>
         <button
           type="button"
@@ -74,7 +76,7 @@ function PanelNegocio({ negocio, estaGuardado, onCerrar, onComoLlegar, onGuardar
           onClick={() => onVerPerfil(negocio)}
         >
           <IconoPerfil />
-          Perfil de negocio
+          {t('panel.perfilNegocio')}
         </button>
       </div>
     </div>

@@ -1,0 +1,65 @@
+/* Aviso de una ciudad que todavía no tiene sitios */
+.proximamente-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(10, 14, 40, 0.62);
+  animation: proximamenteFondo 0.18s ease-out;
+}
+.proximamente-tarjeta {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 26px 22px 22px;
+  text-align: center;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-body);
+  animation: proximamenteTarjeta 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.proximamente-icono {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(140deg, #1B2A6B, #2B3BA5);
+  color: #fff;
+}
+.proximamente-titulo {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--color-heading);
+}
+.proximamente-texto { margin: 0; font-size: 0.95rem; color: var(--color-text); }
+.proximamente-pie { margin: 0; font-size: 0.88rem; color: var(--color-text-muted); }
+.proximamente-boton {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 12px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.proximamente-boton:focus-visible { outline: 3px solid var(--color-turquoise); outline-offset: 2px; }
+@keyframes proximamenteFondo { from { opacity: 0; } to { opacity: 1; } }
+@keyframes proximamenteTarjeta { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .proximamente-fondo, .proximamente-tarjeta { animation: none; }
+}

@@ -58,3 +58,20 @@
 .topbar-titulo {
   color: var(--color-text-inverse);
 }
+/* ===== Botón de perfil (rightSlot de la TopBar) ===== */
+.topbar-perfil-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.topbar-perfil-btn:hover { background: rgba(255, 255, 255, 0.22); transform: scale(1.04); }
+.topbar-perfil-btn:focus-visible { outline: 3px solid var(--color-turquoise); outline-offset: 2px; }

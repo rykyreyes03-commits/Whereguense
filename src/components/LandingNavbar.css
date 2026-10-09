@@ -72,8 +72,8 @@
   transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 .landing-btn-registro:hover {
-  background: var(--color-white);
-  color: var(--color-navy);
+  background: var(--color-card);
+  color: var(--color-heading);
   transform: scale(1.02);
 }
 .landing-btn-registro--movil { display: none; }

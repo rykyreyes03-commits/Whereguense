@@ -1,11 +1,13 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import './Inicio.css';
 import TopBar from './TopBar';
+import BotonPerfil from './BotonPerfil';
 import BottomNav from './BottomNav';
 import { useGuardados } from '../hooks/useGuardados';
 import { INSIGNIAS } from '../data/insignias';
-import iconoCabezon from '../assets/icons/icono_cabezon.svg';
-import iconoGigantona from '../assets/icons/icono_gigantona.svg';
+import { hoyManagua, esDeEstaSemana } from '../utils/eventos';
+import { esIngles } from '../utils/idioma';
 import iconoBuscar from '../assets/icons/icono_buscar.svg';
 import iconoArbol from '../assets/icons/icono_arbol.svg';
 import iconoRuta from '../assets/icons/icono_ruta.svg';
@@ -15,8 +17,8 @@ import iconoPasaporte from '../assets/icons/icono_pasaporte.svg';
 
 function formatearFechaCorta(iso) {
   if (!iso) return '';
-  const [y, m, d] = iso.split('-');
-  return `${d}/${m}`;
+  const [, m, d] = iso.split('-');
+  return esIngles() ? `${m}/${d}` : `${d}/${m}`;
 }
 
 function Inicio({
@@ -32,10 +34,12 @@ function Inicio({
   onSeleccionarEvento,
   eventoDestacadoId,
 }) {
+  const { t } = useTranslation();
   const [busqueda, setBusqueda] = useState('');
+  // URL de portada que falló al cargar: la tarjeta vuelve a su diseño de siempre, sin foto.
+  const [portadaFallida, setPortadaFallida] = useState(null);
   const { guardados } = useGuardados(usuarioId);
 
-  const iconoAvatar = localStorage.getItem('avatarElegido') === 'gigantona' ? iconoGigantona : iconoCabezon;
 
   const query = busqueda.trim().toLowerCase();
   const buscando = query.length > 0;
@@ -51,6 +55,10 @@ function Inicio({
     () => eventos?.find((e) => e.id === eventoDestacadoId) || null,
     [eventos, eventoDestacadoId]
   );
+  // "Eventos de esta semana" mientras el destacado esté en curso o empiece en 7 días; si es más lejano, la sección dice "Próximo evento".
+  const tituloEventos = !eventoDestacado || esDeEstaSemana(eventoDestacado, hoyManagua()) ? t('inicio.eventosSemana') : t('inicio.proximoEvento');
+  // Evento con foto: la tarjeta lleva la foto de fondo (criterio de DetalleEvento).
+  const eventoConFoto = Boolean(eventoDestacado?.imagenUrl) && portadaFallida !== eventoDestacado.imagenUrl;
 
   const handleUltimoSello = () => {
     if (!ultimoSello) return;
@@ -83,26 +91,18 @@ function Inicio({
     <div className="inicio-wrapper">
       <TopBar
         onMenuClick={() => onNavigate?.('menu')}
-        rightSlot={
-          <button
-            className="inicio-avatar-btn"
-            onClick={() => onNavigate?.('personalizacion')}
-            aria-label="Personalizar avatar"
-          >
-            <img src={iconoAvatar} alt="" />
-          </button>
-        }
+        rightSlot={<BotonPerfil onClick={() => onNavigate?.('perfil')} />}
       />
 
       <header className="inicio-hero">
         <div className="inicio-hero-texto">
-          <span className="inicio-hero-eyebrow">RUTAS DARIANAS</span>
-          <h1 className="inicio-hero-titulo">Hola, Explorador</h1>
-          <p className="inicio-hero-sub">¿Qué quieres descubrir hoy en León?</p>
+          <span className="inicio-hero-eyebrow">{t('inicio.eyebrow')}</span>
+          <h1 className="inicio-hero-titulo">{t('inicio.hola')}</h1>
+          <p className="inicio-hero-sub">{t('inicio.subtitulo')}</p>
         </div>
-        <div className="inicio-hero-progreso" aria-label={`${sellos.length} de ${totalSellos} sellos`}>
+        <div className="inicio-hero-progreso" aria-label={t('inicio.progresoAria', { n: sellos.length, total: totalSellos })}>
           <span className="inicio-hero-progreso-num">{sellos.length}</span>
-          <span className="inicio-hero-progreso-label">de {totalSellos} sellos</span>
+          <span className="inicio-hero-progreso-label">{t('inicio.progresoLabel', { total: totalSellos })}</span>
         </div>
       </header>
 
@@ -111,16 +111,16 @@ function Inicio({
           <img src={iconoBuscar} alt="" />
           <input
             type="text"
-            placeholder="Buscar rutas, sitios, eventos..."
+            placeholder={t('inicio.buscarPlaceholder')}
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            aria-label="Buscar"
+            aria-label={t('inicio.buscarAria')}
           />
           {busqueda && (
             <button
               className="inicio-buscador-limpiar"
               onClick={() => setBusqueda('')}
-              aria-label="Limpiar búsqueda"
+              aria-label={t('inicio.limpiarBusqueda')}
             >
               ×
             </button>
@@ -132,30 +132,30 @@ function Inicio({
             {rutasCoincidentes.map((r) => (
               <button key={`ruta-${r.id}`} className="inicio-resultado" onClick={() => irARuta(r.id)}>
                 <span className="inicio-resultado-titulo">{r.nombre}</span>
-                <span className="inicio-resultado-tipo">Ruta</span>
+                <span className="inicio-resultado-tipo">{t('inicio.tipoRuta')}</span>
               </button>
             ))}
             {sitiosCoincidentes.map((s) => (
               <button key={`sitio-${s.id}`} className="inicio-resultado" onClick={() => onVerSitioEnMapa?.(s.id)}>
                 <span className="inicio-resultado-titulo">{s.name}</span>
-                <span className="inicio-resultado-tipo">Sitio</span>
+                <span className="inicio-resultado-tipo">{t('inicio.tipoSitio')}</span>
               </button>
             ))}
             {eventosCoincidentes.map((e) => (
               <button key={`evento-${e.id}`} className="inicio-resultado" onClick={() => irAEvento(e)}>
                 <span className="inicio-resultado-titulo">{e.nombre}</span>
-                <span className="inicio-resultado-tipo">Evento</span>
+                <span className="inicio-resultado-tipo">{t('inicio.tipoEvento')}</span>
               </button>
             ))}
             {sinResultados && (
               <div className="inicio-resultado-vacio">
-                Sin resultados para &ldquo;{busqueda}&rdquo;
+                {t('inicio.sinResultados', { q: busqueda })}
               </div>
             )}
           </div>
         )}
 
-        <h2 className="inicio-seccion">Accesos rápidos</h2>
+        <h2 className="inicio-seccion">{t('inicio.accesos')}</h2>
         <div className="inicio-accesos">
           <button
             type="button"
@@ -164,9 +164,9 @@ function Inicio({
             disabled={!ultimoSello}
           >
             <span className="inicio-acceso-icono"><img src={iconoArbol} alt="" /></span>
-            <span className="inicio-acceso-label">Último sello</span>
+            <span className="inicio-acceso-label">{t('inicio.ultimoSello')}</span>
             <span className="inicio-acceso-meta">
-              {ultimoSello ? 'Ver detalle' : 'Sin sellos aún'}
+              {ultimoSello ? t('inicio.verDetalle') : t('inicio.sinSellosAun')}
             </span>
           </button>
 
@@ -177,7 +177,7 @@ function Inicio({
             disabled={!rutaPrincipal}
           >
             <span className="inicio-acceso-icono"><img src={iconoRuta} alt="" /></span>
-            <span className="inicio-acceso-label">Última ruta</span>
+            <span className="inicio-acceso-label">{t('inicio.ultimaRuta')}</span>
             <span className="inicio-acceso-meta">{rutaPrincipal?.nombre || '—'}</span>
           </button>
 
@@ -188,40 +188,40 @@ function Inicio({
             disabled={guardados.length === 0}
           >
             <span className="inicio-acceso-icono"><img src={iconoRutaGuardada} alt="" /></span>
-            <span className="inicio-acceso-label">Guardados</span>
+            <span className="inicio-acceso-label">{t('inicio.guardados')}</span>
             <span className="inicio-acceso-meta">
               {guardados.length > 0
-                ? `${guardados.length} guardado${guardados.length === 1 ? '' : 's'}`
-                : 'Aún no guardas nada'}
+                ? t('inicio.guardados', { count: guardados.length })
+                : t('inicio.nadaGuardado')}
             </span>
           </button>
 
           <button type="button" className="inicio-acceso" onClick={handleEscanear}>
             <span className="inicio-acceso-icono"><img src={iconoQR} alt="" /></span>
-            <span className="inicio-acceso-label">Escanear</span>
-            <span className="inicio-acceso-meta">Sello de negocio</span>
+            <span className="inicio-acceso-label">{t('inicio.escanear')}</span>
+            <span className="inicio-acceso-meta">{t('inicio.selloOCupon')}</span>
           </button>
         </div>
 
         {sellos.length === 0 && (
-          <div className="inicio-banner-bienvenida" role="region" aria-label="Invitación a explorar">
+          <div className="inicio-banner-bienvenida" role="region" aria-label={t('inicio.bannerAria')}>
             <span className="inicio-banner-bienvenida-icono" aria-hidden="true">
               <img src={iconoPasaporte} alt="" />
             </span>
             <div className="inicio-banner-bienvenida-texto">
-              <strong>Aún no tienes sellos</strong>
-              <span>Visita un sitio en el mapa para comenzar la aventura.</span>
+              <strong>{t('inicio.bannerTitulo')}</strong>
+              <span>{t('inicio.bannerTexto')}</span>
             </div>
             <button className="inicio-banner-bienvenida-btn" onClick={irAlMapa}>
-              Abrir mapa
+              {t('inicio.abrirMapa')}
             </button>
           </div>
         )}
 
         <div className="inicio-seccion-header">
-          <h2 className="inicio-seccion">Rutas destacadas</h2>
+          <h2 className="inicio-seccion">{t('inicio.rutasDestacadas')}</h2>
           <button className="inicio-ver-todas" onClick={() => onNavigate?.('rutas')}>
-            Ver todas
+            {t('inicio.verTodas')}
           </button>
         </div>
 
@@ -236,13 +236,13 @@ function Inicio({
               <img src={INSIGNIAS.cathedral} alt="" />
             </div>
             <div className="inicio-card-body">
-              <div className="inicio-card-eyebrow">RUTA PRINCIPAL</div>
+              <div className="inicio-card-eyebrow">{t('inicio.rutaPrincipal')}</div>
               <h3 className="inicio-card-titulo">{rutaPrincipal.nombre}</h3>
               <div className="inicio-card-ubicacion">{rutaPrincipal.ciudad}</div>
               <div className="inicio-card-pills">
-                <span className="inicio-pill">{sitios.length} sitios</span>
+                <span className="inicio-pill">{t('inicio.nSitios', { count: sitios.length })}</span>
                 <span className="inicio-pill inicio-pill--folk">
-                  {sellos.length} sellados
+                  {t('inicio.nSellados', { count: sellos.length })}
                 </span>
               </div>
             </div>
@@ -250,33 +250,43 @@ function Inicio({
         ) : (
           <div className="inicio-empty">
             <div className="inicio-empty-icono" aria-hidden="true">🧭</div>
-            <h3>Aún no hay rutas disponibles</h3>
-            <p>Explora el mapa para descubrir sitios por tu cuenta y crear tu propia ruta.</p>
+            <h3>{t('inicio.sinRutasTitulo')}</h3>
+            <p>{t('inicio.sinRutasTexto')}</p>
             <button className="inicio-empty-btn" onClick={irAlMapa}>
-              Explorar mapa
+              {t('inicio.explorarMapa')}
             </button>
           </div>
         )}
 
         <div className="inicio-seccion-header">
-          <h2 className="inicio-seccion">Eventos de esta semana</h2>
+          <h2 className="inicio-seccion">{tituloEventos}</h2>
           <button className="inicio-ver-todas" onClick={() => onNavigate?.('eventos')}>
-            Ver todos
+            {t('inicio.verTodos')}
           </button>
         </div>
 
         {eventoDestacado ? (
           <article
-            className="inicio-card"
+            className={`inicio-card ${eventoConFoto ? 'inicio-card--foto' : ''}`}
             onClick={() => { onSeleccionarEvento?.(eventoDestacado.id); onNavigate?.('detalleEvento'); }}
             role="button"
             tabIndex={0}
           >
-            <div className="inicio-card-media inicio-card-media--evento" aria-hidden="true">
-              <img src={INSIGNIAS.sun} alt="" />
-            </div>
+            {eventoConFoto ? (
+              <img
+                className="inicio-card-portada"
+                src={eventoDestacado.imagenUrl}
+                alt=""
+                loading="lazy"
+                onError={() => setPortadaFallida(eventoDestacado.imagenUrl)}
+              />
+            ) : (
+              <div className="inicio-card-media inicio-card-media--evento" aria-hidden="true">
+                <img src={INSIGNIAS.sun} alt="" />
+              </div>
+            )}
             <div className="inicio-card-body">
-              <div className="inicio-card-eyebrow">EVENTO</div>
+              <div className="inicio-card-eyebrow">{t('inicio.evento')}</div>
               <h3 className="inicio-card-titulo">{eventoDestacado.nombre}</h3>
               <div className="inicio-card-ubicacion">{eventoDestacado.ubicacion}</div>
               <div className="inicio-card-pills">
@@ -289,10 +299,10 @@ function Inicio({
         ) : (
           <div className="inicio-empty">
             <div className="inicio-empty-icono" aria-hidden="true">🎉</div>
-            <h3>Sin eventos esta semana</h3>
-            <p>Vuelve pronto: la agenda cultural de León se actualiza cada semana.</p>
+            <h3>{t('inicio.sinEventosTitulo')}</h3>
+            <p>{t('inicio.sinEventosTexto')}</p>
             <button className="inicio-empty-btn inicio-empty-btn--ghost" onClick={() => onNavigate?.('eventos')}>
-              Ver agenda completa
+              {t('inicio.verAgenda')}
             </button>
           </div>
         )}

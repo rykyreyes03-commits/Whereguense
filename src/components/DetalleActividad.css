@@ -1,0 +1,99 @@
+/* Pantalla de una actividad del negocio: franja "Así lo ven los turistas", detalle del turista y barra de acciones. */
+.detact-franja {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 18px;
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-white));
+  color: var(--color-accent-text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+.detact-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 12px 18px 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.detact-aviso svg { flex-shrink: 0; margin-top: 1px; }
+.detact-aviso--ok { background: color-mix(in srgb, var(--color-turquoise) 18%, #fff); color: #0B4F4A; }
+.detact-aviso--info { background: var(--color-surface); color: var(--color-text-muted); }
+.detact-aviso--sellos { background: color-mix(in srgb, var(--color-sun) 38%, #fff); color: #4A3600; }
+
+/* Lo que es solo del dueño: debajo de la vista previa */
+.detact-extras { display: flex; flex-direction: column; gap: 12px; padding: 4px 18px 24px; font-family: var(--font-body); }
+.detact-extras .detact-aviso { margin: 12px 0 0; }
+.detact-sello {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+}
+.detact-sello .generarqr-estado { margin-top: 0; }
+.detact-sello .generarqr-reenvio { width: 100%; }
+.detact-sello-dato, .detact-sello-motivo { margin: 0; font-size: 0.85rem; color: var(--color-text-muted); }
+.detact-nota {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+.detact-nota svg { flex-shrink: 0; margin-top: 1px; }
+.detact-qr-titulo { font-family: var(--font-display); font-size: 1.2rem; color: var(--color-heading); margin: 0 0 14px; text-align: center; }
+
+/* Barra de acciones */
+.detact-barra { display: flex; gap: 8px; }
+.detact-boton {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-card);
+  color: var(--color-heading);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.detact-boton:focus-visible { outline: 3px solid var(--color-turquoise); outline-offset: 2px; }
+.detact-boton--eliminar { border-color: color-mix(in srgb, var(--color-coral) 55%, #fff); color: #A81F22; }
+.detact-boton--qr { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-white); }
+/* Eliminar bloqueado: se ve, con borde punteado y gris, y la explicación está en el aviso amarillo */
+.detact-boton--bloqueado {
+  border: 1.5px dashed var(--color-border-strong);
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  cursor: not-allowed;
+}
+
+/* Tres botones en 360 px: sin saltos de línea y con los íconos de su tamaño */
+.detact-boton { white-space: nowrap; }
+.detact-boton svg { flex-shrink: 0; }
+@media (max-width: 400px) {
+  .detact-boton { padding: 0 6px; gap: 4px; font-size: 0.88rem; }
+  .detact-boton svg { width: 16px; height: 16px; }
+}

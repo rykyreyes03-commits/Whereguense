@@ -1,65 +1,41 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './LandingEventos.css';
 import LandingNavbar from './LandingNavbar';
-import { supabase } from '../lib/supabaseClient';
+import { useEventosPublicos } from '../hooks/useEventosPublicos';
+import { diaDeFin, hoyManagua, sumarDias } from '../utils/eventos';
 
-function inicioDeHoy() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
+// Rango de días 'YYYY-MM-DD' de la vista, a partir de la fecha de Managua (la misma que usa Eventos), no la del teléfono.
+function rangoDeVista(vista) {
+  const hoy = hoyManagua();
+  if (vista === 'semana') return [hoy, sumarDias(hoy, 6)];
+  const [y, m] = hoy.split('-').map(Number);
+  const ultimo = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const mes = `${y}-${String(m).padStart(2, '0')}`;
+  return [`${mes}-01`, `${mes}-${String(ultimo).padStart(2, '0')}`];
 }
-function finDeSemana() {
-  const d = inicioDeHoy();
-  d.setDate(d.getDate() + 6);
-  d.setHours(23, 59, 59, 999);
-  return d;
-}
-function inicioDeMes() {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1);
-}
-function finDeMes() {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
+// Fechas 'YYYY-MM-DD' como día local: new Date('2026-10-05') es medianoche UTC,
+// que en Nicaragua (UTC-6) cae el día anterior.
+function fechaLocal(fechaISO) {
+  return new Date(`${fechaISO}T00:00:00`);
 }
 function seSuperponen(evento, inicioRango, finRango) {
-  const ei = new Date(evento.fecha_inicio);
-  const ef = new Date(evento.fecha_fin);
-  return ei <= finRango && ef >= inicioRango;
+  // una nocturna que termina de madrugada llega hasta el día siguiente: se usa su último día real
+  return evento.fechaInicio <= finRango && (diaDeFin(evento) || evento.fechaFin) >= inicioRango;
 }
 function formatearRango(fechaInicio, fechaFin) {
   const opciones = { day: 'numeric', month: 'long' };
-  const ini = new Date(fechaInicio).toLocaleDateString('es-NI', opciones);
-  const fin = new Date(fechaFin).toLocaleDateString('es-NI', opciones);
+  const ini = fechaLocal(fechaInicio).toLocaleDateString('es-NI', opciones);
+  const fin = fechaLocal(fechaFin).toLocaleDateString('es-NI', opciones);
   return fechaInicio === fechaFin ? ini : `${ini} – ${fin}`;
 }
 
 function LandingEventos({ onNavigate, onComenzar }) {
-  const [eventos, setEventos] = useState([]);
-  const [cargando, setCargando] = useState(true);
+  // Mismo criterio que la app: eventos cargados a mano + actividades de negocios
+  // visibles (activos y vigentes). Un negocio vencido no aparece aquí.
+  const { eventos, cargando } = useEventosPublicos();
   const [vista, setVista] = useState('semana'); // 'semana' | 'mes'
 
-  useEffect(() => {
-    let activo = true;
-    supabase
-      .from('evento')
-      .select('*')
-      .order('fecha_inicio')
-      .then(({ data, error }) => {
-        if (!activo) return;
-        if (error) {
-          console.error('Error cargando eventos:', error);
-          setEventos([]);
-        } else {
-          setEventos(data || []);
-        }
-        setCargando(false);
-      });
-    return () => { activo = false; };
-  }, []);
-
-  const inicioRango = vista === 'semana' ? inicioDeHoy() : inicioDeMes();
-  const finRango = vista === 'semana' ? finDeSemana() : finDeMes();
+  const [inicioRango, finRango] = rangoDeVista(vista);
   const eventosFiltrados = eventos.filter((e) => seSuperponen(e, inicioRango, finRango));
 
   return (
@@ -100,14 +76,14 @@ function LandingEventos({ onNavigate, onComenzar }) {
 
           {eventosFiltrados.map((evento) => (
             <article key={evento.id} className="le-card">
-              {evento.imagen_url && (
-                <img className="le-card-img" src={evento.imagen_url} alt={evento.nombre} />
+              {evento.imagenUrl && (
+                <img className="le-card-img" src={evento.imagenUrl} alt={evento.nombre} />
               )}
               <div className="le-card-texto">
                 <h2>{evento.nombre}</h2>
-                <span className="le-card-etiqueta">Recorrido</span>
+                <span className="le-card-etiqueta">{evento.negocioId ? 'Actividad' : 'Recorrido'}</span>
                 {evento.descripcion && <p className="le-card-desc">{evento.descripcion}</p>}
-                <p className="le-card-fecha">{formatearRango(evento.fecha_inicio, evento.fecha_fin)}</p>
+                <p className="le-card-fecha">{formatearRango(evento.fechaInicio, evento.fechaFin)}</p>
                 {evento.ubicacion && <p className="le-card-ubicacion">📍 {evento.ubicacion}</p>}
               </div>
             </article>

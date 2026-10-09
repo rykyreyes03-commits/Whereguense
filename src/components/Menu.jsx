@@ -1,6 +1,17 @@
+import { Fragment, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Sun, Moon } from 'lucide-react';
+import { cambiarIdioma } from '../i18n';
+import { cambiarTema, temaGuardado } from '../tema';
 import './Menu.css';
 import TopBar from './TopBar';
 
+const IconoCupon = () => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+    <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h13A1.5 1.5 0 0 1 20 8.5V10a2 2 0 0 0 0 4v1.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 15.5V14a2 2 0 0 0 0-4V8.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    <path d="M14 7.5v9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeDasharray="1.6 2.2" />
+  </svg>
+);
 const IconoIdioma = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
     <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
@@ -71,33 +82,61 @@ const IconoAdmin = () => (
   </svg>
 );
 
-function opcionesMenu(esAdmin) {
-  const base = [
-    { etiqueta: 'Escanear sello QR', Icono: IconoQR, pantalla: 'escanearQR' },
-    { etiqueta: 'Mi negocio', Icono: IconoNegocio, accion: 'miNegocio' },
-    { etiqueta: 'Cambiar idioma', Icono: IconoIdioma },
-    { etiqueta: 'Notificaciones', Icono: IconoNotificaciones },
-    { etiqueta: 'Tema', Icono: IconoTema },
-    { etiqueta: 'Privacidad', Icono: IconoPrivacidad },
-    { etiqueta: 'Ayuda y soporte', Icono: IconoAyuda },
-    { etiqueta: 'Acerca de', Icono: IconoAcerca },
+// Qué opciones ve cada quien. El menú del emprendedor (se abre desde su panel) no trae las funciones del turista
+// (escanear sello y cupón) ni "Mi negocio", que ya es una pestaña de su barra. "Panel Admin" solo lo ve un admin.
+function opcionesMenu(esAdmin, modoNegocio) {
+  const deTurista = [
+    { clave: 'escanearSello', Icono: IconoQR, pantalla: 'escanearQR' },
+    { clave: 'escanearCupon', Icono: IconoCupon, pantalla: 'escanearCupon' },
+    { clave: 'misCupones', Icono: IconoCupon, pantalla: 'misCupones' },
+    { clave: 'miNegocio', Icono: IconoNegocio, accion: 'miNegocio' },
   ];
-  if (esAdmin) {
-    base.unshift({ etiqueta: 'Panel Admin', Icono: IconoAdmin, pantalla: 'panelAdmin' });
-  }
-  return base;
+  const comunes = [
+    { clave: 'idioma', Icono: IconoIdioma, accion: 'idioma' },
+    { clave: 'notificaciones', Icono: IconoNotificaciones },
+    { clave: 'tema', Icono: IconoTema, accion: 'tema' },
+    { clave: 'privacidad', Icono: IconoPrivacidad },
+    { clave: 'ayuda', Icono: IconoAyuda },
+    { clave: 'acerca', Icono: IconoAcerca },
+  ];
+  const lista = modoNegocio ? comunes : [...deTurista, ...comunes];
+  if (esAdmin) lista.unshift({ clave: 'panelAdmin', Icono: IconoAdmin, pantalla: 'panelAdmin' });
+  return lista;
 }
 
-function Menu({ onNavigate, onVolver, onCerrarSesion, onMiNegocio, esAdmin }) {
-  const OPCIONES = opcionesMenu(esAdmin);
-  const handleOpcion = (opcion) => {
-    window.alert(`${opcion}: próximamente 🚧`);
+const IDIOMAS = [
+  { id: 'es', nombre: 'Español' },
+  { id: 'en', nombre: 'English' },
+];
+
+const TEMAS_MENU = [
+  { id: 'claro', Icono: Sun, clave: 'temaClaro' },
+  { id: 'oscuro', Icono: Moon, clave: 'temaOscuro' },
+];
+
+function Menu({ onNavigate, onVolver, onCerrarSesion, onMiNegocio, onCambiarIdioma, esAdmin, modoNegocio = false }) {
+  const { t, i18n } = useTranslation();
+  const [abierto, setAbierto] = useState(null); // selector desplegado: 'idioma', 'tema' o ninguno
+  const [temaActual, setTemaActual] = useState(temaGuardado);
+  const idiomaActual = String(i18n.language || 'es').slice(0, 2) === 'en' ? 'en' : 'es';
+  const OPCIONES = opcionesMenu(esAdmin, modoNegocio);
+
+  const handleOpcion = (clave) => {
+    window.alert(t('menu.proximamente', { opcion: t(`menu.${clave}`) }));
+  };
+
+  const elegirIdioma = (id) => {
+    // La app guarda la preferencia en la cuenta; sin ese manejador (pruebas) solo cambia en este dispositivo.
+    (onCambiarIdioma || cambiarIdioma)(id);
+  };
+
+  const elegirTema = (id) => {
+    cambiarTema(id); // se aplica ya (clase "dark" en <html>) y queda guardado en localStorage
+    setTemaActual(id);
   };
 
   const handleCerrarSesion = () => {
-    const confirmado = window.confirm(
-      '¿Seguro que quieres cerrar sesión? Se borrarán tus sellos y datos de perfil guardados en este dispositivo.'
-    );
+    const confirmado = window.confirm(t('perfil.confirmarCerrar'));
     if (!confirmado) return;
 
     onCerrarSesion?.();
@@ -105,34 +144,74 @@ function Menu({ onNavigate, onVolver, onCerrarSesion, onMiNegocio, esAdmin }) {
 
   return (
     <div className="menu-wrapper">
-      <TopBar title="Configuración" onBack={onVolver} />
+      <TopBar title={t('menu.titulo')} onBack={onVolver} />
 
       <div className="menu-contenido">
         <nav className="menu-lista">
-          {OPCIONES.map(({ etiqueta, Icono, pantalla, accion }) => (
-            <button
-              key={etiqueta}
-              className="menu-item"
-              onClick={() => {
-                if (accion === 'miNegocio') {
-                  onMiNegocio?.();
-                } else if (pantalla) {
-                  onNavigate?.(pantalla);
-                } else {
-                  handleOpcion(etiqueta);
-                }
-              }}
-            >
-              <span className="menu-item-icono"><Icono /></span>
-              <span className="menu-item-texto">{etiqueta}</span>
-              <Chevron />
-            </button>
-          ))}
+          {OPCIONES.map(({ clave, Icono, pantalla, accion }) => {
+            const desplegable = accion === 'idioma' || accion === 'tema';
+            return (
+              <Fragment key={clave}>
+                <button
+                  className="menu-item"
+                  aria-expanded={desplegable ? abierto === accion : undefined}
+                  onClick={() => {
+                    if (desplegable) {
+                      setAbierto((actual) => (actual === accion ? null : accion));
+                    } else if (accion === 'miNegocio') {
+                      onMiNegocio?.();
+                    } else if (pantalla) {
+                      onNavigate?.(pantalla);
+                    } else {
+                      handleOpcion(clave);
+                    }
+                  }}
+                >
+                  <span className="menu-item-icono"><Icono /></span>
+                  <span className="menu-item-texto">{t(`menu.${clave}`)}</span>
+                  <Chevron />
+                </button>
+                {accion === 'idioma' && abierto === 'idioma' && (
+                  <div className="menu-selector" role="radiogroup" aria-label={t('menu.idioma')}>
+                    {IDIOMAS.map(({ id, nombre }) => (
+                      <button
+                        key={id}
+                        type="button"
+                        role="radio"
+                        aria-checked={idiomaActual === id}
+                        className="menu-selector-opcion"
+                        onClick={() => elegirIdioma(id)}
+                      >
+                        {nombre}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {accion === 'tema' && abierto === 'tema' && (
+                  <div className="menu-selector" role="radiogroup" aria-label={t('menu.tema')}>
+                    {TEMAS_MENU.map(({ id, Icono: IconoTemaOpcion, clave: claveTema }) => (
+                      <button
+                        key={id}
+                        type="button"
+                        role="radio"
+                        aria-checked={temaActual === id}
+                        className="menu-selector-opcion"
+                        onClick={() => elegirTema(id)}
+                      >
+                        <IconoTemaOpcion size={18} strokeWidth={2} aria-hidden="true" />
+                        {t(`menu.${claveTema}`)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </Fragment>
+            );
+          })}
         </nav>
 
         <div className="menu-sesion">
           <button className="menu-logout-btn" onClick={handleCerrarSesion}>
-            Cerrar sesión
+            {t('perfil.cerrarSesion')}
           </button>
         </div>
       </div>

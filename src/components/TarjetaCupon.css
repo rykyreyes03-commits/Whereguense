@@ -1,0 +1,5 @@
+/* Tarjeta de cupón de solo lectura: la de CanjearCupon sin el efecto de botón */
+.tarjeta-cupon { cursor: default; }
+.tarjeta-cupon:hover { transform: none; box-shadow: var(--shadow-sm); }
+.tarjeta-cupon-negocio { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.04em; color: var(--color-text-muted); text-transform: uppercase; }
+.tarjeta-cupon-vence { font-size: 0.8rem; color: var(--color-text-muted); }

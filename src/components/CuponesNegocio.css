@@ -1,0 +1,124 @@
+/* Cupones del negocio (027): dentro de la pestaña Sellos. Reusa las clases generarqr-* para
+   mantener el lenguaje visual del formulario de actividad. */
+
+/* La vista Cupones va sin marco propio: el selector de GenerarQR ya la separa de Actividades. */
+.cupones-negocio { width: 100%; text-align: left; }
+.cupones-subtitulo {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--color-heading);
+  margin: 0 0 6px;
+}
+.cupones-canje {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px 16px;
+  margin-bottom: 20px;
+  background: var(--color-surface-soft);
+}
+.cupones-ayuda {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+}
+.cupones-canje .generarqr-qr-area { background: var(--color-card); margin-bottom: 12px; }
+.cupones-vacio { max-width: none; text-align: center; margin: 0 0 8px; }
+
+.cupon-miniatura-porcentaje { font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; }
+.cupon-resumen { margin: 0; }
+.cupon-acciones { flex-wrap: wrap; }
+.cupon-acciones .generarqr-accion { flex: 1 1 140px; font-size: 0.84rem; padding: 10px 8px; white-space: nowrap; }
+.cupon-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 0;
+  border: none;
+  background: none;
+  color: var(--color-accent-text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cupon-nota {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--color-text-muted);
+}
+.cupon-qr-ayuda { margin: 14px 0 8px; text-align: center; }
+
+.cupon-otorgados {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--color-border);
+}
+.cupon-otorgados li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.88rem;
+}
+.cupon-otorgado-nombre { font-weight: 700; overflow-wrap: anywhere; }
+.cupon-otorgado-estado {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+.cupon-otorgado-estado--usado { color: var(--color-green); }
+.cupon-error { margin-top: 0; }
+.cupon-ayuda-campo { font-weight: 400; color: var(--color-text-muted); font-size: 0.78rem; margin: -6px 0 12px; }
+
+/* QR de canje en una fila: icono, texto y los botones Ver y Descargar */
+.cupones-canje-fila {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+  font-family: var(--font-body);
+}
+.cupones-canje-icono {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-turquoise) 30%, var(--color-white));
+  color: var(--color-navy);
+}
+.cupones-canje-texto { flex: 1 1 140px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cupones-canje-texto strong { font-size: 0.95rem; color: var(--color-heading); }
+.cupones-canje-texto span { font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.3; }
+.cupones-canje-botones { display: flex; gap: 8px; margin-left: auto; }
+.cupones-canje-boton {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 14px;
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-pill);
+  background: var(--color-card);
+  color: var(--color-accent-text);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.cupones-canje-boton:focus-visible { outline: 3px solid var(--color-turquoise); outline-offset: 2px; }
+.cupones-canje-oculto { position: absolute; left: -9999px; top: 0; width: 0; height: 0; overflow: hidden; }
+.cupones-canje-vacio { margin: 0 0 14px; text-align: center; }

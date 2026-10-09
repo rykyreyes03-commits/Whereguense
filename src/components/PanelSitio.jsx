@@ -1,4 +1,8 @@
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FOTOS_SITIOS } from '../data/fotos';
+import { INSIGNIAS } from '../data/insignias';
+import { usePortadaSitio } from '../hooks/usePortadaSitio';
 import './PanelSitio.css';
 
 function IconoComoLlegar() {
@@ -31,10 +35,16 @@ function IconoHistoria() {
   );
 }
 
-function PanelSitio({ sitio, estaGuardado, onCerrar, onComoLlegar, onGuardar, onHistoria }) {
+function PanelSitio({ sitio, estaGuardado, onCerrar, onComoLlegar, onGuardar, onVerDetalle }) {
+  const { t } = useTranslation();
+  const portada = usePortadaSitio(sitio?.id);
+  const [fotoRota, setFotoRota] = useState(null);
   if (!sitio) return null;
 
-  const foto = FOTOS_SITIOS[String(sitio.id)];
+  // portada de sitio_foto > imagen_url del sitio > foto local de assets (las que ya había) > fondo azul con el ícono.
+  const foto = portada || FOTOS_SITIOS[String(sitio.id)];
+  const fotoVisible = foto && fotoRota !== foto ? foto : null;
+  const insignia = INSIGNIAS[sitio.badge];
 
   return (
     <div className="panel-sitio">
@@ -42,19 +52,23 @@ function PanelSitio({ sitio, estaGuardado, onCerrar, onComoLlegar, onGuardar, on
         type="button"
         className="panel-sitio-cerrar"
         onClick={onCerrar}
-        aria-label="Cerrar"
+        aria-label={t('comun.cerrar')}
       >
         ×
       </button>
 
-      <h2 className="panel-sitio-nombre">{sitio.name}</h2>
-
-      {foto && (
-        <img className="panel-sitio-foto" src={foto} alt={sitio.name} />
+      {fotoVisible ? (
+        <img className="panel-sitio-foto" src={fotoVisible} alt={sitio.name} onError={() => setFotoRota(fotoVisible)} />
+      ) : (
+        <div className="panel-sitio-foto panel-sitio-foto--vacia" aria-hidden="true">
+          {insignia && <img src={insignia} alt="" />}
+        </div>
       )}
 
+      <h2 className="panel-sitio-nombre">{sitio.name}</h2>
+
       <div className="panel-sitio-texto">
-        <span className="panel-sitio-etiqueta">Resumen histórico</span>
+        <span className="panel-sitio-etiqueta">{t('panel.resumen')}</span>
         <p>{sitio.desc}</p>
       </div>
 
@@ -65,7 +79,7 @@ function PanelSitio({ sitio, estaGuardado, onCerrar, onComoLlegar, onGuardar, on
           onClick={() => onComoLlegar(sitio)}
         >
           <IconoComoLlegar />
-          Cómo llegar
+          {t('panel.comoLlegar')}
         </button>
         <button
           type="button"
@@ -73,15 +87,15 @@ function PanelSitio({ sitio, estaGuardado, onCerrar, onComoLlegar, onGuardar, on
           onClick={() => onGuardar(sitio)}
         >
           <IconoGuardar />
-          {estaGuardado ? 'Guardado' : 'Guardar'}
+          {estaGuardado ? t('comun.guardado') : t('comun.guardar')}
         </button>
         <button
           type="button"
           className="panel-sitio-btn panel-sitio-btn-secundario panel-sitio-btn-ancho"
-          onClick={() => onHistoria(sitio)}
+          onClick={() => onVerDetalle(sitio)}
         >
           <IconoHistoria />
-          Historia del lugar
+          {t('panel.historia')}
         </button>
       </div>
     </div>

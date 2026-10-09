@@ -39,7 +39,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px dashed var(--color-border-strong);
   color: var(--color-text-muted);
   font-weight: 700;

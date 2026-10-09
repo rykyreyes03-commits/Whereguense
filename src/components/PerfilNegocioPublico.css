@@ -4,15 +4,8 @@
    Tokens de src/index.css.
    ========================================================= */
 
-.perfilpublico-categoria {
-  margin: 4px 0 0;
-  text-align: center;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.85); /* va sobre el hero azul */
-}
-
 .perfilpublico-card {
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
@@ -21,31 +14,43 @@
 }
 
 .perfilpublico-seccion-titulo {
-  font-family: var(--font-display);
+  font-family: var(--ficha-titulo, var(--font-display));
   font-weight: 700;
   font-size: 1rem;
-  color: var(--color-navy);
+  color: var(--color-heading);
   margin: 0 0 8px;
 }
 
 .perfilpublico-telefono {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 8px 0 0;
   font-size: 1rem;
   color: var(--color-text);
 }
 
-.perfilpublico-fotos {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
 .perfilpublico-fotos img {
-  width: 140px;
-  height: 100px;
+  display: block;
+  width: 100%;
   object-fit: cover;
   border-radius: var(--radius-md);
-  flex-shrink: 0;
+}
+.perfilpublico-fotos.perfilpublico-cuadricula {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.perfilpublico-fotos.perfilpublico-cuadricula img {
+  aspect-ratio: 1 / 1;
+}
+.perfilpublico-fotos.perfilpublico-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.perfilpublico-fotos.perfilpublico-lista img {
+  aspect-ratio: 16 / 10;
 }
 
 .perfilpublico-horarios {
@@ -56,23 +61,252 @@
 .perfilpublico-horarios li {
   display: flex;
   justify-content: space-between;
-  padding: 6px 0;
-  font-size: 0.9rem;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 0.92rem;
   color: var(--color-text);
 }
+.perfilpublico-horarios li + li {
+  border-top: 1px solid var(--color-border);
+}
+.perfilpublico-horarios li strong {
+  text-align: right;
+  white-space: nowrap;
+}
 
-.perfilpublico-productos {
+.perfilpublico-productos.perfilpublico-cuadricula {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.perfilpublico-productos.perfilpublico-lista {
+  display: flex;
+  flex-direction: column;
+}
+.perfilpublico-producto-chip {
+  display: block;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-heading);
+  overflow-wrap: anywhere;
+}
+.perfilpublico-productos.perfilpublico-cuadricula .perfilpublico-producto-chip {
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--ficha-color, var(--color-primary)) 10%, #fff);
+  border: 1px solid color-mix(in srgb, var(--ficha-color, var(--color-primary)) 24%, #fff);
+}
+.perfilpublico-productos.perfilpublico-lista .perfilpublico-producto-chip {
+  padding: 10px 2px;
+  border-top: 1px solid var(--color-border);
+}
+.perfilpublico-productos.perfilpublico-lista .perfilpublico-producto-chip:first-child {
+  border-top: none;
+}
+
+.perfilpublico-actividades {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.perfilpublico-actividades li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px 0;
+  border-top: 1px solid var(--color-border);
+}
+.perfilpublico-actividades li:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+.perfilpublico-actividades strong {
+  font-size: 0.95rem;
+  color: var(--color-heading);
+}
+.perfilpublico-actividades p {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-text-soft);
+}
+.perfilpublico-actividad-fecha,
+.perfilpublico-actividad-sello {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+.perfilpublico-actividad-sello {
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-turquoise) 20%, #fff);
+  color: var(--color-navy);
+  font-weight: 700;
+}
+
+/* =========================================================
+   Ficha con diseño (035): paleta, letra, portada y botón de WhatsApp.
+   Variables --ficha-* puestas por la ficha (utils/diseno.js).
+   ========================================================= */
+.perfilpublico-ficha {
+  font-family: var(--ficha-cuerpo, var(--font-body));
+}
+
+.perfilpublico-portada {
+  position: relative;
+  height: calc(150px + env(safe-area-inset-top));
+  background: var(--ficha-color, var(--color-primary));
+  overflow: hidden;
+}
+.perfilpublico-portada-foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.perfilpublico-marca {
+  position: absolute;
+  top: calc(14px + env(safe-area-inset-top));
+  left: 16px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.perfilpublico-ficha .historia-sitio-cerrar {
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 2;
+}
+
+.perfilpublico-contenido {
+  padding-top: 0;
+}
+
+.perfilpublico-identidad {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: -36px;
+  position: relative;
+}
+.perfilpublico-logo {
+  flex: 0 0 auto;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 3px solid var(--ficha-color, var(--color-primary));
+  background: var(--color-card);
+  color: var(--ficha-color, var(--color-primary));
+  font-family: var(--ficha-titulo, var(--font-display));
+  font-size: 1.9rem;
+  font-weight: 800;
+}
+.perfilpublico-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.perfilpublico-nombre {
+  margin: 0 0 6px;
+  font-family: var(--ficha-titulo, var(--font-display));
+  font-size: 1.4rem;
+  line-height: 1.2;
+  color: var(--color-heading);
+  overflow-wrap: anywhere;
+}
+
+.perfilpublico-pastillas {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin: 12px 0 14px;
 }
-.perfilpublico-producto-chip {
-  display: inline-block;
-  padding: 6px 14px;
+.perfilpublico-pastilla {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
   border-radius: var(--radius-pill);
-  background: var(--color-ultramarine);
-  border: none;
+  background: var(--bg-eef0f6);
+  color: #3A3A4E;
   font-size: 0.85rem;
-  font-weight: 600;
-  color: #fff;
+  font-weight: 700;
+}
+.perfilpublico-pastilla:empty {
+  display: none;
+}
+.perfilpublico-pastilla--abierto {
+  background: var(--bg-ddf5e4);
+  color: #14633A;
+}
+
+.perfilpublico-whatsapp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  margin-bottom: 16px;
+  padding: 0 18px;
+  border-radius: var(--radius-pill);
+  background: var(--ficha-color, var(--color-primary));
+  color: var(--ficha-sobre-color, #fff);
+  font-size: 1rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.perfilpublico-whatsapp:focus-visible {
+  outline: 3px solid var(--color-turquoise);
+  outline-offset: 2px;
+}
+
+.perfilpublico-ficha .perfilpublico-actividad-sello {
+  background: color-mix(in srgb, var(--ficha-color, var(--color-primary)) 14%, #fff);
+}
+
+.perfilpublico-descripcion {
+  margin: 10px 0 0;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: var(--color-text);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.perfilpublico-telefono--solo {
+  margin: 0;
+}
+
+.perfilpublico-como-llegar {
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  margin-top: 12px;
+  padding: 0 18px;
+  border-radius: var(--radius-pill);
+  background: var(--ficha-color, var(--color-primary));
+  color: var(--ficha-sobre-color, #fff);
+  font-size: 1rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.perfilpublico-como-llegar:focus-visible {
+  outline: 3px solid var(--color-turquoise);
+  outline-offset: 2px;
 }

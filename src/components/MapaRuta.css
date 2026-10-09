@@ -36,8 +36,8 @@
   height: 44px;
   border-radius: 50%;
   border: none;
-  background: var(--color-white);
-  color: var(--color-primary);
+  background: var(--color-card);
+  color: var(--color-accent-text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,7 +56,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--color-white);
+  background: var(--color-card);
   border-radius: var(--radius-pill);
   padding: 11px 16px;
   box-shadow: var(--shadow-md);
@@ -71,7 +71,7 @@
   margin: 0;
   padding: 6px;
   list-style: none;
-  background: var(--color-white);
+  background: var(--color-card);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   max-height: 260px;
@@ -224,11 +224,8 @@
   }
 }
 
-/* ===== Radio de geofencing ===== */
-.mapa-geofence {
-  stroke: var(--color-turquoise);
-  fill: var(--color-turquoise);
-}
+/* ===== Radio de geofencing =====
+   El anillo tipo radar se anima desde MapaRuta.jsx (setRadius/setStyle de Leaflet): los círculos son SVG y el CSS transform no sirve. */
 
 /* ===== Popup ===== */
 .leaflet-popup-content-wrapper {
@@ -243,7 +240,7 @@
   font-family: var(--font-display);
   font-size: 1.05rem;
   margin: 0 0 4px;
-  color: var(--color-navy);
+  color: var(--color-heading);
 }
 .mapa-popup p {
   margin: 0 0 12px;
@@ -277,21 +274,21 @@
 .mapa-popup-btn-secundario {
   flex: 1;
   border: 1.5px solid var(--color-primary);
-  background: var(--color-white);
-  color: var(--color-primary);
+  background: var(--color-card);
+  color: var(--color-accent-text);
 }
 .mapa-popup-btn-secundario:hover { background: rgba(30, 42, 120, 0.06); }
 .mapa-popup-btn-ghost {
   flex: 1;
   border: 1.5px solid var(--color-border-strong);
-  background: var(--color-white);
+  background: var(--color-card);
   color: var(--color-text-muted);
 }
-.mapa-popup-btn-ghost:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.mapa-popup-btn-ghost:hover { border-color: var(--color-primary); color: var(--color-accent-text); }
 .mapa-popup-btn-ghost.activo {
   border-color: var(--color-primary);
   background: rgba(30, 42, 120, 0.08);
-  color: var(--color-primary);
+  color: var(--color-accent-text);
 }
 
 .mapa-popup-sellado {
@@ -315,12 +312,17 @@
   bottom: calc(88px + env(safe-area-inset-bottom));
   z-index: 1001;
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 10px;
   padding: 12px 14px;
-  background: var(--color-white);
+  background: var(--color-card);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
+}
+.mapa-ruta-resumen-fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 .mapa-ruta-resumen-info {
   flex: 1;
@@ -332,7 +334,7 @@
 .mapa-ruta-resumen-info strong {
   font-family: var(--font-display);
   font-size: 0.92rem;
-  color: var(--color-navy);
+  color: var(--color-heading);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -354,8 +356,8 @@
   flex-shrink: 0;
   border: 1.5px solid var(--color-primary);
   border-radius: var(--radius-pill);
-  background: var(--color-white);
-  color: var(--color-primary);
+  background: var(--color-card);
+  color: var(--color-accent-text);
   padding: 8px 14px;
   font-family: var(--font-body);
   font-size: 0.82rem;
@@ -364,6 +366,35 @@
   transition: background 0.15s ease;
 }
 .mapa-ruta-resumen-cancelar:hover { background: rgba(30, 42, 120, 0.06); }
+
+/* Selector de modo de transporte -- mismo tratamiento "activo" que las
+   pestañas de Personalizacion.css (borde + relleno var(--color-ultramarine)
+   cuando esta seleccionado), solo que mas chico para caber en esta tarjeta. */
+.mapa-ruta-modos {
+  display: flex;
+  gap: 8px;
+}
+.mapa-ruta-modos button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-pill);
+  background: var(--color-card);
+  color: var(--color-accent-text);
+  padding: 6px 8px;
+  font-family: var(--font-body);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.mapa-ruta-modos button.activo {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
 
 /* ===== Aviso de error de ubicación ===== */
 .mapa-ubicacion-error {
@@ -380,4 +411,82 @@
   max-width: 82%;
   text-align: center;
   box-shadow: var(--shadow-md);
+}
+
+
+/* ===== Negocio al que se llegó con "Ver en el mapa": aro que pulsa debajo de su marcador ===== */
+.negocio-halo-icono { background: none; border: none; }
+.negocio-pin-halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #C62828;
+  opacity: 0.5;
+  animation: pulsoNegocio 1.8s ease-out infinite;
+}
+@keyframes pulsoNegocio {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+/* ===== Botón flotante "Estoy aquí" (esquina inferior derecha, sobre el botón de mi ubicación) ===== */
+.mapa-estoy-aqui-btn {
+  position: absolute;
+  right: 16px;
+  bottom: calc(86px + env(safe-area-inset-bottom));
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 2px solid #fff;
+  border-radius: var(--radius-pill);
+  background: var(--color-navy);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+}
+.mapa-estoy-aqui-btn:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+.mapa-estoy-aqui-btn:focus-visible {
+  outline: 3px solid var(--color-turquoise);
+  outline-offset: 2px;
+}
+
+/* ===== Pin "Estoy aquí": azul claro, distinto del pin coral de los negocios ===== */
+.estoy-aqui-icono { position: relative; background: transparent; border: none; }
+.estoy-aqui-punto {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  background: #7CC8F2;
+  border: 4px solid #fff;
+  box-shadow: 0 0 0 2px #2F9FDC, 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+.estoy-aqui-halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  background: #7CC8F2;
+  opacity: 0.5;
+  animation: pulsoNegocio 1.8s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .negocio-pin-halo,
+  .estoy-aqui-halo { animation: none; opacity: 0.25; }
 }

@@ -13,7 +13,7 @@
   padding: 40px 0;
 }
 .panelAdmin-card {
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
@@ -23,7 +23,7 @@
 .panelAdmin-card h2 {
   font-family: var(--font-display);
   font-size: 1.1rem;
-  color: var(--color-navy);
+  color: var(--color-heading);
   margin: 0 0 6px;
 }
 .panelAdmin-detalle {
@@ -36,7 +36,35 @@
   color: var(--color-text-muted);
   margin: 0 0 12px;
 }
+.panelAdmin-seccion {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--color-heading);
+  margin: 8px 0 12px;
+}
+.panelAdmin-seccion + .panelAdmin-estado { padding: 16px 0 28px; }
+.panelAdmin-card + .panelAdmin-seccion { margin-top: 28px; }
+.panelAdmin-etiqueta {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 10px 0 4px;
+}
+.panelAdmin-justificacion {
+  font-size: 0.9rem;
+  color: var(--color-text);
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 0 0 10px;
+}
 .panelAdmin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   border: none;
   border-radius: var(--radius-pill);
   padding: 10px 18px;
@@ -52,8 +80,14 @@
   color: #fff;
 }
 .panelAdmin-btn-rechazar {
-  background: var(--color-folk);
+  background: var(--color-coral);
   color: #fff;
+}
+.panelAdmin-aviso {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin: 6px 4px 0;
+  text-align: center;
 }
 .panelAdmin-btn:disabled {
   opacity: 0.6;
@@ -72,4 +106,99 @@
 }
 @media (min-width: 640px) {
   .panelAdmin-wrapper { max-width: 700px; }
+}
+
+/* Foto de la actividad en la solicitud de sello (026) */
+.panelAdmin-foto {
+  width: 100%;
+  aspect-ratio: 7 / 5; /* igual que las fotos de la ficha pública y de las actividades */
+  object-fit: cover;
+  object-position: center top; /* recorte anclado arriba: no corta cabezas */
+  background: var(--color-navy); /* detrás de fotos con transparencia */
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  display: block;
+}
+
+.panelAdmin-terminada {
+  display: inline-block;
+  margin: 0 0 6px;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-heading);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.panelAdmin-filtro {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+.panelAdmin-filtro select {
+  font: inherit;
+  font-weight: 400;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+}
+
+@media (min-width: 1024px) {
+  .panelAdmin-wrapper { max-width: 100%; }
+}
+
+/* Solicitudes de demo (041) */
+.panelAdmin-badge {
+  display: inline-block;
+  min-width: 22px;
+  padding: 1px 8px;
+  margin-left: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+  vertical-align: middle;
+}
+.panelAdmin-demo-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.panelAdmin-estadoDemo {
+  flex-shrink: 0;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.panelAdmin-estadoDemo.nueva { background: var(--color-coral); color: #fff; }
+.panelAdmin-estadoDemo.leida { background: var(--color-border); color: var(--color-text-muted); }
+.panelAdmin-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.panelAdmin-vermas {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: -4px 0 10px;
+  color: var(--color-primary);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
 }

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Wheregüense</string>
+    <string name="title_activity_main">Wheregüense</string>
+    <string name="package_name">com.capncode.whereguense</string>
+    <string name="custom_url_scheme">com.capncode.whereguense</string>
+</resources>

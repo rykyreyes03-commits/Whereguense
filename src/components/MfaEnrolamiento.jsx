@@ -1,44 +1,101 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import './MfaEnrolamiento.css';
 import { supabase } from '../lib/supabaseClient';
 
-function MfaEnrolamiento({ onCompletado, onCerrarSesion }) {
+// Una sola activación a la vez por usuario, compartida entre montajes del componente. App.jsx puede desmontar y volver a montar
+// esta pantalla (por ejemplo mientras carga la fila de usuario); sin esto cada montaje creaba un factor nuevo y el QR que la
+// persona ya había escaneado dejaba de coincidir con el factor que se verifica ("Invalid TOTP code entered").
+let activacion = null; // { usuarioId, promesa }
+
+// Además se guarda en sessionStorage (solo esta pestaña): si la página se recarga a mitad de la activación se reutiliza el MISMO
+// factor y el mismo QR en vez de crear otro. El secreto de un factor pendiente solo se entrega al crearlo, por eso se guarda entero.
+const CLAVE_ACTIVACION = 'mfaActivacionPendiente';
+
+function leerGuardada(usuarioId) {
+  try {
+    const g = JSON.parse(sessionStorage.getItem(CLAVE_ACTIVACION));
+    return g && g.usuarioId === usuarioId ? g.factor : null;
+  } catch {
+    return null;
+  }
+}
+
+function guardar(usuarioId, factor) {
+  try {
+    sessionStorage.setItem(CLAVE_ACTIVACION, JSON.stringify({ usuarioId, factor }));
+  } catch {
+    // sin almacenamiento (modo privado): vale igual dentro de esta carga de la página
+  }
+}
+
+function olvidarActivacion() {
+  activacion = null;
+  try {
+    sessionStorage.removeItem(CLAVE_ACTIVACION);
+  } catch {
+    // nada que borrar
+  }
+}
+
+async function crearFactor(usuarioId) {
+  // listFactors().totp solo trae los VERIFICADOS; los pendientes están en .all.
+  const { data: existentes } = await supabase.auth.mfa.listFactors();
+  const pendientes = (existentes?.all || []).filter((f) => f.factor_type === 'totp' && f.status !== 'verified');
+
+  // Si ya hay uno guardado de esta sesión y sigue pendiente en Supabase, se reutiliza; los demás pendientes sobran.
+  const guardada = leerGuardada(usuarioId);
+  const reutilizable = guardada && pendientes.some((f) => f.id === guardada.id) ? guardada : null;
+  for (const f of pendientes) {
+    if (!reutilizable || f.id !== reutilizable.id) await supabase.auth.mfa.unenroll({ factorId: f.id });
+  }
+  if (reutilizable) return reutilizable;
+
+  const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: `totp-${Date.now()}` });
+  if (error) throw error;
+  const factor = { id: data.id, qrCode: data.totp.qr_code, uri: data.totp.uri || '', secreto: data.totp.secret };
+  guardar(usuarioId, factor);
+  return factor;
+}
+
+function obtenerActivacion(usuarioId) {
+  if (!activacion || activacion.usuarioId !== usuarioId) {
+    const promesa = crearFactor(usuarioId);
+    activacion = { usuarioId, promesa };
+    promesa.catch(() => { if (activacion?.promesa === promesa) activacion = null; }); // si falla, el próximo intento vuelve a empezar
+  }
+  return activacion.promesa;
+}
+
+function MfaEnrolamiento({ onCompletado, onCerrarSesion, onVolver }) {
   const [cargando, setCargando] = useState(true);
   const [qrCode, setQrCode] = useState('');
+  const [uri, setUri] = useState('');
   const [secreto, setSecreto] = useState('');
   const [factorId, setFactorId] = useState('');
   const [codigo, setCodigo] = useState('');
   const [verificando, setVerificando] = useState(false);
   const [error, setError] = useState('');
-  const inicioLanzadoRef = useRef(false);
 
   useEffect(() => {
-    if (inicioLanzadoRef.current) return;
-    inicioLanzadoRef.current = true;
+    let activo = true;
     (async () => {
       setCargando(true);
       setError('');
-      // Si quedó un factor sin verificar de un intento anterior (p. ej. si se
-      // cerró la pestaña a mitad del proceso), lo limpiamos antes de crear
-      // uno nuevo — Supabase no permite dos factores con el mismo nombre.
-      const { data: existentes } = await supabase.auth.mfa.listFactors();
-      const factorSinVerificar = existentes?.totp?.find((f) => f.status !== 'verified');
-      if (factorSinVerificar) {
-        await supabase.auth.mfa.unenroll({ factorId: factorSinVerificar.id });
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const factor = await obtenerActivacion(session?.user?.id ?? 'sin-sesion');
+        if (!activo) return;
+        setFactorId(factor.id);
+        setQrCode(factor.qrCode);
+        setUri(factor.uri);
+        setSecreto(factor.secreto);
+      } catch (err) {
+        if (activo) setError(err?.message || 'No se pudo iniciar la activación de 2FA.');
       }
-      const { data, error: err } = await supabase.auth.mfa.enroll({
-        factorType: 'totp',
-        friendlyName: `totp-${Date.now()}`,
-      });
-      setCargando(false);
-      if (err) {
-        setError(err.message || 'No se pudo iniciar la activación de 2FA.');
-        return;
-      }
-      setFactorId(data.id);
-      setQrCode(data.totp.qr_code);
-      setSecreto(data.totp.secret);
+      if (activo) setCargando(false);
     })();
+    return () => { activo = false; };
   }, []);
 
   const handleVerificar = async (e) => {
@@ -63,9 +120,10 @@ function MfaEnrolamiento({ onCompletado, onCerrarSesion }) {
     });
     setVerificando(false);
     if (errVerify) {
-      setError(errVerify.message || 'Código incorrecto. Intenta de nuevo.');
+      setError('Código incorrecto. Escanea el QR que ves ahora (si ya tenías una entrada de Wheregüense en tu app, bórrala), comprueba que la hora de tu teléfono esté en automático y escribe el código nuevo.');
       return;
     }
+    olvidarActivacion();
     onCompletado();
   };
 
@@ -80,9 +138,17 @@ function MfaEnrolamiento({ onCompletado, onCerrarSesion }) {
 
         {cargando && <p className="mfa-cargando">Generando código QR…</p>}
 
-        {!cargando && qrCode && (
+        {!cargando && (uri || qrCode) && (
           <>
-            <div className="mfa-qr" dangerouslySetInnerHTML={{ __html: qrCode }} />
+            {/* El QR se dibuja aquí con la URI otpauth:// (SVG propio): no depende del SVG/data URI que manda Supabase,
+                que algunos navegadores móviles muestran como texto. */}
+            {uri ? (
+              <div className="mfa-qr" role="img" aria-label="Código QR para tu app autenticadora">
+                <QRCodeSVG value={uri} size={200} level="M" marginSize={2} bgColor="#FFFFFF" fgColor="#000000" />
+              </div>
+            ) : (
+              <div className="mfa-qr" dangerouslySetInnerHTML={{ __html: qrCode }} />
+            )}
             <p className="mfa-secreto-label">¿No podés escanear? Ingresa este código manualmente:</p>
             <code className="mfa-secreto">{secreto}</code>
 
@@ -109,8 +175,14 @@ function MfaEnrolamiento({ onCompletado, onCerrarSesion }) {
 
         {error && <p className="mfa-error">{error}</p>}
 
+        {onVolver && (
+          <button className="mfa-cerrar-sesion" type="button" onClick={onVolver}>
+            Ahora no, volver
+          </button>
+        )}
+
         {onCerrarSesion && (
-          <button className="mfa-cerrar-sesion" type="button" onClick={onCerrarSesion}>
+          <button className="mfa-cerrar-sesion" type="button" onClick={() => { olvidarActivacion(); onCerrarSesion(); }}>
             Cerrar sesión
           </button>
         )}

@@ -8,9 +8,9 @@
   max-width: 480px;
   margin: 0 auto;
   padding: 40px 24px;
-  background: #ffffff;
+  background: var(--color-card);
 }
-.estado-icono { font-size: 4rem; margin-bottom: 16px; }
+.estado-icono { display: flex; justify-content: center; margin-bottom: 16px; color: var(--color-accent-text); }
 .estado-icono-rechazado { color: var(--color-coral); }
 .estado-titulo { font-size: 1.6rem; margin: 0 0 12px; }
 .estado-mensaje { font-size: 0.95rem; color: #444; margin: 0 0 8px; max-width: 320px; }
@@ -32,7 +32,7 @@
   background: none;
   border: 1px dashed #aaa;
   border-radius: var(--radius-md);
-  color: #888;
+  color: var(--color-text-muted);
   font-size: 0.75rem;
   padding: 8px 14px;
   cursor: pointer;
@@ -44,10 +44,19 @@
   flex-direction: column;
   gap: 10px;
   padding: 16px;
-  background: #f8f8f8;
+  background: var(--bg-f8f8f8);
   border-radius: var(--radius-md);
 }
 .estado-dev-aprobar { border: none; border-radius: var(--radius-pill); background: var(--color-green); color: #113; font-weight: 700; padding: 10px; cursor: pointer; }
-.estado-dev-motivo { border: 1px solid #ccc; border-radius: var(--radius-sm); padding: 8px; font-family: var(--font-body); font-size: 0.85rem; min-height: 60px; resize: vertical; }
+.estado-dev-motivo { border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 8px; font-family: var(--font-body); font-size: 0.85rem; min-height: 60px; resize: vertical; }
 .estado-dev-rechazar { border: none; border-radius: var(--radius-pill); background: var(--color-coral); color: #fff; font-weight: 700; padding: 10px; cursor: pointer; }
-.estado-dev-rechazar:disabled { background: #ddd; color: #999; cursor: not-allowed; }
+.estado-dev-rechazar:disabled { background: var(--bg-dddddd); color: var(--color-text-muted); cursor: not-allowed; }
+
+/* Suscripción vencida (016/017): el botón es un enlace a WhatsApp */
+.estado-icono-vencido { color: var(--color-coral); }
+.estado-boton-enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}

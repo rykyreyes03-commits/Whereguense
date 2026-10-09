@@ -1,6 +1,6 @@
 .personalizacion-wrapper{
-  background:#ffffff;
-  color:#111;
+  background:var(--color-card);
+  color:var(--color-text);
   width:100%;
   max-width:480px;
   margin:0 auto;
@@ -9,7 +9,7 @@
 }
 
 .personalizacion-contenido{
-  padding: 24px 22px 40px;
+  padding: 24px 22px 150px; /* deja lugar a la barra inferior y al botón flotante del mapa */
 }
 
 /* El avatar nunca debe tocar el borde de la pantalla */
@@ -41,7 +41,7 @@
 .personalizacion-nivel{
   text-align:center;
   font-size:0.85rem;
-  color:#555;
+  color:var(--color-text-muted);
   margin: 16px 0 24px;
 }
 
@@ -54,8 +54,8 @@
   flex:1;
   border:2px solid #1a1a1a;
   border-radius:20px;
-  background:#fff;
-  color:#111;
+  background:var(--color-card);
+  color:var(--color-text);
   padding:10px;
   font-family:var(--font-body);
   font-weight:600;
@@ -76,9 +76,9 @@
 
 .personalizacion-item{
   position:relative;
-  border:2px solid #ccc;
+  border:2px solid var(--color-border);
   border-radius:16px;
-  background:#fafafa;
+  background:var(--bg-fafafa);
   padding:10px;
   aspect-ratio: 1;
   display:flex;
@@ -94,7 +94,7 @@
 .personalizacion-item.seleccionado{
   border-color: var(--color-ultramarine);
   border-width:3px;
-  background:#eef0ff;
+  background:var(--bg-eef0ff);
 }
 .personalizacion-item.bloqueado{
   cursor:not-allowed;
@@ -109,31 +109,31 @@
 .personalizacion-sin-sombrero{
   font-size:0.78rem;
   text-align:center;
-  color:#555;
+  color:var(--color-text-muted);
 }
 
 @media (min-width: 640px){
   .personalizacion-wrapper{ max-width:700px; }
 }
 @media (min-width: 1024px){
-  .personalizacion-wrapper{ max-width:1100px; }
+  .personalizacion-wrapper{ max-width: 100%; }
   .personalizacion-grid{ grid-template-columns: repeat(4, 1fr); }
 }
 
 .personalizacion-tienda{
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-border);
 }
 .personalizacion-tienda-titulo{
   font-size: 1.05rem;
   font-weight: 700;
   margin: 0 0 4px;
-  color: #111;
+  color: var(--color-text);
 }
 .personalizacion-tienda-sub{
   font-size: 0.82rem;
-  color: #666;
+  color: var(--color-text-muted);
   margin: 0 0 16px;
 }
 .personalizacion-item--tienda{

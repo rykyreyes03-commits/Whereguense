@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import TopBar from './TopBar';
 import { useGuardados } from '../hooks/useGuardados';
+import { rangoLargo, eventoTermino } from '../utils/eventos';
+import { useAhora } from '../hooks/useAhora';
 import './MisGuardados.css';
 
 const PESTANAS = [
@@ -29,9 +31,14 @@ const MENSAJE_VACIO = {
   ubicacion: 'Aún no tienes ubicaciones guardadas.',
 };
 
-function MisGuardados({ usuarioId, onVerSitio, onVolver }) {
+// eventos: la agenda actual (useEventosPublicos). onVerEvento(id) abre su detalle. Un evento guardado
+// que ya no está en la agenda (terminó, o el negocio venció) se sigue mostrando con los datos
+// que se guardaron, marcado como "Ya no está en la agenda".
+function MisGuardados({ usuarioId, eventos = [], onVerSitio, onVerEvento, onVolver }) {
   const { guardados, cargando } = useGuardados(usuarioId);
+  const ahora = useAhora();
   const [pestanaActiva, setPestanaActiva] = useState('todos');
+  const [avisoId, setAvisoId] = useState(null); // evento sin detalle del que se mostró el aviso
 
   const visibles = pestanaActiva === 'todos'
     ? guardados
@@ -41,8 +48,15 @@ function MisGuardados({ usuarioId, onVerSitio, onVolver }) {
     if (item.tipo === 'sitio') {
       onVerSitio?.(Number(item.referencia_id));
     }
-    // Los demas tipos (ruta, negocio, evento, ubicacion) se conectan en pasos siguientes.
+    if (item.tipo === 'evento') {
+      const vivo = eventos.find((e) => e.id === item.referencia_id);
+      if (vivo && !eventoTermino(vivo, ahora)) onVerEvento?.(item.referencia_id);
+      else if (eventoTermino(vivo || item.datos || {}, ahora) && item.datos) onVerEvento?.(item.referencia_id, item.datos); // terminó: detalle con lo guardado
+      else setAvisoId(avisoId === item.referencia_id ? null : item.referencia_id);
+    }
+    // Los demas tipos (ruta, negocio, ubicacion) se conectan en pasos siguientes.
   };
+
 
   return (
     <div className="guardados-wrapper">
@@ -68,20 +82,60 @@ function MisGuardados({ usuarioId, onVerSitio, onVolver }) {
           <p className="guardados-vacio">{MENSAJE_VACIO[pestanaActiva]}</p>
         ) : (
           <ul className="guardados-lista">
-            {visibles.map((item) => (
-              <li key={`${item.tipo}-${item.referencia_id}`}>
-                <button
-                  type="button"
-                  className="guardados-item"
-                  onClick={() => handleClick(item)}
-                >
-                  <span className="guardados-item-nombre">
-                    {item.datos?.nombre || 'Sin nombre'}
-                  </span>
-                  <span className="guardados-item-tipo">{ETIQUETA_TIPO[item.tipo]}</span>
-                </button>
-              </li>
-            ))}
+            {visibles.map((item) => {
+              if (item.tipo === 'evento') {
+                // Datos al día si el evento sigue en la agenda; si no, los que se guardaron.
+                const vivo = eventos.find((e) => e.id === item.referencia_id);
+                const info = vivo || item.datos || {};
+                const terminado = eventoTermino(info, ahora);
+                const fuera = !vivo || terminado;
+                return (
+                  <li key={`${item.tipo}-${item.referencia_id}`}>
+                    <button
+                      type="button"
+                      className={`guardados-item guardados-item--evento ${fuera ? 'guardados-item--fuera' : ''}`}
+                      onClick={() => handleClick(item)}
+                    >
+                      <span
+                        className="guardados-evento-foto"
+                        style={info.imagenUrl ? { backgroundImage: `url("${info.imagenUrl}")` } : undefined}
+                        aria-hidden="true"
+                      />
+                      <span className="guardados-evento-texto">
+                        <span className="guardados-item-nombre">{info.nombre || 'Sin nombre'}</span>
+                        {info.fechaInicio && (
+                          <span className="guardados-evento-detalle">{rangoLargo(info.fechaInicio, info.fechaFin)}</span>
+                        )}
+                        {info.lugar && <span className="guardados-evento-detalle">{info.lugar}</span>}
+                        {fuera && (
+                          <span className="guardados-evento-estado">
+                            {terminado ? 'Ya terminó' : 'Ya no está en la agenda'}
+                          </span>
+                        )}
+                      </span>
+                      <span className="guardados-item-tipo">{ETIQUETA_TIPO[item.tipo]}</span>
+                    </button>
+                    {avisoId === item.referencia_id && (
+                      <p className="guardados-aviso">Este evento ya no está en la agenda, así que no hay más detalles para mostrar.</p>
+                    )}
+                  </li>
+                );
+              }
+              return (
+                <li key={`${item.tipo}-${item.referencia_id}`}>
+                  <button
+                    type="button"
+                    className="guardados-item"
+                    onClick={() => handleClick(item)}
+                  >
+                    <span className="guardados-item-nombre">
+                      {item.datos?.nombre || 'Sin nombre'}
+                    </span>
+                    <span className="guardados-item-tipo">{ETIQUETA_TIPO[item.tipo]}</span>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

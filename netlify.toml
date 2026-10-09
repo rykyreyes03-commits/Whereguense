@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Estas variables VITE_ quedan dentro del JavaScript publicado por diseño (son claves públicas del navegador);
+  # sin esto, el escáner de secretos de Netlify las detecta en dist/ y cancela el despliegue.
+  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SUPABASE_PUBLISHABLE_KEY,VITE_CARTO_API_KEY,VITE_ORS_API_KEY"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

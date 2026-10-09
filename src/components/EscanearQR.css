@@ -114,7 +114,7 @@
   font-family: var(--font-body);
   font-size: 0.95rem;
   color: var(--color-text);
-  background: var(--color-white);
+  background: var(--color-card);
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -146,9 +146,14 @@
 
 .escanear-aviso {
   margin-top: 16px;
+  padding: 12px 14px;
+  max-width: 320px;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--color-coral);
+  background: color-mix(in srgb, var(--color-coral) 9%, var(--color-white));
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--color-folk);
+  color: var(--color-text);
 }
 
 /* ===== Reduced motion ===== */
@@ -164,7 +169,7 @@
   .escanear-contenido { padding: 32px 40px 48px; }
 }
 @media (min-width: 1024px) {
-  .escanear-wrapper { max-width: 1100px; }
+  .escanear-wrapper { max-width: 100%; }
   .escanear-contenido { max-width: 620px; margin: 0 auto; }
 }
 
@@ -189,6 +194,54 @@
 .escanear-resultado--exito p {
   color: var(--color-green);
 }
-.escanear-resultado--error p {
-  color: var(--color-folk);
+.escanear-resultado--error {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--color-coral);
+  background: color-mix(in srgb, var(--color-coral) 9%, var(--color-white));
 }
+.escanear-resultado--error p {
+  color: var(--color-text);
+}
+
+/* ===== Selector Sello | Cupón (027) ===== */
+.escanear-modos {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin: 0 0 18px;
+  border-radius: var(--radius-pill);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+}
+.escanear-modo {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 0.88rem;
+  padding: 8px 22px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.escanear-modo.activo {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+.escanear-modo:focus-visible { outline: 2px solid var(--color-turquoise); outline-offset: 2px; }
+
+.escanear-resultado .escanear-detalle {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--color-text-soft);
+}
+.escanear-btn--secundario {
+  margin-top: 10px;
+  background: var(--color-card);
+  color: var(--color-accent-text);
+  border: 2px solid var(--color-primary);
+  box-shadow: none;
+}
+.escanear-btn--secundario:hover { background: var(--color-surface-soft); box-shadow: none; }

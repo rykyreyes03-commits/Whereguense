@@ -1,19 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
+import { cambiarIdioma } from './i18n';
 import './App.css';
 import Landing from './components/Landing';
-import LandingNavbar from './components/LandingNavbar';
 import LandingEventos from './components/LandingEventos';
 import LandingMapas from './components/LandingMapas';
 import LandingRutaDetalle from './components/LandingRutaDetalle';
-import DatosPerfil from './components/DatosPerfil';
+import OnboardingCuaderno from './components/OnboardingCuaderno';
+import { dataUrlABlob } from './utils/fotoPerfil';
 import OnboardingEmprendedor from './components/OnboardingEmprendedor';
 import PanelAdmin from './components/PanelAdmin';
-import Onboarding from './components/Onboarding';
 import Login from './components/Login';
 import MfaEnrolamiento from './components/MfaEnrolamiento';
 import MfaChallenge from './components/MfaChallenge';
 import Proposito from './components/Proposito';
-import SeleccionDanzante from './components/SeleccionDanzante';
 import Inicio from './components/Inicio';
 import MapaRuta from './components/MapaRuta';
 import MisSellos from './components/MisSellos';
@@ -30,18 +29,24 @@ import Menu from './components/Menu';
 import RegistroNegocio from './components/RegistroNegocio';
 import EstadoNegocio from './components/EstadoNegocio';
 import PerfilNegocio from './components/PerfilNegocio';
-import GenerarQR from './components/GenerarQR';
 import EscanearQR from './components/EscanearQR';
+import EscanearCupon from './components/EscanearCupon';
+import MisCupones from './components/MisCupones';
 import Toast from './components/Toast';
 import LevelUpModal from './components/LevelUpModal';
+import OrbitalRoute from './components/OrbitalRoute';
+import parejaImg from './assets/flujo-inicial/whereguense_pareja.webp';
 import { sitios } from './data/sitios';
 import { rutas } from './data/rutas';
-import { eventos } from './data/eventos';
 import { useSellos } from './hooks/useSellos';
+import { useNivel } from './hooks/useNivel';
+import { useCuponesTurista } from './hooks/useCuponesTurista';
 import { useNegocio } from './hooks/useNegocio';
+import { useEventosPublicos } from './hooks/useEventosPublicos';
 import { useAvatarPersonalizado } from './hooks/useAvatarPersonalizado';
 import { supabase } from './lib/supabaseClient';
 import { aPersonajeDB, aPersonajeLocal } from './utils/avatarPersonaje';
+import { hoyManagua, eventoParaInicio, eventoDesdeGuardado } from './utils/eventos';
 import L from 'leaflet';
 
 function pantallaInicial() {
@@ -52,8 +57,14 @@ function pantallaInicial() {
 function App() {
   const [pantalla, setPantalla] = useState(pantallaInicial);
   const [pantallaAnterior, setPantallaAnterior] = useState('inicio');
+  const [perfilOrigen, setPerfilOrigen] = useState('inicio'); // de dónde se abrió Perfil (su Volver regresa allí)
   const [session, setSession] = useState(null);
   const [usuarioActual, setUsuarioActual] = useState(null);
+
+  // Con sesión, el idioma preferido de la cuenta manda sobre el del navegador.
+  useEffect(() => {
+    if (usuarioActual?.idioma_preferido) cambiarIdioma(usuarioActual.idioma_preferido);
+  }, [usuarioActual?.idioma_preferido]);
   const [authInicializada, setAuthInicializada] = useState(false);
   const [cargandoUsuario, setCargandoUsuario] = useState(false);
   const [guardandoDanzante, setGuardandoDanzante] = useState(false);
@@ -64,46 +75,84 @@ function App() {
   const authCargando = !authInicializada || cargandoUsuario;
   const [rutaActivaId, setRutaActivaId] = useState(null);
   const [eventoActivoId, setEventoActivoId] = useState(null);
+  // Desde dónde se abrió el detalle de un evento: "Volver" regresa ahí.
+  const [origenDetalleEvento, setOrigenDetalleEvento] = useState('eventos');
+  // Un favorito que ya terminó y la base ya no devuelve se abre con lo que se guardó (eventoDesdeGuardado).
+  const [eventoGuardado, setEventoGuardado] = useState(null);
+  const seleccionarEvento = (id) => {
+    // Se guarda una copia del evento al abrirlo: si termina con el detalle abierto y la base ya no lo devuelve, se sigue viendo ("Ya terminó").
+    setEventoGuardado(todosLosEventos.find((e) => e.id === id) || null);
+    setEventoActivoId(id);
+    setOrigenDetalleEvento('eventos');
+  };
   const [sitioSeleccionadoId, setSitioSeleccionadoId] = useState(null);
   const [sitioEnfocadoId, setSitioEnfocadoId] = useState(null);
+  const [negocioEnfocadoId, setNegocioEnfocadoId] = useState(null); // negocio al que se llegó con "Ver en el mapa"
   const { sellos, sellar, canjearQR } = useSellos(usuarioActual?.id);
+  // Nivel por puntos (038): cobre 1, plata 0.5, oro 2; de N a N+1 hacen falta N*2.
+  const nivelInfo = useNivel(usuarioActual?.id, sellos);
+  const nivel = nivelInfo.nivel;
+  const {
+    cupones,
+    cargando: cargandoCupones,
+    recargar: recargarCupones,
+    obtenerCupon,
+    iniciarCanje,
+    usarCupon,
+  } = useCuponesTurista(usuarioActual?.id);
   const {
     negocio,
     horarios,
+    horariosGuardados,
     fotos,
     productos,
     registrar,
     actualizarHorarios,
     actualizarUbicacion,
     actualizarPerfil,
+    guardarDiseno,
+    subirPortada,
+    subirLogoDiseno,
     subirLogo,
     subirFoto,
     eliminarFoto,
+    ordenarFotos,
     agregarProducto,
     eliminarProducto,
+    actividades,
     actividadesQR,
-    crearActividadQR,
+    cargarActividades,
+    sellosEntregados,
+    crearActividad,
+    editarActividad,
+    borrarActividad,
+    reenviarSolicitudSello,
     eliminarActividadQR,
   } = useNegocio(usuarioActual?.id);
+  const { eventos, todos: todosLosEventos, cargando: cargandoEventos, recargar: recargarEventos } = useEventosPublicos();
   const {
     desbloqueados,
     seleccion,
     elegir,
-    nivel,
     candidatosPendientes,
     elegirDesbloqueo,
-  } = useAvatarPersonalizado(usuarioActual?.id, sellos.length, localStorage.getItem('avatarElegido'));
+  } = useAvatarPersonalizado(usuarioActual?.id, nivelInfo.nivel, localStorage.getItem('avatarElegido'));
   const [toastSitio, setToastSitio] = useState(null);
   const [sitioResaltadoPasaporte, setSitioResaltadoPasaporte] = useState(null);
   const [mostrarSubidaNivel, setMostrarSubidaNivel] = useState(false);
-  const nivelPrevioRef = useRef(nivel);
+  const nivelPrevioRef = useRef(null);
 
+  // Solo cuenta como subida un aumento real del nivel ya cargado, no el salto de "todavía no cargó" a "cargó".
   useEffect(() => {
-    if (nivel > nivelPrevioRef.current) {
+    if (!nivelInfo.listo) {
+      nivelPrevioRef.current = null;
+      return;
+    }
+    if (nivelPrevioRef.current != null && nivel > nivelPrevioRef.current) {
       setMostrarSubidaNivel(true);
     }
     nivelPrevioRef.current = nivel;
-  }, [nivel]);
+  }, [nivelInfo.listo, nivel]);
 
   useEffect(() => {
     delete L.Icon.Default.prototype._getIconUrl;
@@ -183,9 +232,9 @@ function App() {
   }, [session?.user?.id, mfaRecargarTick]);
 
   const factorTotpVerificado = factoresMfa.find((f) => f.status === 'verified');
-  const necesitaEnrolarMfa = !!session && !verificandoMfa && !factorTotpVerificado;
-  const necesitaChallengeMfa = !!session && !verificandoMfa && !!factorTotpVerificado
-    && aalMfa?.currentLevel === 'aal1' && aalMfa?.nextLevel === 'aal2';
+  // El 2FA es opcional: quien no lo tiene entra directo y lo activa desde Perfil (pantalla 'mfaEnrolamiento'). Quien ya lo activó
+  // sigue teniendo que verificar el código al iniciar sesión.
+  const necesitaChallengeMfa = false;
 
   // Con sesión: resolver la fila de `usuario` (crearla la primera vez) y, la
   // primera vez por sesión, enrutar según onboarding_completado. El invitado sin
@@ -197,7 +246,6 @@ function App() {
     let activo = true;
     // Marca de "sincronizando con Supabase Auth"; el resto de setState de este
     // efecto ocurre dentro del callback async.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCargandoUsuario(true);
 
     (async () => {
@@ -229,6 +277,7 @@ function App() {
           if (fila.onboarding_completado) {
             localStorage.setItem('avatarElegido', aPersonajeLocal(fila.avatar_personaje));
             localStorage.setItem('flujoInicialCompletado', 'true');
+            if (fila.foto_perfil_url && !localStorage.getItem('fotoPerfil')) localStorage.setItem('fotoPerfil', fila.foto_perfil_url);
             setPantalla('inicio');
           } else {
             setPantalla('proposito');
@@ -249,8 +298,8 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id]);
 
-  const handleSellar = async (sitio) => {
-    const resultado = await sellar(sitio);
+  const handleSellar = async (sitio, ubicacion) => {
+    const resultado = await sellar(sitio, ubicacion);
     if (resultado.exito) {
       setToastSitio(sitio);
     } else {
@@ -258,8 +307,8 @@ function App() {
     }
   };
 
-  const intentarSellarPorGeofencing = async (sitio) => {
-    const resultado = await sellar(sitio);
+  const intentarSellarPorGeofencing = async (sitio, ubicacion) => {
+    const resultado = await sellar(sitio, ubicacion);
     if (resultado.exito) {
       setToastSitio(sitio);
     }
@@ -279,13 +328,29 @@ function App() {
     if (nueva === 'menu') {
       setPantallaAnterior(pantalla);
     }
+    if (nueva === 'perfil') {
+      setPerfilOrigen(pantalla);
+    }
     setPantalla(nueva);
   };
 
   const irAlMapaConSitio = (sitioId) => {
     setSitioEnfocadoId(sitioId);
+    setNegocioEnfocadoId(null);
     cambiarPantalla('mapa');
   };
+
+  // "Ver en el mapa" de la ficha de un negocio: abre el mapa principal centrado en él y con su marcador resaltado.
+  const irAlMapaConNegocio = (negocioId) => {
+    setSitioEnfocadoId(null);
+    setNegocioEnfocadoId(negocioId);
+    cambiarPantalla('mapa');
+  };
+
+  // El negocio enfocado (y con él el botón "Estoy aquí") solo vive mientras se está en el mapa.
+  useEffect(() => {
+    if (pantalla !== 'mapa') setNegocioEnfocadoId(null);
+  }, [pantalla]);
 
   const irAFlujoNegocio = () => {
     if (negocio?.estado === 'activo') {
@@ -302,26 +367,40 @@ function App() {
       irAFlujoNegocio();
       return;
     }
-    setPantalla('onboarding');
+    setPantalla('cuaderno');
   };
 
-  const handleTerminarOnboarding = () => {
-    setPantalla('datosPerfil');
-  };
-
+  // Guarda los datos del cuaderno (nombre, país, idioma, fecha de nacimiento, teléfono, género y foto). Devuelve true si quedó guardado.
   const handleGuardarDatosPerfil = async (datos) => {
     setErrorDatosPerfil(null);
     setGuardandoDatosPerfil(true);
 
     if (usuarioActual) {
-      const { error } = await supabase
-        .from('usuario')
-        .update({
-          nombre_usuario: datos.nombre,
-          pais: datos.pais || null,
-          idioma_preferido: datos.idioma,
-        })
-        .eq('id', usuarioActual.id);
+      let fotoUrl = null;
+      if (datos.foto) {
+        const ruta = `${usuarioActual.id}/perfil.jpg`;
+        const { error: errorSubida } = await supabase.storage
+          .from('perfiles')
+          .upload(ruta, await dataUrlABlob(datos.foto), { upsert: true, contentType: 'image/jpeg' });
+        if (errorSubida) {
+          console.error('Error subiendo la foto de perfil:', errorSubida);
+          setGuardandoDatosPerfil(false);
+          setErrorDatosPerfil('No se pudo subir tu foto. Intenta de nuevo o continúa sin foto.');
+          return false;
+        }
+        fotoUrl = `${supabase.storage.from('perfiles').getPublicUrl(ruta).data.publicUrl}?t=${Date.now()}`;
+      }
+
+      const cambios = {
+        nombre_usuario: datos.nombre,
+        pais: datos.pais || null,
+        idioma_preferido: datos.idioma,
+        fecha_nacimiento: datos.fechaNacimiento || null,
+        telefono: datos.telefono || null,
+        genero: datos.genero || null,
+        ...(fotoUrl ? { foto_perfil_url: fotoUrl } : {}),
+      };
+      const { error } = await supabase.from('usuario').update(cambios).eq('id', usuarioActual.id);
 
       setGuardandoDatosPerfil(false);
 
@@ -332,26 +411,54 @@ function App() {
         } else {
           setErrorDatosPerfil('No se pudo guardar tu información. Intenta de nuevo.');
         }
-        return;
+        return false;
       }
 
-      setUsuarioActual((u) =>
-        u ? { ...u, nombre_usuario: datos.nombre, pais: datos.pais, idioma_preferido: datos.idioma } : u
-      );
+      setUsuarioActual((u) => (u ? { ...u, ...cambios } : u));
     } else {
       setGuardandoDatosPerfil(false);
+      cambiarIdioma(datos.idioma);
       try {
         localStorage.setItem('perfilUsuario', JSON.stringify({
           nombre: datos.nombre,
           pais: datos.pais,
           idioma: datos.idioma,
+          fechaNacimiento: datos.fechaNacimiento,
+          telefono: datos.telefono,
+          genero: datos.genero,
         }));
       } catch (e) {
         console.error('Error guardando perfil local:', e);
       }
     }
 
-    setPantalla('danzante');
+    if (datos.foto) {
+      try {
+        localStorage.setItem('fotoPerfil', datos.foto);
+      } catch (e) {
+        console.error('Error guardando la foto de perfil en el dispositivo:', e);
+      }
+    }
+    return true;
+  };
+
+  // Editar la información desde el pasaporte: se guarda igual que en el registro y el idioma elegido se aplica de inmediato.
+  const handleEditarDesdePasaporte = async (datos) => {
+    const ok = await handleGuardarDatosPerfil(datos);
+    if (ok) cambiarIdioma(datos.idioma);
+    return ok;
+  };
+
+  // Cambiar el idioma desde Configuración: se aplica ya y, con sesión, se guarda en la cuenta (para el próximo inicio de sesión).
+  const handleCambiarIdioma = async (idioma) => {
+    cambiarIdioma(idioma);
+    if (!usuarioActual) return;
+    const { error } = await supabase.from('usuario').update({ idioma_preferido: idioma }).eq('id', usuarioActual.id);
+    if (error) {
+      console.error('Error guardando el idioma:', error);
+      return;
+    }
+    setUsuarioActual((u) => (u ? { ...u, idioma_preferido: idioma } : u));
   };
 
   const handleActualizarPerfilUsuario = async (datos) => {
@@ -433,27 +540,32 @@ function App() {
 
   if (authCargando || (session && verificandoMfa)) {
     return (
-      <div className="app-cargando">
-        <div className="app-cargando-spinner" aria-hidden="true" />
+      <div className="app-cargando" role="status">
+        <div className="app-cargando-gigantona" aria-hidden="true">
+          <img src={parejaImg} alt="" />
+        </div>
+        <OrbitalRoute />
         <p className="app-cargando-texto">Cargando…</p>
       </div>
     );
   }
 
-  if (necesitaEnrolarMfa) {
-    return (
-      <MfaEnrolamiento
-        onCompletado={() => setMfaRecargarTick((t) => t + 1)}
-        onCerrarSesion={handleCerrarSesionGlobal}
-      />
-    );
-  }
   if (necesitaChallengeMfa) {
     return (
       <MfaChallenge
         factorId={factorTotpVerificado.id}
         onVerificado={() => setMfaRecargarTick((t) => t + 1)}
         onCerrarSesion={handleCerrarSesionGlobal}
+      />
+    );
+  }
+
+  // Activar la verificación en dos pasos por decisión propia (desde Perfil)
+  if (pantalla === 'mfaEnrolamiento') {
+    return (
+      <MfaEnrolamiento
+        onCompletado={() => { setMfaRecargarTick((n) => n + 1); setPantalla('perfil'); }}
+        onVolver={() => setPantalla('perfil')}
       />
     );
   }
@@ -490,7 +602,6 @@ function App() {
   if (pantalla === 'login') {
     return (
       <Login
-        onIniciarComoInvitado={() => setPantalla('proposito')}
         onVolverALanding={() => setPantalla('landing')}
         sesionExpirada={avisoSesionExpirada}
       />
@@ -516,42 +627,53 @@ function App() {
     );
   }
 
-  if (pantalla === 'onboarding') {
-    return <Onboarding onTerminar={handleTerminarOnboarding} />;
+  if (pantalla === 'escanearCupon') {
+    return (
+      <EscanearCupon
+        cupones={cupones}
+        onObtenerCupon={obtenerCupon}
+        onIniciarCanje={iniciarCanje}
+        onUsarCupon={usarCupon}
+        onVolver={() => cambiarPantalla('inicio')}
+        onNavigate={cambiarPantalla}
+      />
+    );
   }
 
-  if (pantalla === 'datosPerfil') {
+  if (pantalla === 'misCupones') {
     return (
-      <DatosPerfil
+      <MisCupones
+        cupones={cupones}
+        cargando={cargandoCupones}
+        onRecargar={recargarCupones}
+        onNavigate={cambiarPantalla}
+      />
+    );
+  }
+
+  if (pantalla === 'cuaderno') {
+    return (
+      <OnboardingCuaderno
         valorInicial={{
           nombre: usuarioActual?.nombre_usuario || '',
           pais: usuarioActual?.pais || '',
           idioma: usuarioActual?.idioma_preferido || 'es',
         }}
-        onContinuar={handleGuardarDatosPerfil}
-        onVolverALanding={() => setPantalla('landing')}
+        onGuardarDatos={handleGuardarDatosPerfil}
         guardando={guardandoDatosPerfil}
         error={errorDatosPerfil}
-      />
-    );
-  }
-
-  if (pantalla === 'danzante') {
-    return (
-      <SeleccionDanzante
-        onElegir={handleElegirDanzante}
+        onTerminar={handleElegirDanzante}
+        guardandoFinal={guardandoDanzante}
+        errorFinal={errorDanzante}
         onVolverALanding={() => setPantalla('landing')}
-        guardando={guardandoDanzante}
-        error={errorDanzante}
       />
     );
   }
 
   if (pantalla === 'inicio') {
-    const hoy = new Date().toISOString().slice(0, 10);
-    const eventoVigente = eventos
-      .filter(e => e.fechaInicio <= hoy && hoy <= e.fechaFin)
-      .sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio))[0];
+    const hoy = hoyManagua(); // la fecha de Managua (con toISOString era la UTC: de noche ya era "mañana")
+    // El evento en curso o, si no hay, el próximo en empezar (antes solo contaban los que ya estaban en curso).
+    const eventoVigente = eventoParaInicio(eventos, hoy);
     return (
       <Inicio
         sitios={sitios}
@@ -563,7 +685,7 @@ function App() {
         onSeleccionarRuta={setRutaActivaId}
         onSeleccionarSitio={setSitioSeleccionadoId}
         onVerSitioEnMapa={irAlMapaConSitio}
-        onSeleccionarEvento={setEventoActivoId}
+        onSeleccionarEvento={seleccionarEvento}
         eventoDestacadoId={eventoVigente?.id}
       />
     );
@@ -578,7 +700,13 @@ function App() {
           onSellar={handleSellar}
           onSellarAutomatico={intentarSellarPorGeofencing}
           sitioEnfocadoId={sitioEnfocadoId}
+          negocioEnfocadoId={negocioEnfocadoId}
           onVolver={() => cambiarPantalla('inicio')}
+          onVerRuta={(sitio) => {
+            // Abre la ruta que incluye el sitio; si ninguna lo incluye, la lista de rutas.
+            const ruta = rutas.find((r) => r.sitios.some((s) => s.id === sitio.id));
+            if (ruta) { setRutaActivaId(ruta.id); cambiarPantalla('detalleRuta'); } else cambiarPantalla('rutas');
+          }}
           usuarioId={usuarioActual?.id}
         />
         <Toast sitio={toastSitio} onClose={handleCerrarToast} onClick={handleClickToast} />
@@ -601,20 +729,35 @@ function App() {
     return (
       <MisGuardados
         usuarioId={usuarioActual?.id}
+        eventos={eventos}
         onVerSitio={irAlMapaConSitio}
+        onVerEvento={(id, datosGuardados) => {
+          setEventoGuardado(datosGuardados ? eventoDesdeGuardado(id, datosGuardados) : (todosLosEventos.find((e) => e.id === id) || null));
+          setEventoActivoId(id);
+          setOrigenDetalleEvento('guardados');
+          cambiarPantalla('detalleEvento');
+        }}
         onVolver={() => cambiarPantalla('inicio')}
       />
     );
   }
 
-  if (pantalla === 'pasaporte') {
+  if (pantalla === 'pasaporte' || pantalla === 'pasaporteVisual') {
     return (
       <MisSellos
+        key={pantalla}
+        abrirPasaporte={pantalla === 'pasaporteVisual'}
+        onGuardarPerfil={handleEditarDesdePasaporte}
+        guardandoPerfil={guardandoDatosPerfil}
+        errorPerfil={errorDatosPerfil}
         sellos={sellos}
         sitios={sitios}
         onNavigate={cambiarPantalla}
         onSeleccionarSitio={setSitioSeleccionadoId}
         sitioResaltadoId={sitioResaltadoPasaporte}
+        usuario={usuarioActual}
+        rutas={rutas}
+        nivelInfo={nivelInfo}
       />
     );
   }
@@ -640,9 +783,13 @@ function App() {
         sellos={sellos}
         total={sitios.length}
         onNavigate={cambiarPantalla}
+        onVolver={() => setPantalla(perfilOrigen)}
+        modoNegocio={perfilOrigen === 'perfilNegocio'}
         onCerrarSesion={handleCerrarSesionGlobal}
         usuarioActual={usuarioActual}
         onActualizarPerfil={handleActualizarPerfilUsuario}
+        mfaActivo={Boolean(factorTotpVerificado)}
+        onActivar2FA={() => setPantalla('mfaEnrolamiento')}
       />
     );
   }
@@ -657,12 +804,32 @@ function App() {
   }
 
   if (pantalla === 'eventos') {
-    return <Eventos eventos={eventos} onNavigate={cambiarPantalla} onSeleccionarEvento={setEventoActivoId} />;
+    return (
+      <Eventos
+        eventos={eventos}
+        cargando={cargandoEventos}
+        onRecargar={recargarEventos}
+        onNavigate={cambiarPantalla}
+        onSeleccionarEvento={seleccionarEvento}
+      />
+    );
   }
 
   if (pantalla === 'detalleEvento') {
-    const evento = eventos.find(e => e.id === eventoActivoId);
-    return <DetalleEvento evento={evento} onNavigate={cambiarPantalla} />;
+    const vivo = todosLosEventos.find(e => e.id === eventoActivoId);
+    // Lo guardado manda si es un favorito terminado; si no, el evento al día y, si ya no llega de la base, la copia de cuando se abrió.
+    const evento = eventoGuardado && eventoGuardado.id === eventoActivoId && (eventoGuardado.desdeGuardado || !vivo)
+      ? eventoGuardado
+      : vivo;
+    return (
+      <DetalleEvento
+        evento={evento}
+        onNavigate={cambiarPantalla}
+        usuarioId={usuarioActual?.id}
+        volverA={origenDetalleEvento}
+        onVerNegocioEnMapa={irAlMapaConNegocio}
+      />
+    );
   }
 
   if (pantalla === 'ranking') {
@@ -673,12 +840,12 @@ function App() {
     return (
       <>
         <Personalizacion
-          sellos={sellos}
           onNavigate={cambiarPantalla}
           desbloqueados={desbloqueados}
           seleccion={seleccion}
           elegir={elegir}
           nivel={nivel}
+          nivelInfo={nivelInfo}
         />
         {mostrarSubidaNivel && (
           <LevelUpModal
@@ -735,7 +902,9 @@ function App() {
   }
 
   if (pantalla === 'panelAdmin') {
-    return <PanelAdmin onVolver={() => cambiarPantalla('menu')} />;
+    // setPantalla y no cambiarPantalla: este Volver regresa al Menú, y cambiarPantalla('menu')
+    // guardaría 'panelAdmin' como pantallaAnterior (el Volver del Menú volvería al Panel).
+    return <PanelAdmin onVolver={() => setPantalla('menu')} usuarioId={usuarioActual?.id} />;
   }
 
   if (pantalla === 'perfilNegocio') {
@@ -743,28 +912,31 @@ function App() {
       <PerfilNegocio
         negocio={negocio}
         horarios={horarios}
+        horariosGuardados={horariosGuardados}
         fotos={fotos}
         productos={productos}
         onNavigate={cambiarPantalla}
         onActualizarHorarios={actualizarHorarios}
         onActualizarUbicacion={actualizarUbicacion}
         onActualizarPerfil={actualizarPerfil}
+        onGuardarDiseno={guardarDiseno}
+        onSubirPortada={(file) => subirPortada(usuarioActual?.id, file)}
+        onSubirLogoDiseno={(file) => subirLogoDiseno(usuarioActual?.id, file)}
         onSubirLogo={(file) => subirLogo(usuarioActual?.id, file)}
         onSubirFoto={(file) => subirFoto(usuarioActual?.id, file)}
         onEliminarFoto={eliminarFoto}
+        onOrdenarFotos={ordenarFotos}
         onAgregarProducto={agregarProducto}
         onEliminarProducto={eliminarProducto}
-      />
-    );
-  }
-
-  if (pantalla === 'generarQR') {
-    return (
-      <GenerarQR
+        actividades={actividades}
         actividadesQR={actividadesQR}
-        onCrearActividad={crearActividadQR}
+        onRecargarActividades={cargarActividades}
+        onCrearActividad={crearActividad}
+        sellosEntregados={sellosEntregados}
+        onEditarActividad={editarActividad}
+        onBorrarActividad={borrarActividad}
+        onReenviarSello={reenviarSolicitudSello}
         onEliminarActividad={eliminarActividadQR}
-        onNavigate={cambiarPantalla}
       />
     );
   }
@@ -776,6 +948,9 @@ function App() {
         onVolver={() => cambiarPantalla(pantallaAnterior)}
         onCerrarSesion={handleCerrarSesionGlobal}
         onMiNegocio={irAFlujoNegocio}
+        onCambiarIdioma={handleCambiarIdioma}
+        // Si el menú se abrió desde el panel del emprendedor, se muestra su versión (sin lo del turista).
+        modoNegocio={pantallaAnterior === 'perfilNegocio'}
         esAdmin={usuarioActual?.rol === 'admin'}
       />
     );

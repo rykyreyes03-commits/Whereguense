@@ -10,7 +10,7 @@
 .mfa-panel {
   width: 100%;
   max-width: 420px;
-  background: var(--color-white);
+  background: var(--color-card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   padding: var(--space-xl);
@@ -20,7 +20,7 @@
 .mfa-titulo {
   font-family: var(--font-display);
   font-size: 1.5rem;
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   margin: 0 0 var(--space-sm);
 }
 
@@ -43,8 +43,11 @@
 }
 
 .mfa-qr svg {
-  width: 180px;
-  height: 180px;
+  display: block;
+  width: 200px;
+  height: 200px;
+  max-width: 100%;
+  border-radius: 8px;
 }
 
 .mfa-secreto-label {

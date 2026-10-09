@@ -21,23 +21,6 @@
   min-height: 100vh;
 }
 
-/* ===== Avatar (en TopBar rightSlot) ===== */
-.inicio-avatar-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding: 0;
-  transition: transform 0.15s ease, background 0.15s ease;
-}
-.inicio-avatar-btn:hover { background: rgba(255, 255, 255, 0.22); transform: scale(1.04); }
-.inicio-avatar-btn img { width: 22px; height: 22px; filter: brightness(0) invert(1); }
-
 /* ===== Hero ===== */
 .inicio-hero {
   background: linear-gradient(140deg, var(--color-navy) 0%, var(--color-primary) 100%);
@@ -130,7 +113,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
   padding: 12px 18px;
@@ -175,7 +158,7 @@
 
 /* ===== Resultados de búsqueda ===== */
 .inicio-resultados {
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   margin-top: 12px;
@@ -205,7 +188,7 @@
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   background: rgba(30, 42, 120, 0.08);
   padding: 4px 10px;
   border-radius: var(--radius-pill);
@@ -222,7 +205,7 @@
   font-family: var(--font-display);
   font-size: 1rem;
   font-weight: 700;
-  color: var(--color-navy);
+  color: var(--color-heading);
   margin: 28px 0 14px;
   letter-spacing: 0.3px;
 }
@@ -240,7 +223,7 @@
   font-family: var(--font-body);
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   cursor: pointer;
   padding: 0;
 }
@@ -254,7 +237,7 @@
   margin-bottom: 8px;
 }
 .inicio-acceso {
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 14px 6px 12px;
@@ -303,7 +286,7 @@
 .inicio-acceso-label {
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--color-navy);
+  color: var(--color-heading);
   line-height: 1.2;
 }
 .inicio-acceso-meta {
@@ -386,7 +369,7 @@
 
 /* ===== Empty state elegante ===== */
 .inicio-empty {
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 26px 22px;
@@ -401,7 +384,7 @@
 .inicio-empty h3 {
   font-family: var(--font-display);
   font-size: 1.05rem;
-  color: var(--color-navy);
+  color: var(--color-heading);
   margin: 0 0 6px;
 }
 .inicio-empty p {
@@ -425,7 +408,7 @@
 .inicio-empty-btn:hover { background: #25338c; transform: translateY(-1px); }
 .inicio-empty-btn--ghost {
   background: transparent;
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   border: 1px solid var(--color-primary);
 }
 .inicio-empty-btn--ghost:hover { background: rgba(30, 42, 120, 0.06); }
@@ -433,7 +416,7 @@
 /* ===== Card de ruta / evento ===== */
 .inicio-card {
   display: flex;
-  background: var(--color-white);
+  background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -484,14 +467,14 @@
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 1.5px;
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   text-transform: uppercase;
 }
 .inicio-card-titulo {
   font-family: var(--font-display);
   font-size: 1.02rem;
   font-weight: 700;
-  color: var(--color-navy);
+  color: var(--color-heading);
   margin: 0;
   line-height: 1.2;
 }
@@ -535,16 +518,60 @@
 /* ===== Tablet / Desktop ===== */
 @media (min-width: 640px) {
   .inicio-wrapper { max-width: 700px; }
-  .inicio-hero { padding: 36px 32px 64px; }
+  /* La barra de arriba tiene las esquinas de abajo redondeadas: el hero empieza detrás de ellas (margen negativo + el mismo relleno
+     extra) para que ahí no se vea el fondo claro de la pantalla. El texto del hero queda en el mismo lugar. */
+  .inicio-wrapper > .topbar { position: relative; z-index: 2; }
+  .inicio-hero { margin-top: calc(-1 * var(--radius-lg)); padding: calc(36px + var(--radius-lg)) 32px 64px; }
   .inicio-hero-titulo { font-size: 2rem; }
   .inicio-contenido { padding: 0 28px; }
 }
 
 @media (min-width: 1024px) {
-  .inicio-wrapper { max-width: 1100px; }
-  .inicio-hero { padding: 48px 60px 72px; }
+  .inicio-wrapper { max-width: 100%; }
+  .inicio-hero { padding: calc(48px + var(--radius-lg)) 60px 72px; }
   .inicio-hero-titulo { font-size: 2.4rem; }
   .inicio-contenido { padding: 0 60px; }
   .inicio-accesos { grid-template-columns: repeat(4, 1fr); max-width: 720px; }
   .inicio-card-media { width: 30%; }
+}
+
+/* ===== Evento destacado con foto: foto de fondo + degradado + nombre encima ===== */
+.inicio-card--foto {
+  position: relative;
+  min-height: 200px;
+  align-items: flex-end;
+  background: var(--color-navy); /* detrás de fotos con transparencia */
+  border-color: transparent;
+}
+.inicio-card-portada {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+.inicio-card--foto::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(12, 16, 40, 0.94) 0%, rgba(12, 16, 40, 0.78) 50%, rgba(12, 16, 40, 0) 92%);
+  pointer-events: none;
+}
+.inicio-card--foto .inicio-card-body {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 16px;
+}
+.inicio-card--foto .inicio-card-eyebrow { color: var(--color-turquoise); }
+.inicio-card--foto .inicio-card-titulo {
+  color: var(--color-white);
+  font-size: 1.15rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+.inicio-card--foto .inicio-card-ubicacion { color: rgba(255, 255, 255, 0.9); }
+.inicio-card--foto .inicio-pill {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--color-white);
 }

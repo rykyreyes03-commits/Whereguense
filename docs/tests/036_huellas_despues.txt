@@ -1,0 +1,36 @@
+# Huellas de los datos reales DESPUÉS de la migración 036 (2026-10-06). Misma fórmula que 035_huellas_antes.txt:
+#   md5 del texto de las filas, ordenadas, de cada tabla de public.
+# La 036 AGREGA la columna creado_en a negocio_foto, así que la huella de esa tabla CAMBIARÁ por diseño; por eso se guarda también
+# la huella de sus columnas actuales (id|negocio_id|url|tipo|orden), que NO debe cambiar:
+#   select md5(coalesce(string_agg(concat_ws('|', id, negocio_id, url, tipo, orden), E'\n' order by id), '')) from public.negocio_foto
+# negocio_foto_columnas_actuales 1 0b77f5aa064d795cd3fd8319cd3c0270
+actividad_negocio 3 5dea265ebad7c2612912c26a9bef443a
+avatar_equipado 0 d41d8cd98f00b204e9800998ecf8427e
+categoria_avatar 4 c66914bff9f8f5c33cc44b7571fe40ea
+cupon 1 f13e0fadda82fabac6275457498b5e2a
+cupon_obtenido 0 d41d8cd98f00b204e9800998ecf8427e
+evento 7 d298f911b1a594e6d4436657c234d136
+guardado 3 ce3fe6016e22afcfa389b393088b6a06
+hito_candidato 0 d41d8cd98f00b204e9800998ecf8427e
+insignia 60 5aa6a995806c12e15e7c7016ff1a2fff
+negocio 3 3ce544f1921f1fdf2103126dc0ee16e4
+negocio_foto 1 1675afb977e0700a6061f2f0df192ac7
+negocio_horario 7 d73f960220d634cd0e90306b86480152
+negocio_token_canje 1 0ce0cbf8999fcb5f4092201733118cef
+nivel 40 55db4afa22cd120335277fc8c797ea10
+pieza_avatar 23 620d3ab296a11efd25092798543908b5
+pieza_desbloqueada 2 7ce9a849c5a2b68303ad41af2a9373d4
+producto 1 2d98e94052c5498bdd139b73c0632957
+qr_sello 1 d77f760cffc4d46dc9821d0a440a7ce4
+rango 3 f016cb9f197ee13fffce3b220ac400ab
+resena 0 d41d8cd98f00b204e9800998ecf8427e
+ruta 1 6b397895058385b3c6624b2b8d32b1c5
+ruta_guardada 0 d41d8cd98f00b204e9800998ecf8427e
+ruta_sitio 10 7d02bd5ae346d982a6433dd2eaf92777
+sello 3 cd0bdd68a986f633f5a4195b8b335f00
+sitio 60 5cadbcbe53475f14d3e3c4ff01e4c01a
+usuario 7 eaca9079ba86bf8ab9d6f2fd5a8a5317
+usuario_hito 0 d41d8cd98f00b204e9800998ecf8427e
+# RESULTADO: 25 de 26 tablas IDÉNTICAS a 036_huellas_antes.txt. La única que cambia es negocio_foto (a1edcfc9... -> 1675afb9...) porque ahora
+# tiene la columna creado_en; la huella de sus columnas de antes (id|negocio_id|url|tipo|orden) sigue siendo 0b77f5aa064d795cd3fd8319cd3c0270,
+# es decir, la fila real no cambió. La prueba (docs/tests/036_negocio_foto_galeria.sql) dio 59 de 59.

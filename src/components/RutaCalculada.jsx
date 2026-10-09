@@ -1,52 +1,65 @@
 import { useEffect } from 'react';
+import i18n from '../i18n';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
-import 'leaflet-routing-machine';
 
-function RutaCalculada({ puntos, colorLinea = '#1a3c8f', onRutaCalculada, onError }) {
+const PERFIL_ORS = {
+  foot: 'foot-walking',
+  bike: 'cycling-regular',
+  car: 'driving-car',
+};
+
+function RutaCalculada({ puntos, modo = 'foot', colorLinea = '#1a3c8f', onRutaCalculada, onError }) {
   const map = useMap();
 
   useEffect(() => {
-    if (!map || !puntos || puntos.length < 2) return;
+    if (!puntos) return;
+    let cancelado = false;
+    const capa = L.geoJSON(null, {
+      style: { color: colorLinea, weight: 4, opacity: 0.75 },
+    }).addTo(map);
 
-    const waypoints = puntos.map(([lat, lng]) => L.latLng(lat, lng));
+    const perfil = PERFIL_ORS[modo] ?? PERFIL_ORS.foot;
+    // ORS espera [longitud, latitud] -- al revés de como los guardamos
+    // nosotros ([lat, lng]).
+    const coordenadas = puntos.map(([lat, lng]) => [lng, lat]);
 
-    const control = L.Routing.control({
-      router: L.Routing.osrmv1({
-        serviceUrl: 'https://routing.openstreetmap.de/routed-foot/route/v1',
-        profile: 'driving',
-      }),
-      waypoints,
-      routeWhileDragging: false,
-      addWaypoints: false,
-      draggableWaypoints: false,
-      fitSelectedRoutes: true,
-      show: false,
-      lineOptions: {
-        styles: [{ color: colorLinea, weight: 4, opacity: 0.75 }],
+    fetch(`https://api.openrouteservice.org/v2/directions/${perfil}/geojson`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: import.meta.env.VITE_ORS_API_KEY,
       },
-      createMarker: () => null,
+      body: JSON.stringify({ coordinates: coordenadas }),
     })
-      .on('routesfound', (e) => {
-        const ruta = e.routes?.[0];
-        if (ruta?.summary) {
-          onRutaCalculada?.({
-            distanciaMetros: ruta.summary.totalDistance,
-            duracionSegundos: ruta.summary.totalTime,
-            coordenadas: (ruta.coordinates || []).map((c) => [c.lat, c.lng]),
-          });
-        }
+      .then((res) => {
+        if (!res.ok) throw new Error('Error de OpenRouteService');
+        return res.json();
       })
-      .on('routingerror', (e) => {
-        console.error('Error calculando ruta:', e.error);
-        onError?.('No se pudo calcular la ruta. Revisa tu conexión e intenta de nuevo.');
+      .then((geojson) => {
+        if (cancelado) return;
+        capa.addData(geojson);
+        const feature = geojson.features[0];
+        const resumen = feature.properties.summary;
+        onRutaCalculada?.({
+          distanciaMetros: resumen.distance,
+          duracionSegundos: resumen.duration,
+          // ORS devuelve [lng, lat] (orden GeoJSON); MapaRuta.jsx espera
+          // [lat, lng] para la deteccion de desvio (distanciaMinimaARuta).
+          coordenadas: feature.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
+        });
       })
-      .addTo(map);
+      .catch(() => {
+        if (!cancelado) onError?.(i18n.t('mapa.rutaError'));
+      });
 
     return () => {
-      map.removeControl(control);
+      cancelado = true;
+      map.removeLayer(capa);
     };
-  }, [map, puntos]);
+  // onError y onRutaCalculada cambian en cada render del padre: incluirlas volvería a pedir la ruta sin parar.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, puntos, modo, colorLinea]);
 
   return null;
 }

@@ -1,0 +1,87 @@
+/* =========================================================
+   Tema claro / oscuro
+   Los componentes usan estos tokens en vez de colores fijos. El tema claro es el de siempre; el oscuro se activa con la clase
+   "dark" en <html> (ver src/tema.js y el script de index.html, que la pone antes de dibujar para que no haya parpadeo).
+   ========================================================= */
+
+:root {
+  /* Superficies y textos que antes eran colores fijos (blanco, navy, índigo) */
+  --color-card: #FFFFFF;
+  --color-heading: #1A1A2E;
+  --color-accent-text: #1E2A78;
+
+  /* Fondos claros con tinte (iguales a los de siempre; en oscuro se cambian por su versión oscura) */
+  --bg-dddddd: #dddddd;
+  --bg-ddf5e4: #ddf5e4;
+  --bg-e8eaf0: #e8eaf0;
+  --bg-e8f7f6: #e8f7f6;
+  --bg-ecebfb: #ecebfb;
+  --bg-eeeeee: #eeeeee;
+  --bg-eef0f6: #eef0f6;
+  --bg-eef0ff: #eef0ff;
+  --bg-f0f0ff: #f0f0ff;
+  --bg-f2fdfc: #f2fdfc;
+  --bg-f5f6ff: #f5f6ff;
+  --bg-f8f8f8: #f8f8f8;
+  --bg-fafafa: #fafafa;
+  --bg-fde7e5: #fde7e5;
+  --bg-fff4d6: #fff4d6;
+  --bg-fff8e1: #fff8e1;
+}
+
+html.dark {
+  color-scheme: dark;
+
+  --color-surface: #12121C;
+  --color-card: #1D1D2B;
+  --color-text: #ECECF4;
+  --color-text-muted: #B4B4CA;
+  --color-text-soft: #9393AE;
+  --color-heading: #F2F2FA;
+  --color-accent-text: #AEB8FF;
+  --color-border: #2F2F45;
+  --color-border-strong: #46465F;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.5);
+
+  --bg-dddddd: #383838;
+  --bg-ddf5e4: #25442e;
+  --bg-e8eaf0: #2e313a;
+  --bg-e8f7f6: #25403e;
+  --bg-ecebfb: #232142;
+  --bg-eeeeee: #333333;
+  --bg-eef0f6: #292e3a;
+  --bg-eef0ff: #202440;
+  --bg-f0f0ff: #202040;
+  --bg-f2fdfc: #20403d;
+  --bg-f5f6ff: #20233f;
+  --bg-f8f8f8: #303030;
+  --bg-fafafa: #2f2f2f;
+  --bg-fde7e5: #432422;
+  --bg-fff4d6: #453c23;
+  --bg-fff8e1: #433b22;
+}
+
+/* Mapa: las teselas claras se invierten (el tono se conserva) y los controles de Leaflet siguen el tema */
+html.dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92);
+}
+html.dark .leaflet-bar a,
+html.dark .leaflet-bar a:hover {
+  background-color: var(--color-card);
+  color: var(--color-text);
+  border-bottom-color: var(--color-border);
+}
+html.dark .leaflet-container { background: #1a1a24; }
+html.dark .leaflet-control-attribution {
+  background: rgba(18, 18, 28, 0.75);
+  color: var(--color-text-muted);
+}
+html.dark .leaflet-control-attribution a { color: var(--color-accent-text); }
+
+/* Íconos de imagen oscuros sobre tarjetas (Login: la "G" de Google y el sobre) se vuelven claros */
+html.dark .login-btn-secundario img {
+  filter: brightness(0) invert(1);
+}

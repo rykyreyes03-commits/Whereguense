@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -8,12 +8,22 @@ import { calcularDistanciaMetros } from '../utils/geo';
 import RutaCalculada from './RutaCalculada';
 import PanelSitio from './PanelSitio';
 import HistoriaSitio from './HistoriaSitio';
+import DetalleSitio from './DetalleSitio';
+import { useTranslation } from 'react-i18next';
+import { getCategoriaIcono, svgPinSitio } from '../utils/categoriaSitio';
 import { useGuardados } from '../hooks/useGuardados';
 import { useNegociosActivos } from '../hooks/useNegociosActivos';
 import PanelNegocio from './PanelNegocio';
 import PerfilNegocioPublico from './PerfilNegocioPublico';
 
-const RADIO_GEOFENCE_METROS = 80;
+const RADIO_GEOFENCE_DEFECTO = 80;
+// Efecto radar de los círculos de sellado: el anillo sale del centro (10 % del radio) y llega justo al borde del radio real de
+// sellado (100 %), desvaneciéndose, cada 3.5 s. Los círculos son SVG de Leaflet, así que se anima con setRadius/setStyle (un solo
+// requestAnimationFrame para todos, a unos 30 cuadros por segundo).
+const DURACION_RADAR_MS = 3500;
+const RADIO_INICIAL_RADAR = 0.1;
+const OPACIDAD_RADAR = 0.4;
+const COLOR_RADAR = '#38BDF8';
 
 const iconoUbicacion = L.divIcon({
   className: 'ubicacion-usuario-icono',
@@ -26,15 +36,61 @@ const iconoUbicacion = L.divIcon({
   iconAnchor: [30, 30],
 });
 
-const iconoNegocio = L.divIcon({
-  className: 'negocio-marcador-icono',
-  html: `<svg viewBox="0 0 24 32" width="28" height="36">
-    <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z" fill="var(--color-coral)"/>
-    <circle cx="12" cy="12" r="5" fill="white"/>
-  </svg>`,
-  iconSize: [28, 36],
-  iconAnchor: [14, 36],
+// Marcador de negocio: círculo blanco con un ícono de tienda, borde azul marino (rojo si está activo: panel abierto o llegada
+// con "Ver en el mapa"). Redondo, para no confundirlo con los pines de gota de los sitios. L.icon con el SVG como data URI,
+// cacheado por estado.
+const COLOR_NEGOCIO = '#1B2A6B';
+const COLOR_NEGOCIO_ACTIVO = '#C62828';
+const iconosNegocio = new Map();
+function iconoNegocio(activo) {
+  const clave = activo ? 'activo' : 'normal';
+  if (!iconosNegocio.has(clave)) {
+    const borde = activo ? COLOR_NEGOCIO_ACTIVO : COLOR_NEGOCIO;
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
+      // r=14.7 (no 15): con el trazo de 2.5 el borde exterior llega justo al límite de 32 y no se recorta
+      + `<circle cx="16" cy="16" r="14.7" fill="white" stroke="${borde}" stroke-width="2.5"/>`
+      + `<path fill="${borde}" d="M8 11h16l-1.5 2H9.5zm1.5 3h13v8h-13zm2 2v4h3v-4zm5 0v4h3v-4z"/>`
+      + '</svg>';
+    iconosNegocio.set(clave, L.icon({
+      iconUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+    }));
+  }
+  return iconosNegocio.get(clave);
+}
+
+// Aro que pulsa debajo del negocio al que se llegó con "Ver en el mapa" (no se toca: solo guía la vista).
+const iconoHaloNegocio = L.divIcon({
+  className: 'negocio-halo-icono',
+  html: '<span class="negocio-pin-halo"></span>',
+  iconSize: [30, 30],
+  iconAnchor: [15, 15],
 });
+
+// "Estoy aquí": pin azul claro, distinto de los marcadores de negocios y de sitios.
+const iconoEstoyAqui = L.divIcon({
+  className: 'estoy-aqui-icono',
+  html: '<span class="estoy-aqui-halo"></span><span class="estoy-aqui-punto"></span>',
+  iconSize: [44, 44],
+  iconAnchor: [22, 22],
+});
+
+// Marcador de sitio: pin clásico de Leaflet (25x41) del color de su categoría con el círculo blanco de siempre;
+// rojo si está seleccionado. Un icono por categoría y estado, cacheado.
+const iconosSitio = new Map();
+function iconoSitio(sitio, seleccionado) {
+  const categoria = getCategoriaIcono(sitio);
+  const clave = `${categoria.clave}-${seleccionado ? 's' : 'n'}`;
+  if (!iconosSitio.has(clave)) {
+    iconosSitio.set(clave, L.icon({
+      iconUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgPinSitio(categoria, seleccionado))}`,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+    }));
+  }
+  return iconosSitio.get(clave);
+}
 
 function normalizarTexto(s) {
   return s
@@ -65,6 +121,8 @@ function EnfocarSitio({ sitios, sitioEnfocadoId, onEnfocar }) {
 
     map.flyTo(sitio.position, 17);
     onEnfocar(sitio);
+    // Solo reacciona a un sitio nuevo enfocado; map, sitios y onEnfocar cambian en cada render y no deben volver a volar.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sitioEnfocadoId]);
 
   return null;
@@ -94,11 +152,13 @@ function SeguidorUbicacion({ ubicacion, activo, onSeguirDesactivado }) {
   return null;
 }
 
-function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuarioId }) {
+function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, negocioEnfocadoId = null, onVolver, onVerRuta, usuarioId }) {
+  const { t } = useTranslation();
   const mapRef = useRef(null);
+  const circulosRadarRef = useRef(new Map()); // id del sitio -> { circulo (Leaflet), base (m), desfase (ms) }
   const { ubicacion, error } = useUbicacionActual();
   const { estaGuardado: estaGuardadoSupabase, toggleGuardar } = useGuardados(usuarioId);
-  const { negocios } = useNegociosActivos();
+  const { negocios, cargando: cargandoNegocios } = useNegociosActivos();
   const [busqueda, setBusqueda] = useState('');
 
   const resultadosBusqueda = busqueda.trim()
@@ -117,11 +177,89 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
   const [negocioSeleccionado, setNegocioSeleccionado] = useState(null);
   const [negocioPerfilPublico, setNegocioPerfilPublico] = useState(null);
   const [sitioHistoria, setSitioHistoria] = useState(null);
+  const [sitioDetalle, setSitioDetalle] = useState(null);
   const [destinoRuta, setDestinoRuta] = useState(null);
   const [origenRuta, setOrigenRuta] = useState(null);
   const [modoSeguir, setModoSeguir] = useState(false);
   const [resumenRuta, setResumenRuta] = useState(null);
   const [errorRuta, setErrorRuta] = useState(null);
+  const [modoRuta, setModoRuta] = useState('foot'); // 'foot' | 'bike' | 'car'
+  // Llegada con "Ver en el mapa": negocio resaltado y botón "Estoy aquí" (que vive solo mientras se está en esta pantalla).
+  const [llegadaDesdeFicha, setLlegadaDesdeFicha] = useState(Boolean(negocioEnfocadoId));
+  const [negocioResaltadoId, setNegocioResaltadoId] = useState(null);
+  const [estoyAqui, setEstoyAqui] = useState(null); // { lat, lng } de la última vez que se tocó "Estoy aquí"
+  const [buscandoUbicacion, setBuscandoUbicacion] = useState(false);
+  const [avisoMapa, setAvisoMapa] = useState(null);
+
+  // Vuela hasta el negocio y deja su marcador resaltado. No abre su panel: taparía el marcador (queda en el centro del mapa) y el
+  // botón "Estoy aquí"; el panel se abre tocando el marcador, como siempre.
+  const enfocarNegocio = useCallback((negocio) => {
+    setNegocioResaltadoId(negocio.id);
+    setNegocioSeleccionado(null);
+    setLlegadaDesdeFicha(true);
+    if (mapRef.current) mapRef.current.flyTo(negocio.position, 17);
+  }, []);
+
+  // Radar de los círculos de sellado
+  useEffect(() => {
+    const circulos = circulosRadarRef.current;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      circulos.forEach(({ circulo }) => circulo.setStyle({ opacity: 0.25, fillOpacity: 0 }));
+      return undefined;
+    }
+    let cuadro;
+    let ultimo = 0;
+    const paso = (t) => {
+      cuadro = requestAnimationFrame(paso);
+      if (t - ultimo < 33) return;
+      ultimo = t;
+      circulos.forEach(({ circulo, base, desfase }) => {
+        const progreso = ((t + desfase) % DURACION_RADAR_MS) / DURACION_RADAR_MS;
+        circulo.setRadius(base * (RADIO_INICIAL_RADAR + progreso * (1 - RADIO_INICIAL_RADAR)));
+        circulo.setStyle({ opacity: OPACIDAD_RADAR * (1 - progreso), fillOpacity: 0 });
+      });
+    };
+    cuadro = requestAnimationFrame(paso);
+    return () => cancelAnimationFrame(cuadro);
+  }, []);
+
+  useEffect(() => {
+    if (!negocioEnfocadoId || cargandoNegocios) return;
+    const negocio = negocios.find((n) => n.id === negocioEnfocadoId);
+    if (negocio) enfocarNegocio(negocio);
+    else setAvisoMapa(t('mapa.negocioNoMapa'));
+    // Solo reacciona a un negocio nuevo enfocado o a que termine de cargar la lista.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [negocioEnfocadoId, cargandoNegocios]);
+
+  useEffect(() => {
+    if (!avisoMapa) return undefined;
+    const t = setTimeout(() => setAvisoMapa(null), 4500);
+    return () => clearTimeout(t);
+  }, [avisoMapa]);
+
+  // Pide la ubicación del navegador (al tocar, no antes). Si acepta: centra el mapa y pone el pin azul claro.
+  const irAEstoyAqui = () => {
+    if (!('geolocation' in navigator)) {
+      setAvisoMapa(t('mapa.activaUbicacion'));
+      return;
+    }
+    setBuscandoUbicacion(true);
+    navigator.geolocation.getCurrentPosition(
+      (posicion) => {
+        const punto = { lat: posicion.coords.latitude, lng: posicion.coords.longitude };
+        setBuscandoUbicacion(false);
+        setEstoyAqui(punto);
+        setAvisoMapa(null);
+        if (mapRef.current) mapRef.current.flyTo([punto.lat, punto.lng], 17);
+      },
+      (err) => {
+        setBuscandoUbicacion(false);
+        setAvisoMapa(err.code === err.PERMISSION_DENIED ? t('mapa.activaUbicacion') : t('mapa.noUbicacion'));
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    );
+  };
 
   useEffect(() => {
     if (!ubicacion) return;
@@ -133,8 +271,9 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
         sitio.position[0],
         sitio.position[1]
       );
-      if (distancia <= RADIO_GEOFENCE_METROS) {
-        onSellarAutomatico?.(sitio);
+      const radio = sitio.radioSelloMetros ?? RADIO_GEOFENCE_DEFECTO;
+      if (distancia <= radio) {
+        onSellarAutomatico?.(sitio, ubicacion);
       }
     });
   }, [ubicacion, sitios, onSellarAutomatico]);
@@ -157,13 +296,19 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
     }
   };
 
+  const puntosRuta = useMemo(() => {
+    if (!origenRuta || !destinoRuta) return null;
+    return [[origenRuta.lat, origenRuta.lng], destinoRuta.position];
+  }, [origenRuta, destinoRuta]);
+
   const comoLlegar = (sitio) => {
     if (!ubicacion) {
-      setErrorRuta('Necesitas activar tu ubicación para trazar la ruta.');
+      setErrorRuta(t('mapa.rutaNecesitaUbicacion'));
       return;
     }
     setErrorRuta(null);
     setResumenRuta(null);
+    setModoRuta('foot');
     setDestinoRuta(sitio);
     setOrigenRuta({ lat: ubicacion.lat, lng: ubicacion.lng });
     setModoSeguir(true);
@@ -183,7 +328,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
         <button
           className="mapa-volver-btn"
           onClick={() => onVolver?.()}
-          aria-label="Volver al inicio"
+          aria-label={t('mapa.volverInicio')}
           type="button"
         >
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
@@ -198,16 +343,16 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
           </svg>
           <input
             type="text"
-            placeholder="Buscar sitios de la ruta"
+            placeholder={t('mapa.buscarPlaceholder')}
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            aria-label="Buscar sitios"
+            aria-label={t('mapa.buscarAria')}
           />
           {busqueda && (
             <button
               className="mapa-buscador-limpiar"
               onClick={() => setBusqueda('')}
-              aria-label="Limpiar búsqueda"
+              aria-label={t('mapa.limpiar')}
               type="button"
             >
               ×
@@ -227,7 +372,7 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
                   </li>
                 ))
               ) : (
-                <li className="mapa-buscador-sin-resultados">Sin resultados</li>
+                <li className="mapa-buscador-sin-resultados">{t('mapa.sinResultados')}</li>
               )}
             </ul>
           )}
@@ -238,29 +383,61 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
         ref={mapRef}
         center={[12.4375, -86.8783]}
         zoom={13.5}
+        maxZoom={20}
         zoomControl={false}
         style={{ flex: 1, width: '100%' }}
       >
         <TileLayer
           url={`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${import.meta.env.VITE_CARTO_API_KEY}`}
+          maxZoom={20}
           attribution='&copy; OpenStreetMap contributors &copy; CARTO'
         />
-        {sitios.map(sitio => (
-          <Circle
-            key={`radio-${sitio.id}`}
-            center={sitio.position}
-            radius={RADIO_GEOFENCE_METROS}
-            pathOptions={{ className: 'mapa-geofence', weight: 1, fillOpacity: 0.08 }}
-          />
-        ))}
+        {sitios.map(sitio => {
+          const base = sitio.radioSelloMetros ?? RADIO_GEOFENCE_DEFECTO;
+          return (
+            <Circle
+              key={`radio-${sitio.id}`}
+              ref={(circulo) => {
+                if (circulo) {
+                  // Cada sitio tiene su propio desfase: las ondas son independientes y no pulsan todas a la vez
+                  circulosRadarRef.current.set(sitio.id, { circulo, base, desfase: (sitio.id * 1237) % DURACION_RADAR_MS });
+                } else {
+                  circulosRadarRef.current.delete(sitio.id);
+                }
+              }}
+              center={sitio.position}
+              radius={base}
+              pathOptions={{
+                className: 'mapa-geofence',
+                color: COLOR_RADAR,
+                weight: 2,
+                opacity: OPACIDAD_RADAR,
+                fillOpacity: 0,
+              }}
+            />
+          );
+        })}
 
         {sitios.map(sitio => (
           <Marker
             key={sitio.id}
             position={sitio.position}
+            icon={iconoSitio(sitio, sitio.id === sitioSeleccionado?.id)}
+            zIndexOffset={sitio.id === sitioSeleccionado?.id ? 800 : 0}
             eventHandlers={{
               click: () => setSitioSeleccionado(sitio),
             }}
+          />
+        ))}
+
+        {negocios.filter((n) => n.id === negocioResaltadoId).map((negocio) => (
+          <Marker
+            key={`halo-${negocio.id}`}
+            position={negocio.position}
+            icon={iconoHaloNegocio}
+            zIndexOffset={850}
+            interactive={false}
+            keyboard={false}
           />
         ))}
 
@@ -268,15 +445,26 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
           <Marker
             key={`negocio-${negocio.id}`}
             position={negocio.position}
-            icon={iconoNegocio}
+            icon={iconoNegocio(negocio.id === negocioResaltadoId || negocio.id === negocioSeleccionado?.id)}
+            zIndexOffset={negocio.id === negocioResaltadoId ? 900 : negocio.id === negocioSeleccionado?.id ? 700 : 0}
             eventHandlers={{
               click: () => setNegocioSeleccionado(negocio),
             }}
           />
         ))}
 
-        {ubicacion && (
+        {ubicacion && !estoyAqui && (
           <Marker position={[ubicacion.lat, ubicacion.lng]} icon={iconoUbicacion} zIndexOffset={1000} />
+        )}
+
+        {estoyAqui && (
+          <Marker
+            position={ubicacion ? [ubicacion.lat, ubicacion.lng] : [estoyAqui.lat, estoyAqui.lng]}
+            icon={iconoEstoyAqui}
+            zIndexOffset={1100}
+            interactive={false}
+            keyboard={false}
+          />
         )}
 
         <EnfocarSitio sitios={sitios} sitioEnfocadoId={sitioEnfocadoId} onEnfocar={setSitioSeleccionado} />
@@ -287,9 +475,10 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
           onSeguirDesactivado={() => setModoSeguir(false)}
         />
 
-        {destinoRuta && origenRuta && (
+        {destinoRuta && origenRuta && puntosRuta && (
           <RutaCalculada
-            puntos={[[origenRuta.lat, origenRuta.lng], destinoRuta.position]}
+            puntos={puntosRuta}
+            modo={modoRuta}
             onRutaCalculada={setResumenRuta}
             onError={setErrorRuta}
           />
@@ -298,26 +487,64 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
 
       {destinoRuta && (
         <div className="mapa-ruta-resumen">
-          <div className="mapa-ruta-resumen-info">
-            <strong>Ruta hacia {destinoRuta.name}</strong>
-            {resumenRuta && (
-              <span>
-                {(resumenRuta.distanciaMetros / 1000).toFixed(1)} km ·{' '}
-                {Math.round(resumenRuta.duracionSegundos / 60)} min
-              </span>
-            )}
-            {destinoRuta && !modoSeguir && (
-              <span className="mapa-ruta-resumen-aviso">Toca el botón de ubicación para seguir la ruta</span>
-            )}
-            {errorRuta && <span className="mapa-ruta-resumen-error">{errorRuta}</span>}
+          <div className="mapa-ruta-resumen-fila">
+            <div className="mapa-ruta-resumen-info">
+              <strong>{t('mapa.rutaHacia', { nombre: destinoRuta.name })}</strong>
+              {resumenRuta && (
+                <span>
+                  {(resumenRuta.distanciaMetros / 1000).toFixed(1)} km ·{' '}
+                  {Math.round(resumenRuta.duracionSegundos / 60)} min
+                </span>
+              )}
+              {destinoRuta && !modoSeguir && (
+                <span className="mapa-ruta-resumen-aviso">{t('mapa.tocaUbicacion')}</span>
+              )}
+              {errorRuta && <span className="mapa-ruta-resumen-error">{errorRuta}</span>}
+            </div>
+            <button
+              type="button"
+              className="mapa-ruta-resumen-cancelar"
+              onClick={cancelarRuta}
+            >
+              {t('mapa.cancelar')}
+            </button>
           </div>
-          <button
-            type="button"
-            className="mapa-ruta-resumen-cancelar"
-            onClick={cancelarRuta}
-          >
-            Cancelar
-          </button>
+          <div className="mapa-ruta-modos">
+            <button
+              type="button"
+              className={modoRuta === 'foot' ? 'activo' : ''}
+              onClick={() => setModoRuta('foot')}
+            >
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="13" cy="4" r="2" />
+                <path d="M10 22l1-6-3-2 1-5 4-1 3 3v5l2 6" />
+                <path d="M8 10l-3 2" />
+              </svg>
+              {t('mapa.caminar')}
+            </button>
+            <button
+              type="button"
+              className={modoRuta === 'bike' ? 'activo' : ''}
+              onClick={() => setModoRuta('bike')}
+            >
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="5.5" cy="17.5" r="3.5" />
+                <circle cx="18.5" cy="17.5" r="3.5" />
+                <path d="M5.5 17.5L9 8h6l3 5.5H9M9 8L7 5H5" />
+              </svg>
+              {t('mapa.bicicleta')}
+            </button>
+            <button
+              type="button"
+              className={modoRuta === 'car' ? 'activo' : ''}
+              onClick={() => setModoRuta('car')}
+            >
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 17h14M5 17a2 2 0 104 0M15 17a2 2 0 104 0M5 17v-4l2-5h10l2 5v4" />
+              </svg>
+              {t('mapa.vehiculo')}
+            </button>
+          </div>
         </div>
       )}
 
@@ -335,7 +562,25 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
             console.error('Error al guardar sitio:', resultado.mensaje);
           }
         }}
+        onVerDetalle={(sitio) => setSitioDetalle(sitio)}
+      />
+
+      <DetalleSitio
+        sitio={sitioDetalle}
+        estaGuardado={sitioDetalle ? estaGuardadoSupabase('sitio', sitioDetalle.id) : false}
+        onVolver={() => setSitioDetalle(null)}
+        onCerrar={() => { setSitioDetalle(null); setSitioSeleccionado(null); }}
+        onGuardar={async (sitio) => {
+          const resultado = await toggleGuardar('sitio', sitio.id, { nombre: sitio.name });
+          if (!resultado.exito) console.error('Error al guardar sitio:', resultado.mensaje);
+        }}
         onHistoria={(sitio) => setSitioHistoria(sitio)}
+        onVerRuta={(sitio) => onVerRuta?.(sitio)}
+        onLlegar={(sitio) => {
+          setSitioDetalle(null);
+          setSitioSeleccionado(null);
+          if (mapRef.current) mapRef.current.flyTo(sitio.position, 17);
+        }}
       />
 
       <PanelNegocio
@@ -366,13 +611,34 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
       <PerfilNegocioPublico
         negocio={negocioPerfilPublico}
         onCerrar={() => setNegocioPerfilPublico(null)}
+        onVerEnMapa={(id) => {
+          const negocio = negocios.find((n) => n.id === id);
+          if (negocio) enfocarNegocio(negocio);
+          else setAvisoMapa(t('mapa.negocioNoMapa'));
+        }}
       />
+
+      {llegadaDesdeFicha && (
+        <button
+          type="button"
+          className="mapa-estoy-aqui-btn"
+          onClick={irAEstoyAqui}
+          disabled={buscandoUbicacion}
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" fill="currentColor" />
+            <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2" />
+            <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          {buscandoUbicacion ? t('comun.buscando') : t('mapa.estoyAqui')}
+        </button>
+      )}
 
       <button
         className={`mapa-mi-ubicacion-btn ${modoSeguir ? 'siguiendo' : ''}`}
         onClick={centrarEnMiUbicacion}
         disabled={!ubicacion}
-        aria-label="Centrar en mi ubicación"
+        aria-label={t('mapa.centrar')}
         type="button"
       >
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
@@ -381,7 +647,8 @@ function MapaRuta({ sitios, onSellarAutomatico, sitioEnfocadoId, onVolver, usuar
         </svg>
       </button>
 
-      {error && <p className="mapa-ubicacion-error">{error}</p>}
+      {avisoMapa && <p className="mapa-ubicacion-error" role="status">{avisoMapa}</p>}
+      {error && !avisoMapa && <p className="mapa-ubicacion-error">{error}</p>}
       {errorRuta && !destinoRuta && <p className="mapa-ubicacion-error">{errorRuta}</p>}
     </div>
   );

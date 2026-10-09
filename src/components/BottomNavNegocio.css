@@ -1,0 +1,100 @@
+/* =========================================================
+   BottomNavNegocio — barra inferior del panel del emprendedor
+   Copia el estilo de BottomNav (la del turista): mismo alto, colores, ítem activo y
+   safe-area. Cambia: 5 columnas, íconos Lucide (svg) y etiquetas en minúscula
+   (en mayúscula "MI NEGOCIO" no entra en 360px con 5 ítems).
+   ========================================================= */
+
+.bottom-nav-negocio {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: stretch;
+  background: var(--color-navy);
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  max-width: 480px;
+  margin: 0 auto;
+  z-index: 100;
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.18);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.bottom-nav-negocio-item {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-body);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  padding: 8px 2px 6px;
+  position: relative;
+  border-radius: var(--radius-md);
+  transition: color 0.15s ease;
+}
+.bottom-nav-negocio-item span {
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.bottom-nav-negocio-item svg {
+  flex-shrink: 0;
+  opacity: 0.65;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+/* Ítem activo: fondo pill turquesa translúcido + ícono blanco + etiqueta blanca */
+.bottom-nav-negocio-item.activo {
+  color: var(--color-white);
+}
+.bottom-nav-negocio-item.activo svg {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+.bottom-nav-negocio-item.activo::before {
+  content: '';
+  position: absolute;
+  inset: 4px 6px auto 6px;
+  height: calc(100% - 8px);
+  border-radius: var(--radius-md);
+  background: linear-gradient(160deg, rgba(84, 200, 192, 0.28), rgba(30, 42, 120, 0.32));
+  z-index: -1;
+}
+.bottom-nav-negocio-item.activo::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--color-turquoise);
+}
+.bottom-nav-negocio-item:focus-visible {
+  outline: 2px solid var(--color-turquoise);
+  outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bottom-nav-negocio-item,
+  .bottom-nav-negocio-item svg { transition: none; }
+}
+
+/* Mismo ancho que el panel en pantallas grandes (igual que BottomNav) */
+@media (min-width: 640px) {
+  .bottom-nav-negocio { max-width: 700px; }
+}
+@media (min-width: 1024px) {
+  .bottom-nav-negocio { max-width: 100%; }
+}

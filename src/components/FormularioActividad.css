@@ -1,0 +1,39 @@
+/* Asistente de actividad en 3 pasos */
+.formact-titulo-paso {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  line-height: 1.2;
+  color: var(--color-heading);
+  margin: 0 0 18px;
+}
+.generarqr-campo small.formact-escrita { font-weight: 700; color: var(--color-heading); margin: 0 0 16px; }
+.formact-aviso {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.formact-aviso--problema { background: color-mix(in srgb, var(--color-coral) 12%, #fff); color: #A81F22; }
+.formact-bloqueo {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+.formact-bloqueo svg { flex-shrink: 0; margin-top: 1px; }
+.formact-cambiar-foto { margin-top: 10px; padding: 12px 14px; }
+.generarqr-input:disabled { background: var(--color-surface); color: var(--color-text-muted); cursor: not-allowed; }
+.generarqr-switch[aria-disabled='true'] { opacity: 0.5; cursor: not-allowed; }
+.pantalla-form .generarqr-generar-btn { min-height: 52px; }
+.pantalla-form .generarqr-generar-btn[aria-disabled='true'] { background: var(--color-surface); color: var(--color-text-muted); opacity: 1; cursor: not-allowed; }
+.formact-aviso:empty { display: none; }
+.formact-titulo-paso:focus { outline: none; }

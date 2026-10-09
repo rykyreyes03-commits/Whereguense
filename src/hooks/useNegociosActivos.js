@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { disenoDesdeConfig } from '../utils/diseno';
 
 export function useNegociosActivos() {
   const [negocios, setNegocios] = useState([]);
@@ -10,8 +11,11 @@ export function useNegociosActivos() {
 
     supabase
       .from('negocio')
-      .select('id, nombre_negocio, categoria, descripcion, telefono, latitud, longitud')
+      .select('id, nombre_negocio, categoria, descripcion, config_diseno, telefono, latitud, longitud')
       .eq('estado', 'activo')
+      // Mismo criterio que la RLS (migración 016). Además cubre al dueño de un negocio
+      // vencido: la RLS se lo deja ver, pero en el mapa debe verse igual que para todos.
+      .gt('fecha_vencimiento_suscripcion', new Date().toISOString())
       .then(({ data, error }) => {
         if (!activo) return;
         if (error) {
@@ -23,7 +27,8 @@ export function useNegociosActivos() {
               id: n.id,
               name: n.nombre_negocio,
               categoria: n.categoria,
-              descripcion: n.descripcion,
+              // Misma prioridad que la ficha: la del diseño, si no la del perfil.
+              descripcion: disenoDesdeConfig(n.config_diseno).descripcion.trim() || (n.descripcion || '').trim(),
               telefono: n.telefono,
               position: [n.latitud, n.longitud],
             }))

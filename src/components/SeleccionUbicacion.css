@@ -5,16 +5,16 @@
   width: 100%;
   max-width: 480px;
   margin: 0 auto;
-  background: var(--color-white);
+  background: var(--color-card);
 }
 .ubicacion-topbar {
   padding: 16px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-border);
 }
 .ubicacion-cancelar {
   background: none;
   border: none;
-  color: var(--color-ultramarine);
+  color: var(--color-accent-text);
   font-weight: 700;
   font-family: var(--font-body);
   cursor: pointer;
@@ -26,13 +26,50 @@
   margin: 0;
   font-family: var(--font-display);
 }
+.ubicacion-mapa {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+.ubicacion-tiempo-real {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 11px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--color-ultramarine);
+  background: var(--color-card);
+  color: var(--color-accent-text);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.ubicacion-tiempo-real--activo {
+  background: var(--color-ultramarine);
+  color: #fff;
+}
+.ubicacion-yo-icono { background: none; border: none; }
+.ubicacion-yo-halo {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.25);
+}
+.ubicacion-yo-punto {
+  position: absolute;
+  inset: 15px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
 .ubicacion-footer {
   padding: 16px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-border);
 }
 .ubicacion-ayuda {
   font-size: 0.85rem;
-  color: #555;
+  color: var(--color-text-muted);
   margin: 0 0 12px;
   text-align: center;
 }
@@ -54,4 +91,8 @@
 }
 @media (min-width: 640px) {
   .ubicacion-wrapper { max-width: 700px; }
+}
+
+@media (min-width: 1024px) {
+  .ubicacion-wrapper { max-width: 100%; }
 }

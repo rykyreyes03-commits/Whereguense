@@ -5,82 +5,113 @@ import ilustracionGigantona from '../assets/flujo-inicial/gigantona.png';
 import iconoGoogle from '../assets/flujo-inicial/google_hd.png';
 import iconoCorreo from '../assets/flujo-inicial/email_hd.png';
 
-function Login({ onIniciarComoInvitado, onVolverALanding, sesionExpirada }) {
-  const [paso, setPaso] = useState('correo'); // 'correo' | 'codigo'
+// Mensajes de Supabase Auth en español (lo que no se reconoce se muestra tal cual)
+function traducirError(err) {
+  const m = (err?.message || '').toLowerCase();
+  if (m.includes('invalid login credentials')) {
+    // Puede ser contraseña incorrecta O una cuenta creada con Google (que no tiene contraseña): Supabase no las distingue,
+    // así que el mensaje cubre los dos casos.
+    return 'Correo o contraseña incorrectos. Si creaste tu cuenta con Google, usa el botón "Continuar con Google".';
+  }
+  if (m.includes('email not confirmed')) return 'Confirma tu correo antes de iniciar sesión: te enviamos un mensaje al registrarte.';
+  if (m.includes('already registered')) return 'Ese correo ya tiene una cuenta. Inicia sesión.';
+  if (m.includes('rate limit') || err?.status === 429) return 'Demasiados intentos. Espera unos minutos e intenta de nuevo.';
+  if (m.includes('password') && m.includes('characters')) return err.message;
+  return err?.message || 'No se pudo completar. Intenta de nuevo.';
+}
+
+const MIN_CLAVE = 6;
+
+function Login({ onVolverALanding, sesionExpirada }) {
+  const [modo, setModo] = useState('entrar'); // 'entrar' | 'crear'
   const [email, setEmail] = useState('');
-  const [codigo, setCodigo] = useState('');
+  const [clave, setClave] = useState('');
+  const [confirmar, setConfirmar] = useState('');
   const [enviando, setEnviando] = useState(false);
-  const [verificando, setVerificando] = useState(false);
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
   const emailInputRef = useRef(null);
 
-  const handleProximamente = (metodo) => {
-    window.alert(`Continuar con ${metodo}: próximamente 🚧 (por ahora usá "Continuar como invitado")`);
+  // Google: Supabase manda a la persona a Google y la devuelve a esta misma página (en GitHub Pages: /Whereguense/).
+  // La URL debe estar en Redirect URLs de Supabase. Al volver, App.jsx reacciona vía onAuthStateChange.
+  const handleGoogle = async () => {
+    setEnviando(true);
+    setError('');
+    setAviso('');
+    const { error: err } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + window.location.pathname },
+    });
+    if (err) {
+      setEnviando(false);
+      setError(traducirError(err));
+    }
   };
 
-  const irAPasoCorreo = () => {
-    setPaso('correo');
-    setCodigo('');
+  const cambiarModo = (nuevo) => {
+    setModo(nuevo);
+    setClave('');
+    setConfirmar('');
     setError('');
     setAviso('');
     requestAnimationFrame(() => emailInputRef.current?.focus());
   };
 
-  const handleEnviarCodigo = async (e) => {
-    if (e) e.preventDefault();
+  const handleEnviar = async (e) => {
+    e.preventDefault();
     const correo = email.trim();
     if (!correo) {
       setError('Escribe tu correo.');
       return;
     }
+    if (!clave) {
+      setError('Escribe tu contraseña.');
+      return;
+    }
+    if (modo === 'crear') {
+      if (clave.length < MIN_CLAVE) {
+        setError(`La contraseña debe tener al menos ${MIN_CLAVE} caracteres.`);
+        return;
+      }
+      if (clave !== confirmar) {
+        setError('Las contraseñas no coinciden.');
+        return;
+      }
+    }
     setEnviando(true);
     setError('');
     setAviso('');
-    const { error: err } = await supabase.auth.signInWithOtp({
+
+    if (modo === 'entrar') {
+      const { error: err } = await supabase.auth.signInWithPassword({ email: correo, password: clave });
+      setEnviando(false);
+      if (err) setError(traducirError(err));
+      // Sesión iniciada: App.jsx reacciona vía supabase.auth.onAuthStateChange y decide a qué pantalla ir.
+      return;
+    }
+
+    const { data, error: err } = await supabase.auth.signUp({
       email: correo,
-      options: { shouldCreateUser: true },
+      password: clave,
+      // Si el proyecto pide confirmar el correo, el enlace de confirmación vuelve a esta misma página.
+      options: { emailRedirectTo: `${window.location.origin}${window.location.pathname}` },
     });
     setEnviando(false);
     if (err) {
-      setError(err.message || 'No se pudo enviar el código. Intenta de nuevo.');
+      setError(traducirError(err));
       return;
     }
-    setCodigo('');
-    setPaso('codigo');
-    setAviso(`Te enviamos un código de 6 dígitos a ${correo}.`);
-  };
-
-  const handleVerificar = async (e) => {
-    if (e) e.preventDefault();
-    const token = codigo.trim();
-    const correo = email.trim();
-    // El largo del código depende de la config del proyecto en Supabase
-    // (aquí son 8 dígitos, pero puede cambiar). No lo atamos a un número fijo:
-    // solo exigimos que sean dígitos y al menos 6.
-    if (!/^\d{6,}$/.test(token)) {
-      setError('Ingresa el código completo (solo números).');
+    // Con confirmación de correo activa, Supabase no avisa que el correo ya existe: devuelve un usuario sin identidades.
+    if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      setError('Ese correo ya tiene una cuenta. Inicia sesión.');
       return;
     }
-    setVerificando(true);
-    setError('');
-
-    // Correo ya existente -> type 'email'. Correo nuevo (Supabase generó el
-    // código bajo el flujo de alta) -> type 'signup'. Probamos el primero y,
-    // si falla, reintentamos automáticamente con el segundo antes de reportar.
-    let { error: err } = await supabase.auth.verifyOtp({ email: correo, token, type: 'email' });
-    if (err) {
-      const reintento = await supabase.auth.verifyOtp({ email: correo, token, type: 'signup' });
-      err = reintento.error;
+    if (!data?.session) {
+      // El proyecto exige confirmar el correo antes de entrar
+      cambiarModo('entrar');
+      setAviso(`Te enviamos un correo a ${correo} para confirmar tu cuenta. Después de confirmarlo, inicia sesión con tu contraseña.`);
     }
-
-    setVerificando(false);
-    if (err) {
-      setError(err.message || 'Código incorrecto o expirado.');
-      return;
-    }
-    // Sesión iniciada: App.jsx reacciona vía supabase.auth.onAuthStateChange
-    // y decide a qué pantalla ir. Aquí no navegamos.
+    // Con sesión: App.jsx sigue el flujo (tipo de usuario y cuaderno).
   };
 
   return (
@@ -104,95 +135,86 @@ function Login({ onIniciarComoInvitado, onVolverALanding, sesionExpirada }) {
 
       <div className="login-panel">
         {sesionExpirada && (
-          <p className="login-otp-error">Tu sesión expiró. Inicia sesión de nuevo.</p>
+          <p className="login-form-error">Tu sesión expiró. Inicia sesión de nuevo.</p>
         )}
         <button
-          className="login-btn login-btn-invitado"
-          onClick={onIniciarComoInvitado}
-        >
-          Continuar como invitado
-        </button>
-
-        <div className="login-separador">
-          <span>o continuá con</span>
-        </div>
-
-        <button
           className="login-btn login-btn-secundario"
-          onClick={() => handleProximamente('Google')}
+          type="button"
+          onClick={handleGoogle}
+          disabled={enviando}
         >
           <img src={iconoGoogle} alt="" />
           Continuar con Google
         </button>
 
-        {paso === 'correo' ? (
-          <form className="login-otp" onSubmit={handleEnviarCodigo}>
-            <label className="login-otp-label" htmlFor="login-email">Correo</label>
-            <input
-              id="login-email"
-              ref={emailInputRef}
-              className="login-otp-input"
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              placeholder="tucorreo@ejemplo.com"
-              value={email}
-              onChange={(e) => { setEmail(e.target.value); setError(''); }}
-              disabled={enviando}
-            />
-            <button
-              className="login-btn login-btn-secundario login-otp-btn"
-              type="submit"
-              disabled={enviando}
-            >
-              <img src={iconoCorreo} alt="" />
-              {enviando ? 'Enviando…' : 'Enviar código'}
-            </button>
-          </form>
-        ) : (
-          <form className="login-otp" onSubmit={handleVerificar}>
-            <label className="login-otp-label" htmlFor="login-codigo">Código de verificación</label>
-            <input
-              id="login-codigo"
-              className="login-otp-input login-otp-input-codigo"
-              type="text"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={8}
-              placeholder="••••••"
-              value={codigo}
-              onChange={(e) => { setCodigo(e.target.value.replace(/\D/g, '')); setError(''); }}
-              disabled={verificando}
-            />
-            <button
-              className="login-btn login-btn-secundario login-otp-btn"
-              type="submit"
-              disabled={verificando}
-            >
-              {verificando ? 'Verificando…' : 'Verificar'}
-            </button>
-            <div className="login-otp-acciones">
-              <button
-                type="button"
-                className="login-otp-link"
-                onClick={handleEnviarCodigo}
-                disabled={enviando}
-              >
-                {enviando ? 'Reenviando…' : 'Reenviar código'}
-              </button>
-              <button type="button" className="login-otp-link" onClick={irAPasoCorreo}>
-                Cambiar correo
-              </button>
-            </div>
-          </form>
+        <div className="login-separador">
+          <span>o con tu correo</span>
+        </div>
+
+        {modo === 'entrar' && (
+          <p className="login-form-hint">
+            ¿Entraste con Google la última vez? Usa el botón de arriba.
+          </p>
         )}
 
-        {aviso && !error && <p className="login-otp-aviso">{aviso}</p>}
-        {error && <p className="login-otp-error">{error}</p>}
+        <form className="login-form" onSubmit={handleEnviar} noValidate>
+          <label className="login-form-label" htmlFor="login-email">Correo</label>
+          <input
+            id="login-email"
+            ref={emailInputRef}
+            className="login-form-input"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="tucorreo@ejemplo.com"
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); setError(''); }}
+            disabled={enviando}
+          />
+          <label className="login-form-label" htmlFor="login-clave">Contraseña</label>
+          <input
+            id="login-clave"
+            className="login-form-input"
+            type="password"
+            autoComplete={modo === 'entrar' ? 'current-password' : 'new-password'}
+            placeholder={modo === 'entrar' ? 'Tu contraseña' : `Mínimo ${MIN_CLAVE} caracteres`}
+            value={clave}
+            onChange={(e) => { setClave(e.target.value); setError(''); }}
+            disabled={enviando}
+          />
+          {modo === 'crear' && (
+            <>
+              <label className="login-form-label" htmlFor="login-confirmar">Confirmar contraseña</label>
+              <input
+                id="login-confirmar"
+                className="login-form-input"
+                type="password"
+                autoComplete="new-password"
+                placeholder="Repite la contraseña"
+                value={confirmar}
+                onChange={(e) => { setConfirmar(e.target.value); setError(''); }}
+                disabled={enviando}
+              />
+            </>
+          )}
+          <button
+            className="login-btn login-btn-secundario login-form-btn"
+            type="submit"
+            disabled={enviando}
+          >
+            <img src={iconoCorreo} alt="" />
+            {enviando ? (modo === 'entrar' ? 'Entrando…' : 'Creando cuenta…') : (modo === 'entrar' ? 'Iniciar sesión' : 'Crear cuenta')}
+          </button>
+        </form>
+
+        {aviso && !error && <p className="login-form-aviso">{aviso}</p>}
+        {error && <p className="login-form-error">{error}</p>}
 
         <p className="login-crear-cuenta">
-          ¿No tienes cuenta?{' '}
-          <span onClick={irAPasoCorreo}>crea una</span>
+          {modo === 'entrar' ? '¿No tienes cuenta? ' : '¿Ya tienes cuenta? '}
+          <button type="button" className="login-form-link" onClick={() => cambiarModo(modo === 'entrar' ? 'crear' : 'entrar')}>
+            {modo === 'entrar' ? 'Crea una' : 'Inicia sesión'}
+          </button>
         </p>
       </div>
     </div>

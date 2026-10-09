@@ -1,0 +1,155 @@
+/* Reseñas: resumen, lista, formularios y botones. Tokens de src/index.css. */
+
+.resenas-resumen {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+  font-size: 1rem;
+  color: var(--color-heading);
+}
+.resenas-resumen span { color: var(--color-text-muted); }
+
+.resenas-vacio,
+.resenas-aviso {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--color-text-muted);
+}
+.resenas-aviso { margin-bottom: 4px; }
+
+.resenas-error {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #A81F22;
+}
+
+.resenas-lista {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.resenas-item {
+  padding: 14px 0;
+  border-top: 1px solid var(--color-border);
+}
+.resenas-item:first-child { border-top: 0; padding-top: 4px; }
+.resenas-item-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.resenas-item-meta { font-size: 0.82rem; color: var(--color-text-muted); }
+.resenas-item--mia .resenas-item-meta { color: var(--color-accent-text); font-weight: 700; }
+.resenas-item-texto {
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+.resenas-respuesta {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--color-turquoise);
+  background: var(--color-surface);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.resenas-respuesta strong { font-size: 0.82rem; color: var(--color-heading); }
+.resenas-respuesta p { margin: 4px 0 0; font-size: 0.92rem; line-height: 1.4; overflow-wrap: anywhere; white-space: pre-line; }
+.resenas-respuesta span { display: block; margin-top: 4px; font-size: 0.78rem; color: var(--color-text-muted); }
+
+/* Botones */
+.resenas-boton-principal,
+.resenas-boton-secundario {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.95rem;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.resenas-boton-principal {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: 2px solid var(--color-primary);
+}
+.resenas-boton-principal[aria-disabled='true'] { opacity: 0.55; cursor: not-allowed; }
+.resenas-boton-ancho { width: 100%; margin-bottom: 8px; }
+.resenas-boton-secundario {
+  margin-top: 10px;
+  background: var(--color-card);
+  color: var(--color-accent-text);
+  border: 2px solid var(--color-primary);
+}
+.resenas-boton-principal:focus-visible,
+.resenas-boton-secundario:focus-visible { outline: 3px solid var(--color-turquoise); outline-offset: 2px; }
+
+/* Formularios (dentro de PantallaFormulario) */
+.resenas-form { display: flex; flex-direction: column; gap: 18px; max-width: 560px; margin: 0 auto; }
+.resenas-form-negocio { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--color-heading); }
+.resenas-campo { display: flex; flex-direction: column; gap: 6px; font-weight: 700; font-size: 0.9rem; color: var(--color-heading); }
+.resenas-campo textarea {
+  font: inherit;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.4;
+  padding: 12px;
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  resize: vertical;
+  min-height: 120px;
+  background: var(--color-card);
+  color: var(--color-text);
+}
+.resenas-campo textarea:focus-visible { outline: 3px solid var(--color-turquoise); outline-offset: 1px; border-color: var(--color-primary); }
+.resenas-campo small { font-weight: 400; font-size: 0.8rem; color: var(--color-text-muted); }
+.resenas-cita {
+  margin: 0;
+  padding: 12px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.resenas-cita p { margin: 0; font-size: 0.92rem; overflow-wrap: anywhere; white-space: pre-line; }
+.resenas-cita span { font-size: 0.8rem; color: var(--color-text-muted); }
+
+/* Emprendedor: resumen con barras por estrella */
+.resenas-panel-resumen { display: flex; align-items: center; gap: 16px; }
+.resenas-panel-promedio { font-family: var(--font-display); font-weight: 700; font-size: 2.4rem; line-height: 1; color: var(--color-heading); }
+.resenas-panel-total { font-size: 0.85rem; color: var(--color-text-muted); margin-top: 4px; display: block; }
+.resenas-barras { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.resenas-barra { display: grid; grid-template-columns: 28px 1fr 28px; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--color-heading); }
+.resenas-barra-pista { height: 8px; background: var(--color-border); border-radius: var(--radius-pill); overflow: hidden; }
+.resenas-barra-relleno { display: block; height: 100%; background: #9A5B00; border-radius: var(--radius-pill); }
+.resenas-barra-cuenta { text-align: right; color: var(--color-text-muted); }
+
+/* Línea compacta "★ 4.6 · 12 reseñas" (tarjeta del organizador, Resumen del emprendedor) */
+.resenas-linea { display: inline-flex; align-items: center; gap: 4px; font-size: 0.85rem; color: var(--color-text-muted); }
+.resenas-linea strong { color: var(--color-heading); }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

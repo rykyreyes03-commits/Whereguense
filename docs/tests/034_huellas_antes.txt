@@ -1,0 +1,29 @@
+# Huellas de los datos reales ANTES de la migración 034 (2026-10-06, tras 032 y 033).
+# Cada huella = md5 de las filas (texto, ordenadas) de la tabla. Se recalculan DESPUÉS con la misma consulta (ver docs/tests/034_*.sql).
+actividad_negocio 3 529c0506a7b5c3d14441b0335c4fd548
+avatar_equipado 0 d41d8cd98f00b204e9800998ecf8427e
+categoria_avatar 4 1937d65c07a4cd15b39b7533f2a05c01
+cupon 1 f13e0fadda82fabac6275457498b5e2a
+cupon_obtenido 0 d41d8cd98f00b204e9800998ecf8427e
+evento 7 1590ddd12cf8cc6ed5cd71abe96243f7
+guardado 3 c32ae8331c401dc49878834274a8e078
+hito_candidato 0 d41d8cd98f00b204e9800998ecf8427e
+insignia 60 ec8807012819b5dc98291c8cae3b16cf
+negocio 3 dc0be0ca3e904569145bbf4208e1bc40
+negocio_foto 1 a1edcfc90dfb21358808a6e4013295a1
+negocio_horario 7 5b78bbdc66d763ba76b1c94db7982729
+negocio_token_canje 1 0ce0cbf8999fcb5f4092201733118cef
+nivel 40 4d125612536e168c2de7e2b18c0d5f94
+pieza_avatar 23 166e5e23f4398dfdb7760f4c5ffa0eec
+pieza_desbloqueada 2 b9ae11338753cdaab16a7b9e1c0aff85
+producto 1 2d98e94052c5498bdd139b73c0632957
+qr_sello 1 d77f760cffc4d46dc9821d0a440a7ce4
+rango 3 2068dfbdbd9d74973cdb2b6935ed4147
+resena 0 d41d8cd98f00b204e9800998ecf8427e
+ruta 1 6b397895058385b3c6624b2b8d32b1c5
+ruta_guardada 0 d41d8cd98f00b204e9800998ecf8427e
+ruta_sitio 10 de1acc9ddc3536098f844377a00f43f6
+sello 3 1db092e0ab11e8d8d57fd663e66ed3f8
+sitio 60 5a5e7b3c134524aaf205be206716799d
+usuario 7 1e655cfa5ac85607cd2b1d30ece907dd
+usuario_hito 0 d41d8cd98f00b204e9800998ecf8427e

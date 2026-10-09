@@ -15,11 +15,12 @@ function cargarComprados() {
   return [];
 }
 
-function Tienda({ sellos, onNavigate }) {
+function Tienda({ sellos, onNavigate, nivel = null }) {
   const [pestanaActiva, setPestanaActiva] = useState('gratis');
   const [comprados, setComprados] = useState(cargarComprados);
 
-  const nivelUsuario = obtenerNivel(sellos.length);
+  // nivel: el de la base (useNivel, 038); sin él, el cálculo viejo por cantidad de sellos.
+  const nivelUsuario = nivel ?? obtenerNivel(sellos.length);
 
   const handleComprar = (accesorio) => {
     const confirmado = window.confirm(

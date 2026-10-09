@@ -1,7 +1,7 @@
 .ranking-wrapper{
   font-family: 'Segoe UI', Arial, sans-serif;
-  background:#ffffff;
-  color:#111;
+  background:var(--color-card);
+  color:var(--color-text);
   width:100%;
   max-width:480px;
   margin:0 auto;
@@ -43,8 +43,8 @@
   flex:1;
   border:2px solid #1a1a1a;
   border-radius:30px;
-  background:#fff;
-  color:#111;
+  background:var(--color-card);
+  color:var(--color-text);
   padding:10px 6px;
   font-size:0.82rem;
   font-weight:600;
@@ -74,7 +74,7 @@
   padding:12px 16px;
 }
 .ranking-fila.usuario-actual{
-  background:#eef0ff;
+  background:var(--bg-eef0ff);
   border-color:#4945CD;
   box-shadow:0 0 0 3px #b9cdec;
 }
@@ -109,7 +109,7 @@
 .ranking-sellos{
   font-size:0.85rem;
   font-weight:600;
-  color:#333;
+  color:var(--color-text);
   flex-shrink:0;
 }
 
@@ -121,6 +121,6 @@
 
 /* ===== DESKTOP: 1024px+ ===== */
 @media (min-width: 1024px){
-  .ranking-wrapper{ max-width:1100px; }
+  .ranking-wrapper{ max-width: 100%; }
   .ranking-contenido{ padding: 36px 60px 0; }
 }

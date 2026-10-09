@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { rutaFotoDeUrl } from '../utils/eventos';
+import { MAX_FOTOS, motivoDeRechazo, rutaDeFoto } from '../utils/fotos';
 
 function mapearNegocio(fila) {
   if (!fila) return null;
@@ -10,12 +12,17 @@ function mapearNegocio(fila) {
     descripcion: fila.descripcion,
     telefono: fila.telefono,
     logoUrl: fila.logo_url,
+    configDiseno: fila.config_diseno || {},
     estado: fila.estado,
     motivoRechazo: fila.motivo_rechazo,
     fechaEnvio: fila.fecha_envio,
+    vencimientoSuscripcion: fila.fecha_vencimiento_suscripcion,
     ubicacion: { lat: fila.latitud, lng: fila.longitud },
   };
 }
+
+// Columnas de actividad_negocio que ve el dueño (incluye foto_url y limite_canjes, 026).
+const COLUMNAS_ACTIVIDAD = 'id, nombre, descripcion, foto_url, categoria, categoria_otro, lugar, fecha_inicio, fecha_fin, hora_inicio, hora_fin, eslogan, detalles, etiquetas, solicita_sello, limite_canjes, estado_sello, justificacion_sello, motivo_rechazo_sello, qr_sello_id, evento_id, fecha_creacion';
 
 function horarioPorDefecto() {
   return Array.from({ length: 7 }, (_, diaSemana) => ({
@@ -30,9 +37,12 @@ export function useNegocio(usuarioId) {
   const [negocio, setNegocio] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [horarios, setHorarios] = useState([]);
+  const [horariosGuardados, setHorariosGuardados] = useState(true); // false = el panel muestra horarios de relleno que NO están en la base
   const [fotos, setFotos] = useState([]);
   const [productos, setProductos] = useState([]);
   const [actividadesQR, setActividadesQR] = useState([]);
+  const [actividades, setActividades] = useState([]);
+  const [sellosEntregados, setSellosEntregados] = useState(null); // { [actividadId]: sellos que ya entregó }; null hasta cargarlos
 
   useEffect(() => {
     if (!usuarioId) {
@@ -83,9 +93,12 @@ export function useNegocio(usuarioId) {
           return;
         }
         if (!data || data.length === 0) {
+          // Sin filas en la base: se muestra un horario de relleno para poder editarlo, pero los turistas NO lo ven.
           setHorarios(horarioPorDefecto());
+          setHorariosGuardados(false);
           return;
         }
+        setHorariosGuardados(true);
         setHorarios(
           data.map((f) => ({
             diaSemana: f.dia_semana,
@@ -112,6 +125,7 @@ export function useNegocio(usuarioId) {
       .select('id, url, tipo, orden')
       .eq('negocio_id', negocio.id)
       .order('orden')
+      .order('id')
       .then(({ data, error }) => {
         if (!activo) return;
         if (error) {
@@ -148,28 +162,56 @@ export function useNegocio(usuarioId) {
     return () => { activo = false; };
   }, [negocio?.id]);
 
-  useEffect(() => {
-    if (!negocio?.id) {
+  // Actividades del negocio (actividad_negocio, el dueño ve todas) y sus QR
+  // (qr_sello vía mis_actividades_qr, que es lo único que devuelve el token).
+  // Se recarga al abrir la pestaña Actividades para ver los sellos que el admin aprobó.
+  const negocioId = negocio?.id;
+  const cargarActividades = useCallback(async () => {
+    if (!negocioId) {
+      setActividades([]);
       setActividadesQR([]);
-      return undefined;
+      return;
     }
-    let activo = true;
-    supabase
-      .from('qr_sello')
-      .select('id, token, nombre_actividad, color, fecha_creacion, fecha_expiracion, limite_canjes')
-      .eq('negocio_id', negocio.id)
-      .order('fecha_creacion', { ascending: false })
-      .then(({ data, error }) => {
-        if (!activo) return;
-        if (error) {
-          console.error('Error cargando actividades QR:', error);
-          setActividadesQR([]);
-        } else {
-          setActividadesQR(data || []);
-        }
-      });
-    return () => { activo = false; };
-  }, [negocio?.id]);
+
+    const [resActividades, resQR, resEntregados] = await Promise.all([
+      supabase
+        .from('actividad_negocio')
+        .select(COLUMNAS_ACTIVIDAD)
+        .eq('negocio_id', negocioId)
+        .order('fecha_creacion', { ascending: false }),
+      supabase.rpc('mis_actividades_qr', { p_negocio_id: negocioId }),
+      supabase.rpc('sellos_entregados_por_actividad', { p_negocio_id: negocioId }),
+    ]);
+
+    // El dueño no puede leer la tabla sello (solo el propio turista): la cuenta llega por esta función.
+    if (resEntregados.error) {
+      console.error('Error cargando los sellos entregados:', resEntregados.error);
+      setSellosEntregados({});
+    } else {
+      setSellosEntregados(Object.fromEntries((resEntregados.data || []).map((f) => [f.actividad_id, Number(f.entregados)])));
+    }
+
+    if (resActividades.error) {
+      console.error('Error cargando actividades:', resActividades.error);
+      setActividades([]);
+    } else {
+      setActividades(resActividades.data || []);
+    }
+
+    if (resQR.error) {
+      console.error('Error cargando actividades QR:', resQR.error);
+      setActividadesQR([]);
+    } else if (!resQR.data.exito) {
+      console.error('Error cargando actividades QR:', resQR.data.mensaje);
+      setActividadesQR([]);
+    } else {
+      setActividadesQR(resQR.data.actividades || []);
+    }
+  }, [negocioId]);
+
+  useEffect(() => {
+    cargarActividades();
+  }, [cargarActividades]);
 
   const registrar = useCallback(async (datos) => {
     if (!usuarioId) {
@@ -242,6 +284,63 @@ export function useNegocio(usuarioId) {
     return { exito: true };
   }, [negocio]);
 
+  // Diseño de la ficha (035): la base valida el esquema (paleta, letra, portada del propio bucket, WhatsApp, secciones).
+  const guardarDiseno = useCallback(async (config) => {
+    if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
+
+    const { data, error } = await supabase
+      .from('negocio')
+      .update({ config_diseno: config })
+      .eq('id', negocio.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error guardando el diseño:', error);
+      if (error.code === '23514') {
+        return { exito: false, mensaje: 'Algún valor del diseño no es válido. Revisa el WhatsApp y la portada.' };
+      }
+      return { exito: false, mensaje: 'No se pudo guardar el diseño. Intenta de nuevo.' };
+    }
+
+    setNegocio(mapearNegocio(data));
+    return { exito: true };
+  }, [negocio]);
+
+  // Sube una imagen del diseño (portada o logo) a <usuario_id>/<prefijo>_<negocio_id>.<ext> y devuelve su URL pública; NO la
+  // guarda en el negocio (eso lo hace guardarDiseno cuando el dueño pulsa Guardar). El servidor acepta solo jpg, png y webp
+  // de hasta 10 MB.
+  const subirImagenDiseno = useCallback(async (usuarioId, file, prefijo, nombre) => {
+    if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
+
+    const extensiones = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+    const extension = extensiones[file.type];
+    if (!extension) return { exito: false, mensaje: `${nombre} debe ser una imagen JPG, PNG o WebP.` };
+    if (file.size > 10 * 1024 * 1024) return { exito: false, mensaje: `${nombre} no puede pesar más de 10 MB.` };
+
+    const ruta = `${usuarioId}/${prefijo}_${negocio.id}.${extension}`;
+    const { error: errorSubida } = await supabase.storage
+      .from('negocios')
+      .upload(ruta, file, { upsert: true, contentType: file.type });
+
+    if (errorSubida) {
+      console.error(`Error subiendo ${prefijo}:`, errorSubida);
+      return { exito: false, mensaje: `No se pudo subir ${nombre.toLowerCase()}. Intenta de nuevo.` };
+    }
+
+    // Un solo archivo por negocio y prefijo: se borran los de otra extensión (mejor esfuerzo).
+    const otras = Object.values(extensiones)
+      .filter((e) => e !== extension)
+      .map((e) => `${usuarioId}/${prefijo}_${negocio.id}.${e}`);
+    supabase.storage.from('negocios').remove(otras).catch(() => {});
+
+    const { data } = supabase.storage.from('negocios').getPublicUrl(ruta);
+    return { exito: true, url: `${data.publicUrl}?t=${Date.now()}` };
+  }, [negocio]);
+
+  const subirPortada = useCallback((usuarioId, file) => subirImagenDiseno(usuarioId, file, 'portada', 'La portada'), [subirImagenDiseno]);
+  const subirLogoDiseno = useCallback((usuarioId, file) => subirImagenDiseno(usuarioId, file, 'logo', 'El logo'), [subirImagenDiseno]);
+
   const subirLogo = useCallback(async (usuarioId, file) => {
     if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
 
@@ -279,12 +378,15 @@ export function useNegocio(usuarioId) {
   const subirFoto = useCallback(async (usuarioId, file) => {
     if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
 
-    const extension = file.name.split('.').pop();
-    const ruta = `${usuarioId}/fotos/${Date.now()}.${extension}`;
+    // Mismas reglas que la base y el bucket (036/035): hasta 10 fotos, jpg/png/webp, 10 MB.
+    const motivo = motivoDeRechazo(file, fotos.length);
+    if (motivo) return { exito: false, mensaje: motivo };
+
+    const ruta = rutaDeFoto(usuarioId, negocio.id, file);
 
     const { error: errorSubida } = await supabase.storage
       .from('negocios')
-      .upload(ruta, file);
+      .upload(ruta, file, { contentType: file.type });
 
     if (errorSubida) {
       console.error('Error subiendo foto:', errorSubida);
@@ -298,13 +400,18 @@ export function useNegocio(usuarioId) {
       .insert({
         negocio_id: negocio.id,
         url: urlPublica.publicUrl,
-        orden: fotos.length,
+        orden: fotos.reduce((m, f) => Math.max(m, f.orden + 1), 0),
       })
-      .select()
+      .select('id, url, tipo, orden')
       .single();
 
     if (error) {
       console.error('Error guardando foto:', error);
+      // El archivo quedó huérfano en el bucket: se intenta quitar.
+      supabase.storage.from('negocios').remove([ruta]).catch(() => {});
+      if (error.code === '23514' && /10 fotos/.test(error.message || '')) {
+        return { exito: false, mensaje: `Un negocio puede tener hasta ${MAX_FOTOS} fotos.` };
+      }
       return { exito: false, mensaje: 'La foto se subió pero no se pudo guardar. Intenta de nuevo.' };
     }
 
@@ -313,6 +420,7 @@ export function useNegocio(usuarioId) {
   }, [negocio, fotos]);
 
   const eliminarFoto = useCallback(async (fotoId) => {
+    const foto = fotos.find((f) => f.id === fotoId);
     const { error } = await supabase
       .from('negocio_foto')
       .delete()
@@ -323,9 +431,28 @@ export function useNegocio(usuarioId) {
       return { exito: false, mensaje: 'No se pudo quitar la foto. Intenta de nuevo.' };
     }
 
+    // También se borra el archivo del bucket (mejor esfuerzo: si falla, la foto ya no aparece de todos modos).
+    const ruta = rutaFotoDeUrl(foto?.url);
+    if (ruta) supabase.storage.from('negocios').remove([ruta]).catch(() => {});
+
     setFotos((prev) => prev.filter((f) => f.id !== fotoId));
     return { exito: true };
-  }, []);
+  }, [fotos]);
+
+  // Guarda el orden de las fotos de una vez (ordenar_fotos_negocio, 036). `ids` = todas las fotos, en el orden nuevo.
+  const ordenarFotos = useCallback(async (ids) => {
+    if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
+    const anterior = fotos;
+    setFotos((prev) => ids.map((id, i) => ({ ...prev.find((f) => f.id === id), orden: i })).filter((f) => f.url));
+
+    const { data, error } = await supabase.rpc('ordenar_fotos_negocio', { p_negocio_id: negocio.id, p_ids: ids });
+    if (error || !data?.exito) {
+      if (error) console.error('Error ordenando fotos:', error);
+      setFotos(anterior);
+      return { exito: false, mensaje: data?.mensaje || 'No se pudo guardar el orden. Intenta de nuevo.' };
+    }
+    return { exito: true };
+  }, [negocio, fotos]);
 
   // Pendientes de migrar en pasos siguientes (horarios, fotos, productos, QR):
   const actualizarHorarios = useCallback(async (nuevosHorarios) => {
@@ -349,6 +476,7 @@ export function useNegocio(usuarioId) {
     }
 
     setHorarios(nuevosHorarios);
+    setHorariosGuardados(true);
     return { exito: true };
   }, [negocio]);
   const agregarProducto = useCallback(async (nombre) => {
@@ -387,51 +515,232 @@ export function useNegocio(usuarioId) {
     setProductos((prev) => prev.filter((p) => p.id !== productoId));
     return { exito: true };
   }, []);
-  const crearActividadQR = useCallback(async ({ nombre, color, limiteCanjes, fechaExpiracion }) => {
+  // Crea la actividad en actividad_negocio. Si pide sello, queda 'pendiente' (lo
+  // decide el trigger) hasta que el admin la apruebe. Si tiene fechas, además se
+  // publica como evento con crear_evento_desde_actividad.
+  const crearActividad = useCallback(async ({ nombre, descripcion, fechaInicio, fechaFin, solicitaSello, justificacion, limiteCanjes, foto, categoria, categoriaOtro, lugar, horaInicio, horaFin, eslogan, detalles, etiquetas }) => {
     if (!negocio) return { exito: false, mensaje: 'No hay negocio para actualizar.' };
 
-    const token = Math.random().toString(36).slice(2, 10).toUpperCase();
+    // Foto: mismo bucket y mismo patrón que subirFoto (<uid>/<carpeta>/<timestamp>.<ext>),
+    // en la subcarpeta "actividades". Se sube antes de insertar para guardar la URL.
+    let fotoUrl = null;
+    let rutaFoto = null;
+    if (foto) {
+      const extension = foto.name.split('.').pop();
+      rutaFoto = `${usuarioId}/actividades/${Date.now()}.${extension}`;
+      const { error: errorSubida } = await supabase.storage.from('negocios').upload(rutaFoto, foto);
+      if (errorSubida) {
+        console.error('Error subiendo la foto de la actividad:', errorSubida);
+        return { exito: false, mensaje: 'No se pudo subir la foto. Intenta de nuevo.' };
+      }
+      fotoUrl = supabase.storage.from('negocios').getPublicUrl(rutaFoto).data.publicUrl;
+    }
 
     const { data, error } = await supabase
-      .from('qr_sello')
+      .from('actividad_negocio')
       .insert({
         negocio_id: negocio.id,
-        token,
-        nombre_actividad: nombre,
-        color,
-        limite_canjes: limiteCanjes || null,
-        fecha_expiracion: fechaExpiracion || null,
+        nombre,
+        descripcion: descripcion || null,
+        foto_url: fotoUrl,
+        fecha_inicio: fechaInicio || null,
+        fecha_fin: fechaFin || null,
+        solicita_sello: solicitaSello,
+        justificacion_sello: solicitaSello ? justificacion : null,
+        limite_canjes: solicitaSello ? (limiteCanjes || null) : null,
+        // Campos del rediseño (028). El trigger de 029 exige categoría, descripción, foto, fechas, horas y lugar;
+        // solo eslogan, detalles y etiquetas son opcionales.
+        categoria: categoria || null,
+        categoria_otro: categoria === 'otro' ? (categoriaOtro || null) : null,
+        lugar: lugar || null,
+        hora_inicio: horaInicio || null,
+        hora_fin: horaFin || null,
+        eslogan: eslogan || null,
+        detalles: detalles || null,
+        etiquetas: etiquetas && etiquetas.length > 0 ? etiquetas : null,
       })
-      .select()
+      .select(COLUMNAS_ACTIVIDAD)
       .single();
 
     if (error) {
-      console.error('Error creando actividad QR:', error);
-      return { exito: false, mensaje: 'No se pudo crear la actividad. Intenta de nuevo.' };
+      console.error('Error creando actividad:', error);
+      // No dejar la foto huérfana en Storage si la actividad no se guardó.
+      if (rutaFoto) await supabase.storage.from('negocios').remove([rutaFoto]);
+      // El trigger de 029 dice qué falta ('Faltan datos obligatorios de la actividad: foto, lugar.'): se muestra tal cual.
+      const faltanDatos = error.code === '23514' && /^Faltan datos obligatorios/.test(error.message || '');
+      return { exito: false, mensaje: faltanDatos ? error.message : 'No se pudo crear la actividad. Intenta de nuevo.' };
     }
 
-    setActividadesQR((prev) => [data, ...prev]);
+    let actividad = data;
+    let aviso = null;
 
-    if (fechaExpiracion) {
-      const { error: errorEvento } = await supabase
-        .from('evento')
-        .insert({
-          negocio_organizador_id: negocio.id,
-          nombre,
-          fecha_inicio: new Date().toISOString().slice(0, 10),
-          fecha_fin: fechaExpiracion,
-          ubicacion: negocio.nombre,
-          descripcion: `Actividad de sello: ${nombre}`,
-        });
+    if (data.fecha_inicio && data.fecha_fin) {
+      const { data: resEvento, error: errorEvento } = await supabase
+        .rpc('crear_evento_desde_actividad', { p_actividad_id: data.id });
 
       if (errorEvento) {
-        console.error('Error creando evento para la actividad QR:', errorEvento);
-        // No bloqueamos el éxito de la actividad por esto: qr_sello ya se creó bien.
+        console.error('Error publicando el evento de la actividad:', errorEvento);
+        aviso = 'La actividad se guardó, pero no se pudo publicar como evento.';
+      } else if (!resEvento.exito) {
+        aviso = `La actividad se guardó, pero no se publicó como evento: ${resEvento.mensaje}`;
+      } else {
+        actividad = { ...data, evento_id: resEvento.evento_id };
       }
     }
 
+    setActividades((prev) => [actividad, ...prev]);
+    return { exito: true, aviso };
+  }, [negocio, usuarioId]);
+
+  // Reenvía una solicitud de sello rechazada sobre la MISMA actividad. El trigger
+  // actividad_negocio_estado_sello la vuelve a 'pendiente' solo si la justificación
+  // cambió (021); si no cambió, la deja 'rechazado' sin error, por eso se valida aquí.
+  const reenviarSolicitudSello = useCallback(async (actividadId, justificacion) => {
+    const { data, error } = await supabase
+      .from('actividad_negocio')
+      .update({ solicita_sello: true, justificacion_sello: justificacion })
+      .eq('id', actividadId)
+      .select(COLUMNAS_ACTIVIDAD)
+      .single();
+
+    if (error) {
+      console.error('Error reenviando la solicitud de sello:', error);
+      return { exito: false, mensaje: 'No se pudo reenviar la solicitud. Intenta de nuevo.' };
+    }
+    if (data.estado_sello !== 'pendiente') {
+      return { exito: false, mensaje: 'Cambia la explicación antes de volver a enviar la solicitud.' };
+    }
+
+    setActividades((prev) => prev.map((a) => (a.id === actividadId ? data : a)));
     return { exito: true };
-  }, [negocio]);
+  }, []);
+
+  // Edita una actividad. Con el sello ya aprobado no se mandan fechas, sello ni límite (la base los protege).
+  // Si se cambia la foto, la nueva se sube antes de guardar y la anterior se borra de Storage solo DESPUÉS de
+  // guardar bien; si guardar falla, se borra la nueva. Un fallo al borrar la anterior no cuenta como error.
+  const editarActividad = useCallback(async (id, { nombre, descripcion, fechaInicio, fechaFin, solicitaSello, justificacion, limiteCanjes, foto, categoria, categoriaOtro, lugar, horaInicio, horaFin, eslogan, detalles, etiquetas }) => {
+    const actual = actividades.find((a) => a.id === id);
+    if (!actual) return { exito: false, mensaje: 'No encontramos la actividad. Vuelve a abrir la pestaña.' };
+    const aprobado = actual.estado_sello === 'aprobado';
+
+    let fotoUrl = null;
+    let rutaNueva = null;
+    if (foto) {
+      const extension = foto.name.split('.').pop();
+      rutaNueva = `${usuarioId}/actividades/${Date.now()}.${extension}`;
+      const { error: errorSubida } = await supabase.storage.from('negocios').upload(rutaNueva, foto);
+      if (errorSubida) {
+        console.error('Error subiendo la foto de la actividad:', errorSubida);
+        return { exito: false, mensaje: 'No se pudo subir la foto. Intenta de nuevo.' };
+      }
+      fotoUrl = supabase.storage.from('negocios').getPublicUrl(rutaNueva).data.publicUrl;
+    }
+
+    const cambios = {
+      nombre,
+      descripcion: descripcion || null,
+      ...(fotoUrl ? { foto_url: fotoUrl } : {}),
+      categoria: categoria || null,
+      categoria_otro: categoria === 'otro' ? (categoriaOtro || null) : null,
+      lugar: lugar || null,
+      hora_inicio: horaInicio || null,
+      hora_fin: horaFin || null,
+      eslogan: eslogan || null,
+      detalles: detalles || null,
+      etiquetas: etiquetas && etiquetas.length > 0 ? etiquetas : null,
+      ...(aprobado ? {} : {
+        fecha_inicio: fechaInicio || null,
+        fecha_fin: fechaFin || null,
+        solicita_sello: solicitaSello,
+        justificacion_sello: solicitaSello ? justificacion : null,
+        limite_canjes: solicitaSello ? (limiteCanjes || null) : null,
+      }),
+    };
+
+    const { data, error } = await supabase
+      .from('actividad_negocio')
+      .update(cambios)
+      .eq('id', id)
+      .select(COLUMNAS_ACTIVIDAD)
+      .single();
+
+    if (error) {
+      console.error('Error editando la actividad:', error);
+      if (rutaNueva) {
+        try { await supabase.storage.from('negocios').remove([rutaNueva]); } catch (e) { console.warn('No se pudo quitar la foto nueva:', e); }
+      }
+      // Los mensajes de la base ('Faltan datos obligatorios…', 'Esta actividad ya tiene un sello aprobado…') son claros: se muestran.
+      const mensajeBase = (error.code === '23514' && /^Faltan datos obligatorios/.test(error.message || ''))
+        || (error.code === '42501' && /^Esta actividad ya tiene un sello aprobado/.test(error.message || ''));
+      return { exito: false, mensaje: mensajeBase ? error.message : 'No se pudo guardar los cambios. Intenta de nuevo.' };
+    }
+
+    // La foto anterior sobra (si ninguna otra actividad la usa): se borra ya con todo guardado.
+    if (rutaNueva) {
+      const rutaVieja = rutaFotoDeUrl(actual.foto_url);
+      const compartida = actividades.some((a) => a.id !== id && rutaFotoDeUrl(a.foto_url) === rutaVieja);
+      if (rutaVieja && !compartida) {
+        try {
+          const { error: errorBorrado } = await supabase.storage.from('negocios').remove([rutaVieja]);
+          if (errorBorrado) console.warn('No se pudo borrar la foto anterior:', errorBorrado);
+        } catch (e) {
+          console.warn('No se pudo borrar la foto anterior:', e);
+        }
+      }
+    }
+
+    // Una actividad antigua sin fechas que ahora las tiene se publica como evento.
+    let actividad = data;
+    let aviso = null;
+    if (data.fecha_inicio && data.fecha_fin && !data.evento_id) {
+      const { data: resEvento, error: errorEvento } = await supabase
+        .rpc('crear_evento_desde_actividad', { p_actividad_id: data.id });
+      if (errorEvento || !resEvento?.exito) {
+        console.error('Error publicando el evento de la actividad:', errorEvento || resEvento?.mensaje);
+        aviso = 'Se guardaron los cambios, pero la actividad no se pudo publicar como evento.';
+      } else {
+        actividad = { ...data, evento_id: resEvento.evento_id };
+      }
+    }
+
+    // Corregir una actividad con el sello rechazado y cambiar la justificación lo manda de nuevo a revisión: se avisa.
+    if (!aviso && actual.estado_sello === 'rechazado' && data.estado_sello === 'pendiente') {
+      aviso = 'Se guardaron los cambios y la solicitud del sello volvió a revisión.';
+    }
+
+    setActividades((prev) => prev.map((a) => (a.id === id ? actividad : a)));
+    return { exito: true, aviso };
+  }, [actividades, usuarioId]);
+
+  // Elimina una actividad por completo (eliminar_actividad): su sello, su evento y los favoritos de quienes la guardaron.
+  // La base rechaza si ya entregó sellos. La foto se borra de Storage con la ruta que devuelve la base; si eso falla,
+  // la actividad ya está eliminada y no se avisa como error.
+  const borrarActividad = useCallback(async (id) => {
+    const { data, error } = await supabase.rpc('eliminar_actividad', { p_id: id });
+    if (error || !data) {
+      console.error('Error eliminando la actividad:', error);
+      return { exito: false, mensaje: 'No se pudo eliminar la actividad. Intenta de nuevo.' };
+    }
+    if (!data.exito) return { exito: false, mensaje: data.mensaje };
+
+    if (data.foto_ruta) {
+      try {
+        const { error: errorBorrado } = await supabase.storage.from('negocios').remove([data.foto_ruta]);
+        if (errorBorrado) console.warn('No se pudo borrar la foto de la actividad:', errorBorrado);
+      } catch (e) {
+        console.warn('No se pudo borrar la foto de la actividad:', e);
+      }
+    }
+
+    setActividades((prev) => prev.filter((a) => a.id !== id));
+    setSellosEntregados((prev) => {
+      if (!prev) return prev;
+      const { [id]: _quitada, ...resto } = prev;
+      return resto;
+    });
+    cargarActividades(); // el QR de su sello ya no existe: se vuelve a pedir la lista de QR
+    return { exito: true };
+  }, [cargarActividades]);
 
   const eliminarActividadQR = useCallback(async (id) => {
     const { error } = await supabase
@@ -455,19 +764,30 @@ export function useNegocio(usuarioId) {
     negocio,
     cargando,
     horarios,
+    horariosGuardados,
     fotos,
     productos,
     registrar,
     actualizarHorarios,
     actualizarUbicacion,
     actualizarPerfil,
+    guardarDiseno,
+    subirPortada,
+    subirLogoDiseno,
     subirLogo,
     subirFoto,
     eliminarFoto,
+    ordenarFotos,
     agregarProducto,
     eliminarProducto,
+    actividades,
     actividadesQR,
-    crearActividadQR,
+    sellosEntregados,
+    cargarActividades,
+    crearActividad,
+    editarActividad,
+    borrarActividad,
+    reenviarSolicitudSello,
     eliminarActividadQR,
   };
 }
