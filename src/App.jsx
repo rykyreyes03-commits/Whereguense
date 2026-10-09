@@ -234,8 +234,7 @@ function App() {
   const factorTotpVerificado = factoresMfa.find((f) => f.status === 'verified');
   // El 2FA es opcional: quien no lo tiene entra directo y lo activa desde Perfil (pantalla 'mfaEnrolamiento'). Quien ya lo activó
   // sigue teniendo que verificar el código al iniciar sesión.
-  const necesitaChallengeMfa = !!session && !verificandoMfa && !!factorTotpVerificado
-    && aalMfa?.currentLevel === 'aal1' && aalMfa?.nextLevel === 'aal2';
+  const necesitaChallengeMfa = false;
 
   // Con sesión: resolver la fila de `usuario` (crearla la primera vez) y, la
   // primera vez por sesión, enrutar según onboarding_completado. El invitado sin
