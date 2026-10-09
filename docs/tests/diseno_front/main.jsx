@@ -9,7 +9,7 @@ import '../sitio_front/idiomaPrueba.js';
 import '/src/i18n.js';
 import '/src/index.css';
 import '/src/tema.css';
-import { aplicarTema, temaGuardado } from '/src/tema.js';
+import '/src/tema.js';
 import '/src/App.css';
 import '/src/components/PerfilNegocio.css';
 import PerfilNegocioPublico from '/src/components/PerfilNegocioPublico.jsx';
