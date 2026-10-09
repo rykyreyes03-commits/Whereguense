@@ -46,6 +46,8 @@ function mapearResenaAdmin(f) {
 }
 
 export function useAdmin() {
+  const [solicitudes, setSolicitudes] = useState([]);
+  const [cargandoDemo, setCargandoDemo] = useState(true);
   const [pendientes, setPendientes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [solicitudesSello, setSolicitudesSello] = useState([]);
@@ -102,11 +104,38 @@ export function useAdmin() {
     setResenas((data || []).map(mapearResenaAdmin));
   }, []);
 
+  // Solicitudes de demo de la Landing (041). Solo el admin las lee (RLS); lo más reciente primero.
+  const cargarSolicitudesDemo = useCallback(async () => {
+    setCargandoDemo(true);
+    const { data, error } = await supabase
+      .from('solicitud_demo')
+      .select('id, nombre, correo, organizacion, mensaje, created_at, leida')
+      .order('created_at', { ascending: false });
+    setCargandoDemo(false);
+    if (error) {
+      console.error('Error cargando solicitudes de demo:', error);
+      setSolicitudes([]);
+      return;
+    }
+    setSolicitudes(data || []);
+  }, []);
+
   useEffect(() => {
+    cargarSolicitudesDemo();
     cargarPendientes();
     cargarSolicitudesSello();
     cargarResenas();
-  }, [cargarPendientes, cargarSolicitudesSello, cargarResenas]);
+  }, [cargarSolicitudesDemo, cargarPendientes, cargarSolicitudesSello, cargarResenas]);
+
+  const marcarSolicitudLeida = useCallback(async (id) => {
+    const { error } = await supabase.from('solicitud_demo').update({ leida: true }).eq('id', id);
+    if (error) {
+      console.error('Error marcando solicitud como leída:', error);
+      return { exito: false, mensaje: 'No se pudo marcar como leída. Intenta de nuevo.' };
+    }
+    setSolicitudes((prev) => prev.map((s) => (s.id === id ? { ...s, leida: true } : s)));
+    return { exito: true };
+  }, []);
 
   const borrarResena = useCallback(async (resenaId) => {
     const { data, error } = await supabase.rpc('admin_borrar_resena', { p_resena_id: resenaId });
@@ -175,6 +204,9 @@ export function useAdmin() {
   }, []);
 
   return {
+    solicitudes,
+    cargandoDemo,
+    marcarSolicitudLeida,
     pendientes,
     cargando,
     aprobar,

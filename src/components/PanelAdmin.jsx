@@ -10,6 +10,30 @@ import { useAhora } from '../hooks/useAhora';
 import { eventoTermino } from '../utils/eventos';
 import './ListaResenas.css';
 
+// "8 oct 2026, 9:32 PM"
+function fechaHoraDemo(iso) {
+  const d = new Date(iso);
+  const dia = d.toLocaleDateString('es-NI', { day: 'numeric', month: 'short', year: 'numeric' }).replace(/\./g, '');
+  const hora = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  return `${dia}, ${hora}`;
+}
+
+// Mensaje a 3 líneas con "ver más" / "ver menos"
+function MensajeDemo({ texto }) {
+  const [abierto, setAbierto] = useState(false);
+  const largo = texto.length > 140 || texto.split('\n').length > 3;
+  return (
+    <>
+      <p className={`panelAdmin-justificacion${abierto ? '' : ' panelAdmin-clamp'}`}>{texto}</p>
+      {largo && (
+        <button className="panelAdmin-vermas" type="button" onClick={() => setAbierto(!abierto)}>
+          {abierto ? 'ver menos' : 'ver más'}
+        </button>
+      )}
+    </>
+  );
+}
+
 function formatearFecha(fechaISO) {
   return new Date(`${fechaISO}T00:00:00`).toLocaleDateString('es-NI', { day: 'numeric', month: 'short', year: 'numeric' });
 }
@@ -18,6 +42,9 @@ function formatearFecha(fechaISO) {
 // (admin_aprobar_sello lo rechaza, 025); aquí se ve la tarjeta pero sin el botón activo.
 function PanelAdmin({ onVolver, usuarioId }) {
   const {
+    solicitudes,
+    cargandoDemo,
+    marcarSolicitudLeida,
     pendientes,
     cargando,
     aprobar,
@@ -65,6 +92,40 @@ function PanelAdmin({ onVolver, usuarioId }) {
     <div className="panelAdmin-wrapper">
       <TopBar title="Panel Admin" onBack={onVolver} />
       <div className="panelAdmin-contenido">
+        <h2 className="panelAdmin-seccion">Solicitudes de demo <span className="panelAdmin-badge">{solicitudes.length}</span></h2>
+
+        {cargandoDemo && <p className="panelAdmin-estado">Cargando solicitudes…</p>}
+
+        {!cargandoDemo && solicitudes.length === 0 && (
+          <p className="panelAdmin-estado">No hay solicitudes aún.</p>
+        )}
+
+        {solicitudes.map((s) => {
+          const clave = `demo-${s.id}`;
+          return (
+            <div key={clave} className="panelAdmin-card">
+              <div className="panelAdmin-demo-cabecera">
+                <h2>{s.nombre}</h2>
+                <span className={`panelAdmin-estadoDemo ${s.leida ? 'leida' : 'nueva'}`}>{s.leida ? 'Leída' : 'Nueva'}</span>
+              </div>
+              <p className="panelAdmin-detalle">✉️ <a href={`mailto:${s.correo}`}>{s.correo}</a></p>
+              {s.organizacion && <p className="panelAdmin-detalle">🏢 {s.organizacion}</p>}
+              {s.mensaje && <MensajeDemo texto={s.mensaje} />}
+              <p className="panelAdmin-fecha">{fechaHoraDemo(s.created_at)}</p>
+              {!s.leida && (
+                <button
+                  className="panelAdmin-btn panelAdmin-btn-aprobar"
+                  onClick={() => ejecutar(clave, () => marcarSolicitudLeida(s.id))}
+                  disabled={procesando === clave}
+                  type="button"
+                >
+                  <Check size={16} strokeWidth={2.6} aria-hidden="true" /> Marcar como leída
+                </button>
+              )}
+            </div>
+          );
+        })}
+
         <h2 className="panelAdmin-seccion">Negocios pendientes</h2>
 
         {cargando && <p className="panelAdmin-estado">Cargando solicitudes…</p>}
