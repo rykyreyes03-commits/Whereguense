@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import './MfaEnrolamiento.css';
 import { supabase } from '../lib/supabaseClient';
 
 function MfaEnrolamiento({ onCompletado, onCerrarSesion }) {
   const [cargando, setCargando] = useState(true);
   const [qrCode, setQrCode] = useState('');
+  const [uri, setUri] = useState('');
   const [secreto, setSecreto] = useState('');
   const [factorId, setFactorId] = useState('');
   const [codigo, setCodigo] = useState('');
@@ -37,6 +39,7 @@ function MfaEnrolamiento({ onCompletado, onCerrarSesion }) {
       }
       setFactorId(data.id);
       setQrCode(data.totp.qr_code);
+      setUri(data.totp.uri || '');
       setSecreto(data.totp.secret);
     })();
   }, []);
@@ -80,9 +83,17 @@ function MfaEnrolamiento({ onCompletado, onCerrarSesion }) {
 
         {cargando && <p className="mfa-cargando">Generando código QR…</p>}
 
-        {!cargando && qrCode && (
+        {!cargando && (uri || qrCode) && (
           <>
-            <div className="mfa-qr" dangerouslySetInnerHTML={{ __html: qrCode }} />
+            {/* El QR se dibuja aquí con la URI otpauth:// (SVG propio): no depende del SVG/data URI que manda Supabase,
+                que algunos navegadores móviles muestran como texto. */}
+            {uri ? (
+              <div className="mfa-qr" role="img" aria-label="Código QR para tu app autenticadora">
+                <QRCodeSVG value={uri} size={200} level="M" marginSize={2} bgColor="#FFFFFF" fgColor="#000000" />
+              </div>
+            ) : (
+              <div className="mfa-qr" dangerouslySetInnerHTML={{ __html: qrCode }} />
+            )}
             <p className="mfa-secreto-label">¿No podés escanear? Ingresa este código manualmente:</p>
             <code className="mfa-secreto">{secreto}</code>
 

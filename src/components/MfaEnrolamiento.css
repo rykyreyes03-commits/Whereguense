@@ -43,8 +43,11 @@
 }
 
 .mfa-qr svg {
-  width: 180px;
-  height: 180px;
+  display: block;
+  width: 200px;
+  height: 200px;
+  max-width: 100%;
+  border-radius: 8px;
 }
 
 .mfa-secreto-label {
