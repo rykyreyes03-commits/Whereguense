@@ -162,7 +162,7 @@
 
 /* ===== DESKTOP: 1024px+ ===== */
 @media (min-width: 1024px) {
-  .eventos-wrapper { max-width: 1100px; }
+  .eventos-wrapper { max-width: 100%; }
   .eventos-filtros { padding: 20px 60px 4px; }
   .eventos-contenido { padding: 20px 60px 20px; }
   .eventos-lista { grid-template-columns: 1fr 1fr; }

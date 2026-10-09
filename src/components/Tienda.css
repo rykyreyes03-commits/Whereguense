@@ -128,6 +128,6 @@
 
 /* ===== DESKTOP: 1024px+ ===== */
 @media (min-width: 1024px){
-  .tienda-wrapper{ max-width:1100px; }
+  .tienda-wrapper{ max-width: 100%; }
   .tienda-contenido{ padding: 36px 60px 0; }
 }

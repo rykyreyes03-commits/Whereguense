@@ -96,5 +96,5 @@
   .bottom-nav-negocio { max-width: 700px; }
 }
 @media (min-width: 1024px) {
-  .bottom-nav-negocio { max-width: 1100px; }
+  .bottom-nav-negocio { max-width: 100%; }
 }

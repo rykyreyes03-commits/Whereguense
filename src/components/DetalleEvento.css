@@ -310,7 +310,7 @@
 
 /* ===== DESKTOP: 1024px+ ===== */
 @media (min-width: 1024px) {
-  .detalle-evento-wrapper { max-width: 1100px; }
+  .detalle-evento-wrapper { max-width: 100%; }
   .detalle-evento-hero { min-height: 480px; }
   .detalle-evento-contenido { padding: 28px 60px 0; max-width: 760px; margin: 0 auto; }
 }

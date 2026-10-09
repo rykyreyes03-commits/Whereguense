@@ -101,3 +101,7 @@
 .miscupones-otros-toggle .girada { transform: rotate(180deg); }
 .miscupones-otros-toggle:focus-visible { outline: 2px solid var(--color-turquoise); outline-offset: 2px; border-radius: var(--radius-sm); }
 .miscupones-otros .miscupones-lista { margin-top: 8px; }
+
+@media (min-width: 1024px) {
+  .miscupones-wrapper { max-width: 100%; }
+}

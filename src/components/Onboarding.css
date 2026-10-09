@@ -200,7 +200,7 @@
   .onboarding-logo-img { height: 70px; }
 }
 @media (min-width: 1024px) {
-  .onboarding-wrapper { max-width: 1100px; }
+  .onboarding-wrapper { max-width: 100%; }
   .onboarding-contenido { max-width: 380px; }
   .onboarding-titulo { font-size: 1.9rem; }
   .onboarding-logo-img { height: 84px; }

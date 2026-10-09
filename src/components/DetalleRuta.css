@@ -135,7 +135,7 @@
 
 /* ===== DESKTOP: 1024px+ ===== */
 @media (min-width: 1024px){
-  .detalle-wrapper{ max-width:1100px; }
+  .detalle-wrapper{ max-width: 100%; }
   .detalle-contenido{ padding: 36px 60px 0; }
 }
 

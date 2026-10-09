@@ -116,7 +116,7 @@
   .personalizacion-wrapper{ max-width:700px; }
 }
 @media (min-width: 1024px){
-  .personalizacion-wrapper{ max-width:1100px; }
+  .personalizacion-wrapper{ max-width: 100%; }
   .personalizacion-grid{ grid-template-columns: repeat(4, 1fr); }
 }
 

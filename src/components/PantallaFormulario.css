@@ -54,3 +54,8 @@
 .pantalla-form-pie-interno { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
 @media (prefers-reduced-motion: reduce) { .pantalla-form-progreso span { transition: none; } }
 .pantalla-form:focus { outline: none; }
+
+@media (min-width: 1024px) {
+  .pantalla-form-cuerpo { max-width: 100%; }
+  .pantalla-form-pie-interno { max-width: 800px; }
+}

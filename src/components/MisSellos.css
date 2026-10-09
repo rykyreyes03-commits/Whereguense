@@ -126,7 +126,7 @@
 
 /* ===== DESKTOP: 1024px+ ===== */
 @media (min-width: 1024px){
-  .mis-sellos-wrapper{ max-width:1100px; }
+  .mis-sellos-wrapper{ max-width: 100%; }
   .mis-sellos-contenido{ padding: 36px 60px 0; }
   .mis-sellos-grid{ grid-template-columns: repeat(4, 1fr); }
 }

@@ -59,7 +59,7 @@
 }
 
 @media (min-width: 1024px) {
-  .mapa-pantalla { max-width: 1100px; }
+  .mapa-pantalla { max-width: 100%; }
 }
 
 .app-pantalla-desconocida {

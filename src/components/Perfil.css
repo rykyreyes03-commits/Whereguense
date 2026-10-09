@@ -345,6 +345,6 @@
   .perfil-contenido { padding: 28px 32px 0; }
 }
 @media (min-width: 1024px) {
-  .perfil-wrapper { max-width: 1100px; }
+  .perfil-wrapper { max-width: 100%; }
   .perfil-contenido { padding: 36px 60px 0; max-width: 680px; margin: 0 auto; }
 }

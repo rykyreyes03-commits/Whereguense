@@ -238,5 +238,5 @@ html.dark .registro-ubicacion-btn svg { color: #8E9CF0; }
   .registro-wrapper { max-width: 700px; }
 }
 @media (min-width: 1024px) {
-  .registro-wrapper { max-width: 1100px; }
+  .registro-wrapper { max-width: 100%; }
 }

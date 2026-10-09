@@ -123,7 +123,7 @@
   .menu-contenido { padding: 28px 32px 48px; }
 }
 @media (min-width: 1024px) {
-  .menu-wrapper { max-width: 1100px; }
+  .menu-wrapper { max-width: 100%; }
   .menu-contenido { max-width: 620px; margin: 0 auto; }
 }
 

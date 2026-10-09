@@ -110,7 +110,7 @@
   .guardados-wrapper { max-width: 700px; }
 }
 @media (min-width: 1024px) {
-  .guardados-wrapper { max-width: 1100px; }
+  .guardados-wrapper { max-width: 100%; }
 }
 
 /* ===== Eventos guardados ===== */

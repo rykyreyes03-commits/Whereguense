@@ -191,7 +191,7 @@
   .proposito-continuar { align-self: center; min-width: 280px; }
 }
 @media (min-width: 1024px) {
-  .proposito-wrapper { max-width: 1100px; }
+  .proposito-wrapper { max-width: 100%; }
   .proposito-contenido { max-width: 720px; margin: 0 auto; }
   .proposito-titulo { font-size: 2rem; }
 }
