@@ -67,7 +67,7 @@ function obtenerActivacion(usuarioId) {
   return activacion.promesa;
 }
 
-function MfaEnrolamiento({ onCompletado, onCerrarSesion }) {
+function MfaEnrolamiento({ onCompletado, onCerrarSesion, onVolver }) {
   const [cargando, setCargando] = useState(true);
   const [qrCode, setQrCode] = useState('');
   const [uri, setUri] = useState('');
@@ -174,6 +174,12 @@ function MfaEnrolamiento({ onCompletado, onCerrarSesion }) {
         )}
 
         {error && <p className="mfa-error">{error}</p>}
+
+        {onVolver && (
+          <button className="mfa-cerrar-sesion" type="button" onClick={onVolver}>
+            Ahora no, volver
+          </button>
+        )}
 
         {onCerrarSesion && (
           <button className="mfa-cerrar-sesion" type="button" onClick={() => { olvidarActivacion(); onCerrarSesion(); }}>

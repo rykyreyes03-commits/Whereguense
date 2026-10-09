@@ -138,7 +138,8 @@ function Pantalla() {
   if (params.get('vista') === 'perfil') {
     return (
       <Perfil sellos={[{ id: 1, sitioId: 1, fecha: '1/10/2026' }]} total={89} onNavigate={(p) => window.__eventos.push(['ir', p])} onCerrarSesion={() => {}}
-        usuarioActual={{ id: 'yo', nombre_usuario: 'Ryky', pais: 'Nicaragua', idioma_preferido: 'es' }} onActualizarPerfil={async () => ({ exito: true })} modoNegocio={params.get('negocio') === '1'} />
+        usuarioActual={{ id: 'yo', nombre_usuario: 'Ryky', pais: 'Nicaragua', idioma_preferido: 'es' }} onActualizarPerfil={async () => ({ exito: true })} modoNegocio={params.get('negocio') === '1'}
+        mfaActivo={params.get('mfa') === '1'} onActivar2FA={params.get('sin2fa') === '1' ? null : () => window.__eventos.push(['ir', 'mfaEnrolamiento'])} />
     );
   }
   if (params.get('vista') === 'nav') {

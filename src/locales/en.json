@@ -192,7 +192,10 @@
     "confirmarCerrar": "Are you sure you want to sign out? The stamps and profile data saved on this device will be deleted.",
     "errorGuardar": "Your profile could not be saved. Try again.",
     "errorImagen": "That image could not be used. Try another photo.",
-    "miPasaporte": "My passport"
+    "miPasaporte": "My passport",
+    "dosPasos": "Two-step verification",
+    "dosPasosActiva": "On",
+    "dosPasosInactiva": "Off · Tap to turn on"
   },
   "sitio": {
     "volverMapa": "Back to the map",

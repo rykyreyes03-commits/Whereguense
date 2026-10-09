@@ -54,7 +54,7 @@ function cargarFoto() {
   }
 }
 
-function Perfil({ sellos, total, onNavigate, onVolver, onCerrarSesion, usuarioActual, onActualizarPerfil, modoNegocio = false }) {
+function Perfil({ sellos, total, onNavigate, onVolver, onCerrarSesion, usuarioActual, onActualizarPerfil, modoNegocio = false, mfaActivo = false, onActivar2FA = null }) {
   const { t } = useTranslation();
   const [perfil, setPerfil] = useState(() =>
     usuarioActual ? perfilDesdeUsuario(usuarioActual) : cargarPerfil()
@@ -294,6 +294,27 @@ function Perfil({ sellos, total, onNavigate, onVolver, onCerrarSesion, usuarioAc
               </button>
             </div>
           </>
+        )}
+
+        {/* Seguridad: el 2FA es opcional y se activa aquí */}
+        {usuarioActual && onActivar2FA && (
+          mfaActivo ? (
+            <div className="perfil-card perfil-seguridad perfil-seguridad--activa">
+              <div>
+                <strong className="perfil-seccion perfil-seguridad-titulo">{t('perfil.dosPasos')}</strong>
+                <small>{t('perfil.dosPasosActiva')}</small>
+              </div>
+              <span className="perfil-seguridad-marca" aria-hidden="true">✓</span>
+            </div>
+          ) : (
+            <button type="button" className="perfil-card perfil-seguridad" onClick={onActivar2FA}>
+              <div>
+                <strong className="perfil-seccion perfil-seguridad-titulo">{t('perfil.dosPasos')}</strong>
+                <small>{t('perfil.dosPasosInactiva')}</small>
+              </div>
+              <span className="perfil-seguridad-flecha" aria-hidden="true">›</span>
+            </button>
+          )
         )}
 
         <button

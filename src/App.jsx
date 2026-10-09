@@ -232,7 +232,8 @@ function App() {
   }, [session?.user?.id, mfaRecargarTick]);
 
   const factorTotpVerificado = factoresMfa.find((f) => f.status === 'verified');
-  const necesitaEnrolarMfa = !!session && !verificandoMfa && !factorTotpVerificado;
+  // El 2FA es opcional: quien no lo tiene entra directo y lo activa desde Perfil (pantalla 'mfaEnrolamiento'). Quien ya lo activó
+  // sigue teniendo que verificar el código al iniciar sesión.
   const necesitaChallengeMfa = !!session && !verificandoMfa && !!factorTotpVerificado
     && aalMfa?.currentLevel === 'aal1' && aalMfa?.nextLevel === 'aal2';
 
@@ -550,20 +551,22 @@ function App() {
     );
   }
 
-  if (necesitaEnrolarMfa) {
-    return (
-      <MfaEnrolamiento
-        onCompletado={() => setMfaRecargarTick((t) => t + 1)}
-        onCerrarSesion={handleCerrarSesionGlobal}
-      />
-    );
-  }
   if (necesitaChallengeMfa) {
     return (
       <MfaChallenge
         factorId={factorTotpVerificado.id}
         onVerificado={() => setMfaRecargarTick((t) => t + 1)}
         onCerrarSesion={handleCerrarSesionGlobal}
+      />
+    );
+  }
+
+  // Activar la verificación en dos pasos por decisión propia (desde Perfil)
+  if (pantalla === 'mfaEnrolamiento') {
+    return (
+      <MfaEnrolamiento
+        onCompletado={() => { setMfaRecargarTick((n) => n + 1); setPantalla('perfil'); }}
+        onVolver={() => setPantalla('perfil')}
       />
     );
   }
@@ -786,6 +789,8 @@ function App() {
         onCerrarSesion={handleCerrarSesionGlobal}
         usuarioActual={usuarioActual}
         onActualizarPerfil={handleActualizarPerfilUsuario}
+        mfaActivo={Boolean(factorTotpVerificado)}
+        onActivar2FA={() => setPantalla('mfaEnrolamiento')}
       />
     );
   }
