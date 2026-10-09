@@ -1,7 +1,33 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import './MfaEnrolamiento.css';
 import { supabase } from '../lib/supabaseClient';
+
+// Una sola activación a la vez por usuario, compartida entre montajes del componente. App.jsx puede desmontar y volver a montar
+// esta pantalla (por ejemplo mientras carga la fila de usuario); sin esto cada montaje creaba un factor nuevo y el QR que la
+// persona ya había escaneado dejaba de coincidir con el factor que se verifica ("Invalid TOTP code entered").
+let activacion = null; // { usuarioId, promesa }
+
+async function crearFactor() {
+  // listFactors().totp solo trae los VERIFICADOS; los pendientes están en .all. Se borran para no acumular factores a medias.
+  const { data: existentes } = await supabase.auth.mfa.listFactors();
+  const pendientes = (existentes?.all || []).filter((f) => f.factor_type === 'totp' && f.status !== 'verified');
+  for (const f of pendientes) {
+    await supabase.auth.mfa.unenroll({ factorId: f.id });
+  }
+  const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: `totp-${Date.now()}` });
+  if (error) throw error;
+  return { id: data.id, qrCode: data.totp.qr_code, uri: data.totp.uri || '', secreto: data.totp.secret };
+}
+
+function obtenerActivacion(usuarioId) {
+  if (!activacion || activacion.usuarioId !== usuarioId) {
+    const promesa = crearFactor();
+    activacion = { usuarioId, promesa };
+    promesa.catch(() => { if (activacion?.promesa === promesa) activacion = null; }); // si falla, el próximo intento vuelve a empezar
+  }
+  return activacion.promesa;
+}
 
 function MfaEnrolamiento({ onCompletado, onCerrarSesion }) {
   const [cargando, setCargando] = useState(true);
@@ -12,36 +38,26 @@ function MfaEnrolamiento({ onCompletado, onCerrarSesion }) {
   const [codigo, setCodigo] = useState('');
   const [verificando, setVerificando] = useState(false);
   const [error, setError] = useState('');
-  const inicioLanzadoRef = useRef(false);
 
   useEffect(() => {
-    if (inicioLanzadoRef.current) return;
-    inicioLanzadoRef.current = true;
+    let activo = true;
     (async () => {
       setCargando(true);
       setError('');
-      // Si quedó un factor sin verificar de un intento anterior (p. ej. si se
-      // cerró la pestaña a mitad del proceso), lo limpiamos antes de crear
-      // uno nuevo — Supabase no permite dos factores con el mismo nombre.
-      const { data: existentes } = await supabase.auth.mfa.listFactors();
-      const factorSinVerificar = existentes?.totp?.find((f) => f.status !== 'verified');
-      if (factorSinVerificar) {
-        await supabase.auth.mfa.unenroll({ factorId: factorSinVerificar.id });
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const factor = await obtenerActivacion(session?.user?.id ?? 'sin-sesion');
+        if (!activo) return;
+        setFactorId(factor.id);
+        setQrCode(factor.qrCode);
+        setUri(factor.uri);
+        setSecreto(factor.secreto);
+      } catch (err) {
+        if (activo) setError(err?.message || 'No se pudo iniciar la activación de 2FA.');
       }
-      const { data, error: err } = await supabase.auth.mfa.enroll({
-        factorType: 'totp',
-        friendlyName: `totp-${Date.now()}`,
-      });
-      setCargando(false);
-      if (err) {
-        setError(err.message || 'No se pudo iniciar la activación de 2FA.');
-        return;
-      }
-      setFactorId(data.id);
-      setQrCode(data.totp.qr_code);
-      setUri(data.totp.uri || '');
-      setSecreto(data.totp.secret);
+      if (activo) setCargando(false);
     })();
+    return () => { activo = false; };
   }, []);
 
   const handleVerificar = async (e) => {
@@ -66,9 +82,10 @@ function MfaEnrolamiento({ onCompletado, onCerrarSesion }) {
     });
     setVerificando(false);
     if (errVerify) {
-      setError(errVerify.message || 'Código incorrecto. Intenta de nuevo.');
+      setError('Código incorrecto. Escanea el QR que ves ahora (si ya tenías una entrada de Wheregüense en tu app, bórrala), comprueba que la hora de tu teléfono esté en automático y escribe el código nuevo.');
       return;
     }
+    activacion = null;
     onCompletado();
   };
 
