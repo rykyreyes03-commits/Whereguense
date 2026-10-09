@@ -8,7 +8,11 @@ import iconoCorreo from '../assets/flujo-inicial/email_hd.png';
 // Mensajes de Supabase Auth en español (lo que no se reconoce se muestra tal cual)
 function traducirError(err) {
   const m = (err?.message || '').toLowerCase();
-  if (m.includes('invalid login credentials')) return 'Correo o contraseña incorrectos.';
+  if (m.includes('invalid login credentials')) {
+    // Puede ser contraseña incorrecta O una cuenta creada con Google (que no tiene contraseña): Supabase no las distingue,
+    // así que el mensaje cubre los dos casos.
+    return 'Correo o contraseña incorrectos. Si creaste tu cuenta con Google, usa el botón "Continuar con Google".';
+  }
   if (m.includes('email not confirmed')) return 'Confirma tu correo antes de iniciar sesión: te enviamos un mensaje al registrarte.';
   if (m.includes('already registered')) return 'Ese correo ya tiene una cuenta. Inicia sesión.';
   if (m.includes('rate limit') || err?.status === 429) return 'Demasiados intentos. Espera unos minutos e intenta de nuevo.';
@@ -146,6 +150,12 @@ function Login({ onVolverALanding, sesionExpirada }) {
         <div className="login-separador">
           <span>o con tu correo</span>
         </div>
+
+        {modo === 'entrar' && (
+          <p className="login-form-hint">
+            ¿Entraste con Google la última vez? Usa el botón de arriba.
+          </p>
+        )}
 
         <form className="login-form" onSubmit={handleEnviar} noValidate>
           <label className="login-form-label" htmlFor="login-email">Correo</label>

@@ -37,6 +37,7 @@ const error = async (page) => (await page.locator('.login-form-error').textConte
   ok(!/código|codigo|Verificar|Reenviar|Cambiar correo/i.test(texto) && (await page.locator('input[inputmode=numeric], input[autocomplete=one-time-code]').count()) === 0, 'sin rastro del código de 6 dígitos ni del enlace mágico');
   ok((await page.locator('#login-email').getAttribute('type')) === 'email' && (await page.locator('#login-clave').getAttribute('type')) === 'password' && (await page.locator('#login-confirmar').count()) === 0, 'entrar: campos de correo y contraseña (sin confirmar)');
   ok((await page.locator('#login-clave').getAttribute('autocomplete')) === 'current-password' && (await page.locator('.login-form-btn').innerText()).trim() === 'Iniciar sesión', 'entrar: botón "Iniciar sesión" y autocompletado de contraseña actual');
+  ok((await page.locator('.login-form-hint').textContent()) === '¿Entraste con Google la última vez? Usa el botón de arriba.', 'entrar: se ve el recordatorio de entrar con Google');
   await page.screenshot({ path: path.join(capturas, 'login_entrar.png') });
 
   await page.locator('.login-form-btn').click();
@@ -56,7 +57,7 @@ const error = async (page) => (await page.locator('.login-form-error').textConte
 
 // ---------- errores al entrar ----------
 for (const [mensaje, esperado, nombre] of [
-  ['Invalid login credentials', 'Correo o contraseña incorrectos.', 'credenciales malas'],
+  ['Invalid login credentials', 'Correo o contraseña incorrectos. Si creaste tu cuenta con Google, usa el botón "Continuar con Google".', 'credenciales malas (o cuenta de Google)'],
   ['Email not confirmed', 'Confirma tu correo antes de iniciar sesión: te enviamos un mensaje al registrarte.', 'correo sin confirmar'],
   ['Email rate limit exceeded', 'Demasiados intentos. Espera unos minutos e intenta de nuevo.', 'límite de intentos'],
 ]) {
@@ -74,6 +75,7 @@ for (const [mensaje, esperado, nombre] of [
   await page.getByRole('button', { name: 'Crea una' }).click();
   ok((await page.locator('#login-confirmar').count()) === 1 && (await page.locator('.login-form-btn').innerText()).trim() === 'Crear cuenta' && (await page.locator('#login-clave').getAttribute('autocomplete')) === 'new-password', 'crear: aparece "Confirmar contraseña" y el botón "Crear cuenta"');
   ok((await page.getByRole('button', { name: 'Inicia sesión' }).count()) === 1, 'crear: el enlace de abajo pasa a "Inicia sesión"');
+  ok((await page.locator('.login-form-hint').count()) === 0, 'crear: el recordatorio de Google NO aparece en "Crear cuenta"');
   await page.screenshot({ path: path.join(capturas, 'login_crear.png') });
   await page.fill('#login-email', 'nueva@correo.com');
   await page.fill('#login-clave', '123'); await page.fill('#login-confirmar', '123');

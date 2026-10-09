@@ -220,6 +220,12 @@
   cursor: default;
   text-decoration: none;
 }
+.login-form-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-soft);
+  text-align: center;
+  margin: 0 0 var(--space-sm);
+}
 .login-form-aviso {
   margin: 10px 0 0;
   font-size: 0.85rem;
