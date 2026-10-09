@@ -518,14 +518,17 @@
 /* ===== Tablet / Desktop ===== */
 @media (min-width: 640px) {
   .inicio-wrapper { max-width: 700px; }
-  .inicio-hero { padding: 36px 32px 64px; }
+  /* La barra de arriba tiene las esquinas de abajo redondeadas: el hero empieza detrás de ellas (margen negativo + el mismo relleno
+     extra) para que ahí no se vea el fondo claro de la pantalla. El texto del hero queda en el mismo lugar. */
+  .inicio-wrapper > .topbar { position: relative; z-index: 2; }
+  .inicio-hero { margin-top: calc(-1 * var(--radius-lg)); padding: calc(36px + var(--radius-lg)) 32px 64px; }
   .inicio-hero-titulo { font-size: 2rem; }
   .inicio-contenido { padding: 0 28px; }
 }
 
 @media (min-width: 1024px) {
   .inicio-wrapper { max-width: 1100px; }
-  .inicio-hero { padding: 48px 60px 72px; }
+  .inicio-hero { padding: calc(48px + var(--radius-lg)) 60px 72px; }
   .inicio-hero-titulo { font-size: 2.4rem; }
   .inicio-contenido { padding: 0 60px; }
   .inicio-accesos { grid-template-columns: repeat(4, 1fr); max-width: 720px; }
